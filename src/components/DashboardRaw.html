@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ProDecide | Strategy Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#bec6e0",
+              "on-tertiary-container": "#d6e6ff",
+              "surface-container-lowest": "#ffffff",
+              "on-primary-fixed": "#001452",
+              "surface-tint": "#004ced",
+              "on-secondary-fixed-variant": "#3f465c",
+              "on-primary": "#ffffff",
+              "inverse-on-surface": "#eff1f3",
+              "surface-container-low": "#f2f4f6",
+              "on-error-container": "#93000a",
+              "on-tertiary-fixed": "#0b1c30",
+              "secondary-fixed": "#dae2fd",
+              "primary-fixed-dim": "#b7c4ff",
+              "on-surface": "#191c1e",
+              "surface-container": "#eceef0",
+              "on-error": "#ffffff",
+              "on-secondary-fixed": "#131b2e",
+              "secondary-container": "#dae2fd",
+              "primary": "#003ec7",
+              "tertiary": "#3f4f65",
+              "secondary": "#565e74",
+              "inverse-surface": "#2d3133",
+              "on-primary-container": "#dfe3ff",
+              "on-surface-variant": "#434656",
+              "on-background": "#191c1e",
+              "on-tertiary": "#ffffff",
+              "error": "#ba1a1a",
+              "background": "#f7f9fb",
+              "on-secondary-container": "#5c647a",
+              "surface-container-highest": "#e0e3e5",
+              "primary-fixed": "#dde1ff",
+              "primary-container": "#0052ff",
+              "surface-dim": "#d8dadc",
+              "surface-container-high": "#e6e8ea",
+              "surface-bright": "#f7f9fb",
+              "surface": "#f7f9fb",
+              "on-primary-fixed-variant": "#0038b6",
+              "outline": "#737688",
+              "on-secondary": "#ffffff",
+              "error-container": "#ffdad6",
+              "surface-variant": "#e0e3e5",
+              "tertiary-container": "#57677e",
+              "inverse-primary": "#b7c4ff",
+              "outline-variant": "#c3c5d9",
+              "tertiary-fixed-dim": "#b7c8e1",
+              "on-tertiary-fixed-variant": "#38485d",
+              "tertiary-fixed": "#d3e4fe"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #003ec7 0%, #0052ff 100%);
+        }
+        .asymmetric-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 1024px) {
+            .asymmetric-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body antialiased">
+<!-- TopNavBar -->
+<nav class="bg-[#f7f9fb] dark:bg-slate-900 sticky top-0 z-50">
+<div class="flex justify-between items-center px-8 py-4 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-12">
+<span class="text-xl font-bold text-slate-900 dark:text-white tracking-tighter font-headline">ProDecide</span>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-manrope text-sm font-medium tracking-tight text-[#0052FF] dark:text-blue-400 border-b-2 border-[#0052FF] pb-1" href="#">My Projects</a>
+<a class="font-manrope text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors duration-200" href="#">Consultants</a>
+<a class="font-manrope text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors duration-200" href="#">Settings</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant text-sm">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-sm focus:ring-2 focus:ring-primary-fixed transition-all w-64" placeholder="Search strategy..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-full transition-colors duration-200">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-full transition-colors duration-200">account_circle</button>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-8 py-12">
+<!-- Header Section -->
+<header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="max-w-2xl">
+<nav class="flex items-center gap-2 text-on-surface-variant text-xs font-medium mb-4 uppercase tracking-widest">
+<span>Analysis</span>
+<span class="material-symbols-outlined text-[10px]">arrow_forward_ios</span>
+<span class="text-primary">Project Alpha-9</span>
+</nav>
+<h1 class="font-headline text-5xl font-extrabold text-on-surface tracking-tighter leading-none mb-4">Strategic Landscape Analysis</h1>
+<p class="text-on-surface-variant text-lg leading-relaxed max-w-xl">AI-driven breakdown of market entry risks and capital allocation opportunities for Q3 expansion.</p>
+</div>
+<button class="primary-gradient text-on-primary px-8 py-4 rounded-xl font-headline font-bold text-sm tracking-tight shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                View Expert Consultant Matches
+            </button>
+</header>
+<!-- Bento Grid Layout -->
+<div class="asymmetric-grid">
+<!-- Main Analysis Column -->
+<div class="space-y-8">
+<!-- Strategic Paths Flowchart -->
+<section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/15">
+<h3 class="font-headline text-xl font-bold mb-8 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">account_tree</span>
+                        Recommended Strategic Paths
+                    </h3>
+<div class="relative py-4">
+<div class="flex flex-col gap-12">
+<!-- Node 1 -->
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center font-bold text-on-primary-fixed shrink-0">01</div>
+<div class="flex-1 bg-surface-container-low p-5 rounded-xl border-l-4 border-primary">
+<h4 class="font-bold text-sm mb-1">Market Penetration Phase</h4>
+<p class="text-xs text-on-surface-variant">Focus on core competencies in existing European clusters.</p>
+</div>
+</div>
+<!-- Connector -->
+<div class="absolute left-6 top-12 bottom-12 w-0.5 bg-surface-container-highest -z-10"></div>
+<!-- Node 2 -->
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center font-bold text-on-secondary-fixed shrink-0">02</div>
+<div class="flex-1 bg-surface-container-low p-5 rounded-xl">
+<h4 class="font-bold text-sm mb-1">Operational Scalability</h4>
+<p class="text-xs text-on-surface-variant">Automating back-office logistics via ProDecide API integrations.</p>
+</div>
+</div>
+<!-- Node 3 -->
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center font-bold text-on-tertiary-fixed shrink-0">03</div>
+<div class="flex-1 bg-surface-container-low p-5 rounded-xl">
+<h4 class="font-bold text-sm mb-1">Global Exit Strategy</h4>
+<p class="text-xs text-on-surface-variant">Acquisition readiness for potential Tier-1 buyout by FY26.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- AI Insight Pulse -->
+<section class="bg-tertiary-container/10 p-8 rounded-xl border border-primary/20 backdrop-blur-md">
+<div class="flex items-start gap-4">
+<div class="bg-primary-container p-3 rounded-lg">
+<span class="material-symbols-outlined text-on-primary-container" data-weight="fill">lightbulb</span>
+</div>
+<div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-2">Insight Pulse: AI Recommendation</h3>
+<p class="text-on-surface-variant leading-relaxed mb-6">Based on current volatility indexes, we suggest delaying the APAC launch by 4 weeks to capitalize on projected currency stabilization. This could increase initial ROI by <span class="text-primary font-bold">12.4%</span>.</p>
+<div class="flex gap-4">
+<button class="bg-surface-container-lowest px-4 py-2 rounded-lg text-xs font-bold border border-outline-variant/20 hover:bg-surface-container-low transition-colors">Apply Strategy</button>
+<button class="text-primary px-4 py-2 rounded-lg text-xs font-bold hover:underline">Discuss with AI</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Side Visualization Column -->
+<div class="space-y-8">
+<!-- Radar Chart / Risk Profile -->
+<section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/15">
+<h3 class="font-headline text-xl font-bold mb-6">Risk vs. Opportunity</h3>
+<div class="aspect-square relative flex items-center justify-center mb-6">
+<!-- Abstract Radar Visualization -->
+<div class="absolute inset-0 border border-outline-variant/10 rounded-full"></div>
+<div class="absolute inset-8 border border-outline-variant/10 rounded-full"></div>
+<div class="absolute inset-16 border border-outline-variant/10 rounded-full"></div>
+<div class="absolute w-full h-[1px] bg-outline-variant/10"></div>
+<div class="absolute w-[1px] h-full bg-outline-variant/10"></div>
+<!-- Polygon Overlay -->
+<svg class="w-full h-full p-4 drop-shadow-lg" viewbox="0 0 100 100">
+<polygon fill="rgba(0, 62, 199, 0.15)" points="50,10 85,35 75,80 25,80 15,35" stroke="#003ec7" stroke-width="1"></polygon>
+<circle cx="50" cy="10" fill="#003ec7" r="1.5"></circle>
+<circle cx="85" cy="35" fill="#003ec7" r="1.5"></circle>
+<circle cx="75" cy="80" fill="#003ec7" r="1.5"></circle>
+<circle cx="25" cy="80" fill="#003ec7" r="1.5"></circle>
+<circle cx="15" cy="35" fill="#003ec7" r="1.5"></circle>
+</svg>
+<!-- Labels -->
+<span class="absolute top-0 text-[10px] font-bold text-outline uppercase tracking-tighter">Profit</span>
+<span class="absolute bottom-0 text-[10px] font-bold text-outline uppercase tracking-tighter">Stability</span>
+<span class="absolute right-0 text-[10px] font-bold text-outline uppercase tracking-tighter">Speed</span>
+<span class="absolute left-0 text-[10px] font-bold text-outline uppercase tracking-tighter">Safety</span>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">Market Volatility</span>
+<span class="font-bold text-error">High</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">Capital Efficiency</span>
+<span class="font-bold text-primary">8.8/10</span>
+</div>
+</div>
+</section>
+<!-- Key Takeaways -->
+<section class="bg-surface-container p-8 rounded-xl">
+<h3 class="font-headline text-lg font-bold mb-6">Key Takeaways</h3>
+<ul class="space-y-6">
+<li class="flex gap-4">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+<div>
+<p class="text-sm font-bold text-on-surface mb-1">Regulatory Clearance</p>
+<p class="text-xs text-on-surface-variant">All GDPR and localized compliance checks passed for the Nordic region.</p>
+</div>
+</li>
+<li class="flex gap-4">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+<div>
+<p class="text-sm font-bold text-on-surface mb-1">Talent Density</p>
+<p class="text-xs text-on-surface-variant">Consultant matches show high availability for FinTech specialists in Stockholm.</p>
+</div>
+</li>
+<li class="flex gap-4">
+<span class="material-symbols-outlined text-on-error text-xl">warning</span>
+<div>
+<p class="text-sm font-bold text-on-surface mb-1">Competitor Response</p>
+<p class="text-xs text-on-surface-variant">Main rival detected aggressive pricing adjustments in secondary markets.</p>
+</div>
+</li>
+</ul>
+</section>
+</div>
+</div>
+<!-- Next Steps Horizontal Section -->
+<section class="mt-12 bg-surface-container-low p-8 rounded-2xl">
+<h3 class="font-headline text-2xl font-extrabold mb-8 tracking-tight">Recommended Next Steps</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 group cursor-pointer hover:shadow-md transition-all">
+<span class="material-symbols-outlined text-primary mb-4 block">fact_check</span>
+<h4 class="font-bold text-base mb-2">Review Technical Debt</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">AI audit suggests prioritizing cloud infrastructure optimization.</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 group cursor-pointer hover:shadow-md transition-all">
+<span class="material-symbols-outlined text-primary mb-4 block">group_add</span>
+<h4 class="font-bold text-base mb-2">Assemble Focus Team</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Interview top 3 matched consultants for the transition phase.</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 group cursor-pointer hover:shadow-md transition-all">
+<span class="material-symbols-outlined text-primary mb-4 block">monitoring</span>
+<h4 class="font-bold text-base mb-2">Simulate Exit Scenario</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Run the AI model again with 15% lower valuation projections.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#f2f4f6] dark:bg-slate-950 w-full py-12 px-8 mt-24">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col items-center md:items-start gap-4">
+<span class="text-lg font-bold text-slate-700 dark:text-slate-300 font-headline">ProDecide</span>
+<p class="font-inter text-xs leading-relaxed text-slate-500">© 2024 ProDecide AI. All rights reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="font-inter text-xs text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Privacy Policy</a>
+<a class="font-inter text-xs text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Terms of Service</a>
+<a class="font-inter text-xs text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Contact Support</a>
+<a class="font-inter text-xs text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">About Us</a>
+</div>
+</div>
+</footer>
+</body></html>

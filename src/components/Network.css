@@ -1,0 +1,114 @@
+.network-section {
+  position: relative;
+  overflow: hidden;
+  padding: 8rem 0;
+}
+
+.network-glow {
+  position: absolute;
+  top: 50%;
+  right: -10%;
+  transform: translateY(-50%);
+  width: 60vw;
+  height: 60vh;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(3, 0, 20, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.network-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.network-benefits {
+  list-style: none;
+  margin-top: 2rem;
+}
+
+.network-benefits li {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border-radius: 50%;
+  font-size: 12px;
+}
+
+.network-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.expert-card {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.expert-card:hover {
+  transform: translateY(-5px);
+  background: rgba(236, 72, 153, 0.1);
+  border-color: rgba(236, 72, 153, 0.3);
+}
+
+.expert-avatar {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expert-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+}
+
+.expert-role {
+  color: var(--secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.expert-company {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 900px) {
+  .network-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-subtitle {
+    margin: 0 auto;
+    text-align: center;
+  }
+}
+
+@media (max-width: 500px) {
+  .network-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ProDecide AI - Problem Discovery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#bec6e0",
+              "on-tertiary-container": "#d6e6ff",
+              "surface-container-lowest": "#ffffff",
+              "on-primary-fixed": "#001452",
+              "surface-tint": "#004ced",
+              "on-secondary-fixed-variant": "#3f465c",
+              "on-primary": "#ffffff",
+              "inverse-on-surface": "#eff1f3",
+              "surface-container-low": "#f2f4f6",
+              "on-error-container": "#93000a",
+              "on-tertiary-fixed": "#0b1c30",
+              "secondary-fixed": "#dae2fd",
+              "primary-fixed-dim": "#b7c4ff",
+              "on-surface": "#191c1e",
+              "surface-container": "#eceef0",
+              "on-error": "#ffffff",
+              "on-secondary-fixed": "#131b2e",
+              "secondary-container": "#dae2fd",
+              "primary": "#003ec7",
+              "tertiary": "#3f4f65",
+              "secondary": "#565e74",
+              "inverse-surface": "#2d3133",
+              "on-primary-container": "#dfe3ff",
+              "on-surface-variant": "#434656",
+              "on-background": "#191c1e",
+              "on-tertiary": "#ffffff",
+              "error": "#ba1a1a",
+              "background": "#f7f9fb",
+              "on-secondary-container": "#5c647a",
+              "surface-container-highest": "#e0e3e5",
+              "primary-fixed": "#dde1ff",
+              "primary-container": "#0052ff",
+              "surface-dim": "#d8dadc",
+              "surface-container-high": "#e6e8ea",
+              "surface-bright": "#f7f9fb",
+              "surface": "#f7f9fb",
+              "on-primary-fixed-variant": "#0038b6",
+              "outline": "#737688",
+              "on-secondary": "#ffffff",
+              "error-container": "#ffdad6",
+              "surface-variant": "#e0e3e5",
+              "tertiary-container": "#57677e",
+              "inverse-primary": "#b7c4ff",
+              "outline-variant": "#c3c5d9",
+              "tertiary-fixed-dim": "#b7c8e1",
+              "on-tertiary-fixed-variant": "#38485d",
+              "tertiary-fixed": "#d3e4fe"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- TopNavBar -->
+<header class="bg-[#f7f9fb] dark:bg-slate-900 sticky top-0 z-50">
+<div class="flex justify-between items-center px-8 py-4 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-slate-900 dark:text-white tracking-tighter">ProDecide</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="font-manrope text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors duration-200" href="#">My Projects</a>
+<a class="font-manrope text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors duration-200" href="#">Consultants</a>
+<a class="font-manrope text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors duration-200" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-8 py-12 grid grid-cols-12 gap-8">
+<!-- Main Chat Area -->
+<section class="col-span-12 lg:col-span-8 flex flex-col gap-12">
+<!-- AI Avatar & Message -->
+<div class="flex flex-col gap-6">
+<div class="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<div class="max-w-2xl">
+<h1 class="font-headline text-4xl font-extrabold tracking-tight text-on-surface mb-4">
+                        Tell me about the challenge you're facing.
+                    </h1>
+<p class="text-body-lg text-on-surface-variant leading-relaxed text-lg">
+                        What is the core decision you need to make? Be as specific as possible—I'll help you structure the variables and evaluate the outcomes.
+                    </p>
+</div>
+</div>
+<!-- Input Field Area -->
+<div class="relative group">
+<div class="bg-surface-container-lowest rounded-xl p-2 shadow-sm border-none ring-1 ring-outline-variant/15 focus-within:ring-2 focus-within:ring-primary-fixed transition-all">
+<textarea class="w-full bg-transparent border-none focus:ring-0 text-on-surface p-4 text-lg placeholder:text-outline/50 resize-none font-body" placeholder="e.g., We need to decide whether to pivot our SaaS product to enterprise clients or stay focused on SMBs..." rows="4"></textarea>
+<div class="flex justify-between items-center px-4 py-3 bg-surface-container-low rounded-lg">
+<div class="flex gap-2">
+<button class="p-2 rounded-md hover:bg-surface-container-high text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">attach_file</span>
+</button>
+<button class="p-2 rounded-md hover:bg-surface-container-high text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">mic</span>
+</button>
+</div>
+<button class="bg-gradient-to-br from-primary to-primary-container text-white px-6 py-2 rounded-md font-medium flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all">
+<span>Analyze Problem</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- AI Insight Pulse (Specialized AI Component) -->
+<div class="mt-8 bg-tertiary-container/10 border border-primary/20 backdrop-blur-md rounded-xl p-6 relative overflow-hidden">
+<div class="flex gap-4 items-start relative z-10">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+<div>
+<h4 class="font-headline text-sm font-bold text-on-surface mb-1">PROMPT SUGGESTION</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                                "Help me decide between Option A and Option B considering our Q4 budget constraints and long-term scalability."
+                            </p>
+</div>
+</div>
+<!-- Decorative background pulse -->
+<div class="absolute -right-12 -top-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+</div>
+</div>
+</section>
+<!-- Sidebar: Current Context -->
+<aside class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+<div class="bg-surface-container-low rounded-xl p-8 sticky top-28 h-fit">
+<h3 class="font-headline text-lg font-extrabold tracking-tight text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">account_tree</span>
+                    Current Context
+                </h3>
+<div class="space-y-6">
+<!-- Context Item 1 -->
+<div class="flex flex-col gap-2">
+<span class="text-[10px] font-bold text-outline tracking-widest uppercase">DOMAIN</span>
+<div class="bg-surface-container-lowest px-4 py-3 rounded-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary text-sm">business_center</span>
+<span class="text-sm font-medium text-on-surface">Strategic Planning</span>
+</div>
+</div>
+<!-- Context Item 2 -->
+<div class="flex flex-col gap-2 opacity-50">
+<span class="text-[10px] font-bold text-outline tracking-widest uppercase">CONSTRAINTS</span>
+<div class="bg-surface-container px-4 py-3 rounded-lg border border-dashed border-outline-variant/30 flex items-center justify-center">
+<span class="text-xs italic text-on-surface-variant">Gathering details...</span>
+</div>
+</div>
+<!-- Context Item 3 -->
+<div class="flex flex-col gap-2 opacity-50">
+<span class="text-[10px] font-bold text-outline tracking-widest uppercase">STAKEHOLDERS</span>
+<div class="bg-surface-container px-4 py-3 rounded-lg border border-dashed border-outline-variant/30 flex items-center justify-center">
+<span class="text-xs italic text-on-surface-variant">Awaiting input...</span>
+</div>
+</div>
+</div>
+<div class="mt-12 p-4 bg-surface-container-high rounded-lg">
+<div class="flex items-center gap-3 mb-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-bold text-on-surface">AI ANALYSIS ENGINE</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                        I am currently mapping your problem space. As you provide details, I will categorize your constraints and objectives here.
+                    </p>
+</div>
+</div>
+</aside>
+</main>
+<!-- Footer -->
+<footer class="bg-[#f2f4f6] dark:bg-slate-950 mt-auto">
+<div class="w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
+<span class="text-lg font-bold text-slate-700 dark:text-slate-300">ProDecide AI</span>
+<div class="flex gap-6">
+<a class="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Privacy Policy</a>
+<a class="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Terms of Service</a>
+<a class="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Contact Support</a>
+<a class="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">About Us</a>
+</div>
+<p class="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500">© 2024 ProDecide AI. All rights reserved.</p>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Consultant Matchmaker | ProDecide</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#bec6e0",
+              "on-tertiary-container": "#d6e6ff",
+              "surface-container-lowest": "#ffffff",
+              "on-primary-fixed": "#001452",
+              "surface-tint": "#004ced",
+              "on-secondary-fixed-variant": "#3f465c",
+              "on-primary": "#ffffff",
+              "inverse-on-surface": "#eff1f3",
+              "surface-container-low": "#f2f4f6",
+              "on-error-container": "#93000a",
+              "on-tertiary-fixed": "#0b1c30",
+              "secondary-fixed": "#dae2fd",
+              "primary-fixed-dim": "#b7c4ff",
+              "on-surface": "#191c1e",
+              "surface-container": "#eceef0",
+              "on-error": "#ffffff",
+              "on-secondary-fixed": "#131b2e",
+              "secondary-container": "#dae2fd",
+              "primary": "#003ec7",
+              "tertiary": "#3f4f65",
+              "secondary": "#565e74",
+              "inverse-surface": "#2d3133",
+              "on-primary-container": "#dfe3ff",
+              "on-surface-variant": "#434656",
+              "on-background": "#191c1e",
+              "on-tertiary": "#ffffff",
+              "error": "#ba1a1a",
+              "background": "#f7f9fb",
+              "on-secondary-container": "#5c647a",
+              "surface-container-highest": "#e0e3e5",
+              "primary-fixed": "#dde1ff",
+              "primary-container": "#0052ff",
+              "surface-dim": "#d8dadc",
+              "surface-container-high": "#e6e8ea",
+              "surface-bright": "#f7f9fb",
+              "surface": "#f7f9fb",
+              "on-primary-fixed-variant": "#0038b6",
+              "outline": "#737688",
+              "on-secondary": "#ffffff",
+              "error-container": "#ffdad6",
+              "surface-variant": "#e0e3e5",
+              "tertiary-container": "#57677e",
+              "inverse-primary": "#b7c4ff",
+              "outline-variant": "#c3c5d9",
+              "tertiary-fixed-dim": "#b7c8e1",
+              "on-tertiary-fixed-variant": "#38485d",
+              "tertiary-fixed": "#d3e4fe"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(195, 197, 217, 0.15);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #003ec7 0%, #0052ff 100%);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- TopNavBar Component -->
+<nav class="bg-[#f7f9fb] dark:bg-slate-900 sticky top-0 z-50">
+<div class="flex justify-between items-center px-8 py-4 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-12">
+<span class="text-xl font-bold text-slate-900 dark:text-white tracking-tighter font-headline">ProDecide</span>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-manrope text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 px-3 py-1 rounded-lg" href="#">My Projects</a>
+<a class="font-manrope text-sm font-medium tracking-tight text-[#0052FF] dark:text-blue-400 border-b-2 border-[#0052FF] pb-1" href="#">Consultants</a>
+<a class="font-manrope text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 px-3 py-1 rounded-lg" href="#">Settings</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-surface-container-high">
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border border-outline-variant/20" data-alt="Professional male portrait for user profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjt6TvWSGfOYme5BPSr0EunmaK0vTHrdvQc7fXuf8PP48w6fj_3bhEBF0id8tRVPWfES0V6Rh8Wr8CMqrPmjC7fa8A5iiaWoDVTQrlzP0OuJ9v0Zks9ApKHoVuirkoRbbsF_WM-X2XE7AeuPMW14TmRiQR_mpZPtn_apV2rqv8MK_Mr-JyfcbCSGNDf0jTffFryMp4jVksqCbd8AuCglHak3WfyFZ9Rph4WuNDQaybI1nwG4nZNMGIqv19BZ3DhorP7yxW9fYQD9Q"/>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-8 py-12">
+<!-- Header Section -->
+<header class="mb-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="max-w-2xl">
+<h1 class="font-headline text-5xl font-extrabold tracking-tight text-on-surface mb-4">Consultant Matchmaker</h1>
+<p class="text-body text-lg text-on-surface-variant leading-relaxed">
+                        We've analyzed your project architecture. Here are the experts best equipped to solve your specific scaling and operational bottlenecks.
+                    </p>
+</div>
+<div class="flex gap-3">
+<div class="bg-tertiary-container/10 p-4 rounded-xl glass-panel">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="text-xs font-bold uppercase tracking-wider">AI Insight</span>
+</div>
+<p class="text-sm font-medium mt-1">Found 12 Perfect Matches</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Filters Section -->
+<section class="mb-10 flex flex-wrap items-center gap-4">
+<div class="flex items-center gap-2 bg-surface-container-lowest px-4 py-2 rounded-lg border border-outline-variant/15 text-sm font-medium shadow-sm">
+<span class="text-on-surface-variant">Expertise:</span>
+<select class="border-none bg-transparent p-0 focus:ring-0 text-primary font-bold">
+<option>Strategic Operations</option>
+<option>Cloud Infrastructure</option>
+<option>Financial Modeling</option>
+</select>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-lowest px-4 py-2 rounded-lg border border-outline-variant/15 text-sm font-medium shadow-sm">
+<span class="text-on-surface-variant">Availability:</span>
+<select class="border-none bg-transparent p-0 focus:ring-0 text-primary font-bold">
+<option>Immediate</option>
+<option>Within 2 Weeks</option>
+<option>Next Month</option>
+</select>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-lowest px-4 py-2 rounded-lg border border-outline-variant/15 text-sm font-medium shadow-sm">
+<span class="text-on-surface-variant">Rating:</span>
+<select class="border-none bg-transparent p-0 focus:ring-0 text-primary font-bold">
+<option>4.5+ Stars</option>
+<option>4.0+ Stars</option>
+<option>Any Rating</option>
+</select>
+</div>
+<button class="ml-auto flex items-center gap-2 text-primary font-semibold text-sm hover:underline">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+                Advanced Filters
+            </button>
+</section>
+<!-- Consultant Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Card 1: Featured Match -->
+<div class="bg-surface-container-lowest rounded-xl p-8 flex flex-col md:flex-row gap-8 relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+<div class="absolute top-0 right-0 p-4">
+<div class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">verified</span>
+                        Top Recommended
+                    </div>
+</div>
+<div class="shrink-0">
+<div class="relative">
+<img alt="Professional woman portrait" class="w-32 h-32 rounded-xl object-cover" data-alt="Close up professional portrait of woman executive" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcApYB6Zyi852ruT3kZCQIn-NcN_IyhtoFO02AHJ6DF8CcfARYtOf2uHpIyA9Hk7FUFCDRBCuqvIt9aNQV7Ge6J-2aXRfrsQEclITVvVVrfP5exzqWNJwixRwMQ9xyBwsMnJ9zciT3MiMEZzzqts-BBGM8WGuL3Lr2CIaSdqMe9giiHkQddfUQBjWGsPxZ0liCQwBiPjtnxFY_4tcUPjK3XGG72f-jpJ73Ngj1sUKo2seQ-BLQcRhcM_XT2zKlSZPyz-K7n5QNmAk"/>
+<div class="absolute -bottom-3 -right-3 bg-primary text-white w-12 h-12 rounded-full flex flex-col items-center justify-center border-4 border-surface-container-lowest">
+<span class="text-[10px] font-bold leading-none">MATCH</span>
+<span class="text-sm font-extrabold">98%</span>
+</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col">
+<div class="mb-4">
+<h3 class="font-headline text-2xl font-bold text-on-surface">Dr. Sarah Jenkins</h3>
+<p class="text-primary font-semibold text-sm mb-2">Strategic Operations Expert</p>
+<div class="flex gap-1 text-tertiary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold ml-1 text-on-surface-variant">4.9 (124 reviews)</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Change Mgmt</span>
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Lean Six Sigma</span>
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">SaaS Scaling</span>
+</div>
+<div class="mt-auto">
+<button class="primary-gradient text-white px-6 py-3 rounded-lg font-bold text-sm w-full hover:opacity-90 transition-opacity active:scale-[0.98]">
+                            Book Initial Consultation
+                        </button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-8 flex flex-col md:flex-row gap-8 relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+<div class="shrink-0">
+<div class="relative">
+<img alt="Professional man portrait" class="w-32 h-32 rounded-xl object-cover" data-alt="Professional male consultant headshot in suit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWTdjMyd96V06Y6xDzO-xEeryuzOesjwiuujK5SNOOzIiGUZKR0dTAN1lcCBgpMRZSWPEnkOOz3ixjwuakLp2DeE1N_N_yi9p_eiRAorqc38O3rV239nq89Gq8O_ELCcdecF3uda4nGpwGB01yyIMuOuM9XFYK_bcpOzmPCuZQZWBPqkY6Qv33I6M7CnFFTzePxp4aQww7cjaBMlMHsovI1dWJ1mC_9X111ca4adPvfIujHKklsFMfsKaKH2-p78Q_KSM3IQoXVJ0"/>
+<div class="absolute -bottom-3 -right-3 bg-secondary text-white w-12 h-12 rounded-full flex flex-col items-center justify-center border-4 border-surface-container-lowest">
+<span class="text-[10px] font-bold leading-none">MATCH</span>
+<span class="text-sm font-extrabold">92%</span>
+</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col">
+<div class="mb-4">
+<h3 class="font-headline text-2xl font-bold text-on-surface">Marcus Thorne</h3>
+<p class="text-primary font-semibold text-sm mb-2">Systems Architect &amp; Advisor</p>
+<div class="flex gap-1 text-tertiary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm">star_half</span>
+<span class="text-xs font-bold ml-1 text-on-surface-variant">4.7 (89 reviews)</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Cloud Migration</span>
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Agile Dev</span>
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Cybersecurity</span>
+</div>
+<div class="mt-auto">
+<button class="primary-gradient text-white px-6 py-3 rounded-lg font-bold text-sm w-full hover:opacity-90 transition-opacity active:scale-[0.98]">
+                            Book Initial Consultation
+                        </button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-8 flex flex-col md:flex-row gap-8 relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+<div class="shrink-0">
+<div class="relative">
+<img alt="Professional man portrait" class="w-32 h-32 rounded-xl object-cover" data-alt="Candid professional headshot of male consultant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7axjbSzu71X_XdurpCO4uOqf5zNWN8Vrp3MlS9zGu3X9OGJrpNYoRTVQLgdWzCDSnq-59UoRtk4p2TENBLbQwzxvpo0W3o9mjIBMoq_S0yebDahG4fTHn4u_Li2ms46MYMr_3Mx0QkOlbw3SDbBwCPQSmGWE784hZGwOTC-1ONZN056_45kWDTVkaPabdylFY32qY19bVZb2yGqInBJn2BReB2sw1QzwsK-tImRi30S1vnf2ZtOfA_TWAdLaEcCAsh6lS8mAf1C8"/>
+<div class="absolute -bottom-3 -right-3 bg-secondary text-white w-12 h-12 rounded-full flex flex-col items-center justify-center border-4 border-surface-container-lowest">
+<span class="text-[10px] font-bold leading-none">MATCH</span>
+<span class="text-sm font-extrabold">88%</span>
+</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col">
+<div class="mb-4">
+<h3 class="font-headline text-2xl font-bold text-on-surface">Alex Rivera</h3>
+<p class="text-primary font-semibold text-sm mb-2">Finance Transformation Specialist</p>
+<div class="flex gap-1 text-tertiary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold ml-1 text-on-surface-variant">5.0 (52 reviews)</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">M&amp;A Strategy</span>
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Forecasting</span>
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Equity Ops</span>
+</div>
+<div class="mt-auto">
+<button class="primary-gradient text-white px-6 py-3 rounded-lg font-bold text-sm w-full hover:opacity-90 transition-opacity active:scale-[0.98]">
+                            Book Initial Consultation
+                        </button>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-8 flex flex-col md:flex-row gap-8 relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+<div class="shrink-0">
+<div class="relative">
+<img alt="Professional woman portrait" class="w-32 h-32 rounded-xl object-cover" data-alt="Professional female executive portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEX2ItuXHY651pdglGtVTlcLBd94Be6Ukc1csezNVnpdCKbYwCBnSKGtT6rLc6teYLS5J7kVyQqBlXossPHY6PVRGQ9ax4ihxQXKg-UXYwgRBbc49tuRO-poLvRWj0_2FihSDE6Ejh91L5EnmxU4U8nPXBkKWXkvASbtiprldhlICQOkSK_Fy_C5N4QhCyDNRkf50fOn5Vz9LIOaR3bWeRBhFigaONPl85rGXZd7PyQWxD62uZz606CQ0mHALRIKDeTUnHVSFvg58"/>
+<div class="absolute -bottom-3 -right-3 bg-secondary text-white w-12 h-12 rounded-full flex flex-col items-center justify-center border-4 border-surface-container-lowest">
+<span class="text-[10px] font-bold leading-none">MATCH</span>
+<span class="text-sm font-extrabold">85%</span>
+</div>
+</div>
+</div>
+<div class="flex-1 flex flex-col">
+<div class="mb-4">
+<h3 class="font-headline text-2xl font-bold text-on-surface">Elena Kostic</h3>
+<p class="text-primary font-semibold text-sm mb-2">Growth &amp; Product Strategist</p>
+<div class="flex gap-1 text-tertiary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm">star</span>
+<span class="text-xs font-bold ml-1 text-on-surface-variant">4.6 (215 reviews)</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Product Led Growth</span>
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Retention</span>
+<span class="bg-surface-container px-3 py-1 rounded-sm text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Market Entry</span>
+</div>
+<div class="mt-auto">
+<button class="primary-gradient text-white px-6 py-3 rounded-lg font-bold text-sm w-full hover:opacity-90 transition-opacity active:scale-[0.98]">
+                            Book Initial Consultation
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Asymmetric Insight Block -->
+<aside class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="md:col-span-1">
+<h4 class="font-headline text-2xl font-bold leading-tight mb-4">Why these matches?</h4>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                    Our AI cross-references your current project "Supply Chain Optimization" with the successful track records of 5,000+ vetted consultants.
+                </p>
+</div>
+<div class="md:col-span-2 flex flex-col gap-4">
+<div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-primary">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Skill Density Analysis</p>
+<p class="text-xs text-on-surface-variant">Matches emphasize "Lean Operations" based on your project requirements.</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-tertiary">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-tertiary-container flex items-center justify-center text-white">
+<span class="material-symbols-outlined">history</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Historical Success Velocity</p>
+<p class="text-xs text-on-surface-variant">Dr. Jenkins has reduced overhead by 22% in similar high-growth environments.</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- Footer Component -->
+<footer class="bg-[#f2f4f6] dark:bg-slate-950 w-full py-12 px-8 mt-20">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col gap-2">
+<span class="text-lg font-bold text-slate-700 dark:text-slate-300 font-headline">ProDecide</span>
+<p class="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500">© 2024 ProDecide AI. All rights reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Privacy Policy</a>
+<a class="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Terms of Service</a>
+<a class="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Contact Support</a>
+<a class="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">About Us</a>
+</div>
+</div>
+</footer>
+</body></html>
