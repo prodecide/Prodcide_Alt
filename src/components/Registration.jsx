@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Navbar from './Navbar';
 
 const PROFESSION_OPTIONS = [
     "Software Engineer", "Data Scientist", "Cybersecurity Analyst", "Civil Engineer", "Mechanical Engineer",
@@ -81,9 +82,11 @@ export default function Registration() {
     if (file) {
       if (!file.type.startsWith('image/')) return alert('Please upload an image file');
       if (file.size > 2 * 1024 * 1024) return alert('Max 2MB allowed');
-      setFormData(prev => ({ ...prev, profileImage: file }));
       const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result);
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setFormData(prev => ({ ...prev, profileImage: reader.result }));
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -92,26 +95,218 @@ export default function Registration() {
     e.preventDefault();
     if (formData.expertise.length === 0) return alert("Select expertise");
     if (!formData.role) return alert("Select role");
-    console.log("Submitting:", formData);
-    // Mimic API call
-    setFormSubmitted(true);
+    
+    try {
+      const response = await fetch('/api/consultants', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit application');
+      }
+
+      setFormSubmitted(true);
+    } catch (error) {
+      console.error("Submission error:", error);
+      alert(error.message);
+    }
+  };
+
+  const [mockRequests, setMockRequests] = useState([
+    {
+      id: 'REQ-9921',
+      clientName: 'Alice Vance',
+      clientCompany: 'Aether Capital',
+      challenge: 'Need regulatory guidance on cross-border transactions for our new DeFi protocol launch.',
+      date: 'Jun 10, 2026',
+      time: '11:00 AM - 12:00 PM',
+      status: 'pending'
+    },
+    {
+      id: 'REQ-7782',
+      clientName: 'David K.',
+      clientCompany: 'Vertex Logistics',
+      challenge: 'Evaluating multi-modal warehousing strategies under Q3 fuel cost constraints.',
+      date: 'Jun 12, 2026',
+      time: '02:00 PM - 03:00 PM',
+      status: 'pending'
+    }
+  ]);
+
+  const handleAcceptRequest = (id) => {
+    setMockRequests(prev => prev.map(req => req.id === id ? { ...req, status: 'accepted', meetLink: 'https://meet.google.com/pd-tux-jmr' } : req));
+  };
+
+  const handleDeclineRequest = (id) => {
+    setMockRequests(prev => prev.map(req => req.id === id ? { ...req, status: 'declined' } : req));
   };
 
   if (formSubmitted) {
     return (
-      <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
-        <header className="bg-white dark:bg-slate-900 border-b border-outline-variant/10 px-6 py-4">
-           <Link className="text-xl font-black text-[#0052FF]" to="/">ProDecide</Link>
-        </header>
-        <main className="flex-1 flex items-center justify-center p-6">
-           <div className="max-w-md w-full bg-white rounded-2xl p-12 text-center shadow-xl">
-             <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="material-symbols-outlined text-4xl">check_circle</span>
-             </div>
-             <h2 className="text-3xl font-extrabold mb-4">Application Sent</h2>
-             <p className="text-secondary mb-8">Our screening team will review your profile and reach out within 48 hours for a quick verification call.</p>
-             <Link to="/experts" className="primary-gradient text-white px-8 py-3 rounded-lg font-bold block">Back to Experts</Link>
-           </div>
+      <div className="bg-surface font-body text-on-surface min-h-screen pb-12">
+        <Navbar />
+        <main className="max-w-7xl mx-auto px-6 py-10">
+          
+          {/* Profile Status & Verification Bar */}
+          <div className="bg-white rounded-3xl p-6 border border-outline-variant/10 shadow-sm flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-blue-50 text-primary flex items-center justify-center animate-pulse">
+                <span className="material-symbols-outlined text-2xl">verified</span>
+              </div>
+              <div>
+                <h3 className="font-headline font-bold text-lg text-on-surface">Consultant Profile Verification</h3>
+                <p className="text-secondary text-xs">Your credential assessment is under review by our screening desk.</p>
+              </div>
+            </div>
+            {/* Steps indicator */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <span className="w-6 h-6 rounded-full bg-green-500 text-white text-[10px] font-bold flex items-center justify-center">✓</span>
+                <span className="text-xs font-bold text-slate-700">Submitted</span>
+              </div>
+              <div className="w-8 h-0.5 bg-slate-200"></div>
+              <div className="flex items-center gap-1">
+                <span className="w-6 h-6 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center animate-pulse">2</span>
+                <span className="text-xs font-bold text-primary">Screening</span>
+              </div>
+              <div className="w-8 h-0.5 bg-slate-200"></div>
+              <div className="flex items-center gap-1 opacity-40">
+                <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center">3</span>
+                <span className="text-xs font-medium text-slate-500">Verified</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Column: Stats & Profile Card */}
+            <div className="lg:col-span-4 space-y-6">
+              
+              {/* Profile card preview */}
+              <div className="bg-white rounded-3xl p-6 border border-outline-variant/10 shadow-sm">
+                <div className="flex flex-col items-center text-center pb-6 border-b border-slate-100">
+                  <div className="w-24 h-24 rounded-2xl overflow-hidden bg-slate-100 mb-4 shadow-md">
+                    <img 
+                      src={imagePreview || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop'} 
+                      alt={formData.fullName} 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <h3 className="font-extrabold text-xl text-on-surface">{formData.fullName}</h3>
+                  <p className="text-primary font-bold text-xs uppercase tracking-widest mt-1">{formData.role}</p>
+                  <p className="text-secondary text-xs mt-0.5">{formData.organization}</p>
+                </div>
+                
+                <div className="py-4 border-b border-slate-100 space-y-3">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block">Expertise Fields</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {formData.expertise.map(tag => (
+                      <span key={tag} className="bg-slate-50 text-slate-500 text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-tighter border border-slate-100">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 space-y-2">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block">Biography Overview</span>
+                  <p className="text-xs text-secondary leading-relaxed italic">"{formData.bio}"</p>
+                </div>
+              </div>
+
+              {/* Accrued earnings & analytics */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-900 text-white rounded-3xl p-5 shadow-sm text-center">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Consultations</span>
+                  <p className="text-3xl font-black mt-1">0</p>
+                </div>
+                <div className="bg-white rounded-3xl p-5 border border-outline-variant/10 shadow-sm text-center">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Profile Views</span>
+                  <p className="text-3xl font-black mt-1 text-primary animate-pulse">12</p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column: Client Request Stream */}
+            <div className="lg:col-span-8 space-y-6">
+              <div className="bg-white rounded-3xl p-8 border border-outline-variant/10 shadow-sm">
+                <h3 className="font-headline font-extrabold text-xl mb-6 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">notifications_active</span>
+                  Incoming Client Bookings
+                </h3>
+
+                <div className="space-y-6">
+                  {mockRequests.map((req) => (
+                    <div key={req.id} className="p-6 rounded-2xl bg-slate-50 border border-slate-200/60 relative overflow-hidden transition-all">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-bold text-on-surface text-base">{req.clientName}</h4>
+                          <p className="text-xs text-secondary font-medium">{req.clientCompany}</p>
+                        </div>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest ${
+                          req.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                          req.status === 'declined' ? 'bg-rose-100 text-rose-700' :
+                          'bg-amber-100 text-amber-700'
+                        }`}>
+                          {req.status}
+                        </span>
+                      </div>
+
+                      <p className="text-sm text-secondary leading-relaxed mb-4 italic">
+                        "{req.challenge}"
+                      </p>
+
+                      <div className="flex flex-wrap gap-4 text-xs text-slate-500 pb-4 border-b border-slate-200/50 mb-4">
+                        <div className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">calendar_month</span>
+                          <span>{req.date}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">schedule</span>
+                          <span>{req.time}</span>
+                        </div>
+                      </div>
+
+                      {req.status === 'pending' ? (
+                        <div className="flex gap-3">
+                          <button 
+                            onClick={() => handleAcceptRequest(req.id)}
+                            className="bg-primary text-white font-bold px-4 py-2 rounded-xl text-xs hover:bg-primary-container transition-colors"
+                          >
+                            Accept Request
+                          </button>
+                          <button 
+                            onClick={() => handleDeclineRequest(req.id)}
+                            className="border border-slate-200 text-slate-600 font-bold px-4 py-2 rounded-xl text-xs hover:bg-slate-100 transition-colors"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      ) : req.status === 'accepted' ? (
+                        <div className="bg-green-50 border border-green-100 p-3.5 rounded-xl flex justify-between items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-green-600 text-sm">videocam</span>
+                            <span className="text-xs font-semibold text-green-700">Scheduled Google Meet:</span>
+                            <a href={req.meetLink} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-primary hover:underline">{req.meetLink}</a>
+                          </div>
+                          <span className="text-[10px] text-green-600 font-bold uppercase tracking-widest">Ready to join</span>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-rose-600 italic">This session has been declined.</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
         </main>
       </div>
     );
@@ -119,13 +314,7 @@ export default function Registration() {
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen">
-      <header className="bg-[#f7f9fb] dark:bg-slate-900 sticky top-0 z-50 flex justify-between items-center w-full px-6 py-3 border-b border-outline-variant/10">
-        <Link className="text-xl font-black text-[#0052FF] dark:text-blue-500 font-headline tracking-tight" to="/">ProDecide</Link>
-        <div className="flex items-center gap-4">
-          <button className="p-2 text-slate-600 rounded-full hover:bg-slate-100"><span className="material-symbols-outlined">help_outline</span></button>
-          <button className="p-2 text-slate-600 rounded-full hover:bg-slate-100"><span className="material-symbols-outlined">notifications</span></button>
-        </div>
-      </header>
+      <Navbar />
       
       <main className="max-w-5xl mx-auto px-6 py-12 lg:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-16">
@@ -173,7 +362,7 @@ export default function Registration() {
                     <input value={formData.fullName} onChange={handleChange} required id="fullName" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" placeholder="Dr. Julian Pierce" type="text"/>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">Work Email</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">Email</label>
                     <input value={formData.email} onChange={handleChange} required id="email" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" placeholder="j.pierce@organization.com" type="email"/>
                   </div>
                   <div className="space-y-2">
@@ -185,7 +374,7 @@ export default function Registration() {
                     <input value={formData.location} onChange={handleChange} required id="location" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" placeholder="London, UK" type="text"/>
                   </div>
                 </div>
-
+ 
                 <div className="space-y-6 pt-6 border-t border-outline-variant/10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2" ref={expertiseDropdownRef}>
@@ -200,21 +389,28 @@ export default function Registration() {
                         </div>
                         {isExpertiseOpen && (
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-100 z-50 max-h-64 overflow-y-auto p-4">
-                                {EXPERTISE_OPTIONS.map(group => (
-                                    <div key={group.category} className="mb-4 last:mb-0">
-                                        <div className="text-[10px] font-black uppercase text-slate-400 mb-2 border-b border-slate-50 pb-1">{group.category}</div>
-                                        <div className="space-y-1">
-                                            {group.options.map(opt => (
-                                                <div key={opt} onClick={() => handleExpertiseToggle(opt)} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer text-sm">
-                                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${formData.expertise.includes(opt) ? 'bg-primary border-primary' : 'border-slate-300'}`}>
-                                                        {formData.expertise.includes(opt) && <span className="text-white text-[10px]">✓</span>}
+                                <div className="mb-3 sticky top-0 bg-white border-b border-slate-50 pb-2">
+                                    <input value={expertiseSearch} onChange={(e) => setExpertiseSearch(e.target.value)} autoFocus className="w-full px-3 py-2 bg-slate-50 rounded-lg text-sm outline-none" placeholder="Search expertise..." />
+                                </div>
+                                {EXPERTISE_OPTIONS.map(group => {
+                                    const filteredOptions = group.options.filter(opt => opt.toLowerCase().includes(expertiseSearch.toLowerCase()));
+                                    if (filteredOptions.length === 0) return null;
+                                    return (
+                                        <div key={group.category} className="mb-4 last:mb-0">
+                                            <div className="text-[10px] font-black uppercase text-slate-400 mb-2 border-b border-slate-50 pb-1">{group.category}</div>
+                                            <div className="space-y-1">
+                                                {filteredOptions.map(opt => (
+                                                    <div key={opt} onClick={() => handleExpertiseToggle(opt)} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer text-sm">
+                                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${formData.expertise.includes(opt) ? 'bg-primary border-primary' : 'border-slate-300'}`}>
+                                                            {formData.expertise.includes(opt) && <span className="text-white text-[10px]">✓</span>}
+                                                        </div>
+                                                        {opt}
                                                     </div>
-                                                    {opt}
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                       </div>

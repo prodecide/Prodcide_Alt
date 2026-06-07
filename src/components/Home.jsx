@@ -1,221 +1,223 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Navbar from './Navbar';
 
 export default function Home() {
   return (
-    <div className="bg-surface font-body text-on-surface">
-      
-{/* TopNavBar */}
-<nav className="bg-[#f7f9fb] dark:bg-slate-900 sticky top-0 z-50">
-<div className="flex justify-between items-center px-8 py-4 w-full max-w-7xl mx-auto">
-<div className="flex items-center gap-8">
-<Link className="text-xl font-bold text-slate-900 dark:text-white tracking-tighter" to="/">ProDecide</Link>
-<div className="hidden md:flex gap-6 items-center">
-<Link className="font-manrope text-sm font-medium tracking-tight text-slate-500 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors duration-200" to="/dashboard">My Projects</Link>
-<Link className="font-manrope text-sm font-medium tracking-tight text-slate-500 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors duration-200" to="/experts">Consultants</Link>
-<a className="font-manrope text-sm font-medium tracking-tight text-slate-500 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors duration-200" href="#">Settings</a>
-</div>
-</div>
-<div className="flex items-center gap-4">
-<div className="relative hidden sm:block">
-<span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
-<input className="bg-surface-container-lowest border-none rounded-md pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary-fixed outline-none w-64 ambient-shadow" placeholder="Search..." type="text"/>
-</div>
-<button className="p-2 text-on-surface-variant hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-<span className="material-symbols-outlined">notifications</span>
-</button>
-<button className="p-2 text-on-surface-variant hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-<span className="material-symbols-outlined">account_circle</span>
-</button>
-</div>
-</div>
-</nav>
-<main>
-{/* Hero Section */}
-<section className="relative overflow-hidden pt-20 pb-32 px-8">
-<div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
-<div className="flex-1 text-left">
-<h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tight text-on-surface mb-8 leading-[1.1]">
-                        Master Your Toughest <span className="text-primary">Decisions</span> with AI-Powered Intelligence.
-                    </h1>
-<p className="text-lg md:text-xl text-on-surface-variant mb-12 max-w-xl leading-relaxed">
-                        ProDecide combines advanced cognitive AI with a network of elite human consultants to guide your most critical professional choices.
-                    </p>
-<div className="flex flex-wrap gap-4">
-<Link className="primary-gradient text-white font-semibold py-4 px-8 rounded-lg ambient-shadow active:scale-[0.98] transition-all" to="/discovery" style={{display: "inline-flex", alignItems: "center", justifyContent: "center"}}>Start Your Discovery</Link>
-<button className="bg-surface-container-high text-on-surface font-semibold py-4 px-8 rounded-lg hover:bg-surface-container-highest transition-all">
-                            View Methodology
-                        </button>
-</div>
-</div>
-<div className="flex-1 relative">
-<div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-primary/5 blur-[120px] rounded-full"></div>
-<div className="bg-surface-container-lowest p-6 rounded-xl ambient-shadow relative overflow-hidden">
-<img className="rounded-lg w-full h-[400px] object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700" data-alt="Modern collaborative workspace with clean professional aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZdLfr0vK_PXrmB9AE5OHi2BLCmq3_wZ6zHI_BoHPqmJnZ17J_u2hpA7314m2jCDho1pRCr_S-1XFHGZx0SphrxM-MBYcxtFeL1s7FjZehCBjzJWqrIxE0dSJ7nEWKdj2VG64wyMjJQuNoRjdRRQvHCoJ9cEyWWnrmeKOYHdUosn_L1mSySgAIiKckeIA04Fn9zi0HEj0pCvKnchnXOPk_szxQfLu2xEONPf-37P9voCncd11Sg8vBGvEwUQkoMZQQa5cR5okY4R0"/>
-<div className="absolute bottom-10 right-10 glass-effect p-6 rounded-xl ambient-shadow max-w-[240px]">
-<div className="flex items-center gap-2 mb-2">
-<span className="material-symbols-outlined text-primary" data-weight="fill">auto_awesome</span>
-<span className="font-headline font-bold text-sm">AI Insight</span>
-</div>
-<p className="text-xs text-on-surface-variant leading-relaxed">Optimization path detected: 94% confidence in strategic alignment for Q4 expansion.</p>
-</div>
-</div>
-</div>
-</div>
-</section>
-{/* How It Works Section - Asymmetric Bento Grid */}
-<section className="bg-surface-container-low py-24 px-8">
-<div className="max-w-7xl mx-auto">
-<div className="mb-16">
-<h2 className="font-headline text-4xl font-bold tracking-tight mb-4">A Framework for Clarity</h2>
-<p className="text-on-surface-variant">Three pillars of informed decision architecture.</p>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-{/* Step 1 */}
-<div className="md:col-span-8 bg-surface-container-lowest p-10 rounded-xl flex flex-col justify-between group">
-<div className="max-w-md">
-<span className="inline-block px-3 py-1 rounded-sm bg-primary-fixed text-on-primary-fixed text-[10px] font-bold tracking-widest uppercase mb-6">Phase 01</span>
-<h3 className="font-headline text-3xl font-bold mb-4">AI Understands</h3>
-<p className="text-on-surface-variant leading-relaxed">Our advanced neural models ingest your complex variables—market data, risk factors, and institutional goals—to build a multi-dimensional map of your decision landscape.</p>
-</div>
-<div className="mt-12 flex items-center gap-4">
-<div className="h-1 w-24 bg-surface-container-high rounded-full overflow-hidden">
-<div className="h-full bg-primary w-1/2"></div>
-</div>
-<span className="text-xs font-medium text-primary">Data Synthesis Active</span>
-</div>
-</div>
-{/* Step 2 */}
-<div className="md:col-span-4 bg-tertiary-container text-white p-10 rounded-xl relative overflow-hidden">
-<span className="inline-block px-3 py-1 rounded-sm bg-white/20 text-white text-[10px] font-bold tracking-widest uppercase mb-6">Phase 02</span>
-<h3 className="font-headline text-3xl font-bold mb-4">AI Analyzes</h3>
-<p className="text-white/80 leading-relaxed mb-8">Running thousands of simulations to identify path-dependencies and black swan risks before they occur.</p>
-<span className="material-symbols-outlined text-8xl absolute -bottom-4 -right-4 opacity-10">insights</span>
-</div>
-{/* Step 3 */}
-<div className="md:col-span-12 bg-surface-container-lowest p-10 rounded-xl flex flex-col md:flex-row items-center gap-12 border-t-0">
-<div className="flex-1">
-<span className="inline-block px-3 py-1 rounded-sm bg-primary-fixed text-on-primary-fixed text-[10px] font-bold tracking-widest uppercase mb-6">Phase 03</span>
-<h3 className="font-headline text-3xl font-bold mb-4">We Match Experts</h3>
-<p className="text-on-surface-variant leading-relaxed text-lg">AI filters the noise, then we hand-pick top-tier industry consultants to validate the machine's findings and provide the human nuance essential for final execution.</p>
-</div>
-<div className="flex-1 grid grid-cols-2 gap-4">
-<div className="p-4 bg-surface rounded-lg">
-<span className="material-symbols-outlined text-primary mb-2">person_search</span>
-<div className="text-sm font-bold">Domain Validation</div>
-</div>
-<div className="p-4 bg-surface rounded-lg">
-<span className="material-symbols-outlined text-primary mb-2">verified_user</span>
-<div className="text-sm font-bold">Ethical Review</div>
-</div>
-<div className="p-4 bg-surface rounded-lg">
-<span className="material-symbols-outlined text-primary mb-2">psychology</span>
-<div className="text-sm font-bold">Nuance Context</div>
-</div>
-<div className="p-4 bg-surface rounded-lg">
-<span className="material-symbols-outlined text-primary mb-2">rocket_launch</span>
-<div className="text-sm font-bold">Execution Plan</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-{/* Featured Consultants Section */}
-<section className="py-24 px-8 bg-surface">
-<div className="max-w-7xl mx-auto">
-<div className="flex justify-between items-end mb-16">
-<div>
-<h2 className="font-headline text-4xl font-bold tracking-tight mb-4">Human Intelligence, Augmented.</h2>
-<p className="text-on-surface-variant">Collaborate with the top 1% of industry strategists.</p>
-</div>
-<button className="text-primary font-bold flex items-center gap-2 hover:gap-3 transition-all">
-                        View Directory <span className="material-symbols-outlined">arrow_forward</span>
-</button>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-{/* Consultant 1 */}
-<div className="group">
-<div className="relative overflow-hidden rounded-xl mb-6">
-<img className="w-full h-[400px] object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-105" data-alt="Professional female executive in high-end office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKmkV3e9nKo1J_wj7ErY6Jo6PA56ImpTbrbrf2JYmVGx5aBDub1zWrwrFnA5uF233QPgq6gde2uCEcMIQZ9qCI1iglD-skyrmtrLJKersPCe1Rvg8FNt_I1fpLuwsjQYgiu78gm-f7n_kPd-ghenwl5I_6wu21JAv54emIIUm2Q3Xhlsz6Pp9Pexoj5l_nceGikMwWkdDliA8XZlFE6xp5Tnxxwywkz1oD_R7uKfinJU1t1MFuopE34HN1MxJzjZljD1I13-6uyhk"/>
-<div className="absolute inset-0 bg-gradient-to-t from-on-surface/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<h4 className="font-headline text-xl font-bold mb-1">Sarah Chen</h4>
-<p className="text-sm text-on-surface-variant font-medium mb-3 uppercase tracking-wider">Logistics &amp; Supply Chain</p>
-<p className="text-sm text-on-surface-variant leading-relaxed">Former COO at GlobalLogix. Specializes in multi-modal infrastructure optimization.</p>
-</div>
-{/* Consultant 2 */}
-<div className="group">
-<div className="relative overflow-hidden rounded-xl mb-6">
-<img className="w-full h-[400px] object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-105" data-alt="Senior male consultant in a minimalist studio environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXjKQlFsexu8ZM3ElWg6wQMIVQV-Qe30MQDGhEcj6zoD8IJPVJ3HC9paxqHLneNw_yE8mxaQay6PAsWJ1xtRKYLBiBYc33Zbn8b-3rxQDp0Z4RMstc5B0jnpPYr8WW0bmLTowuj7C31WHCHJ5EIshKQDQxgUjpt-ZR5kjMbsSOKTZpbn78XKBjOKP0lEt9qYIpHw7TPvoA6FaHM38_UG69PNRs_YWCKxq6TX_tybB2TfPgls6GEUJ_DuCO17OFEQcoitR68UR9w_s"/>
-<div className="absolute inset-0 bg-gradient-to-t from-on-surface/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<h4 className="font-headline text-xl font-bold mb-1">Marcus Thorne</h4>
-<p className="text-sm text-on-surface-variant font-medium mb-3 uppercase tracking-wider">FinTech Strategy</p>
-<p className="text-sm text-on-surface-variant leading-relaxed">20+ years in venture capital. Expertise in emerging market regulatory frameworks.</p>
-</div>
-{/* Consultant 3 */}
-<div className="group">
-<div className="relative overflow-hidden rounded-xl mb-6">
-<img className="w-full h-[400px] object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-105" data-alt="Modern tech professional with focused expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ3aMjQwalbGojpGOM_DdB8d_djwk7zRuCEDSghyuCODxyYdKjlIwj-MQUT5lzdnlEVGUs2iH01ev4EfH_oAHtjLEzD-FMA1kr6FtU8T_TttS63-HqFKvCX4-EElt8nN8FUaOar-Oakv_oPGycld3k8KqfGrBwwlPGt4sDTQDNVRyHecirsPUYsDcglER67BUm7w-Rdup1eUAIiXBI75_K0FODJy_Q_gU2g60z681RhTSRIFsMYWdJo0cgKa6Pd1RI1mKa2XeDk3A"/>
-<div className="absolute inset-0 bg-gradient-to-t from-on-surface/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<h4 className="font-headline text-xl font-bold mb-1">Dr. Elena Rodriguez</h4>
-<p className="text-sm text-on-surface-variant font-medium mb-3 uppercase tracking-wider">Sustainable Systems</p>
-<p className="text-sm text-on-surface-variant leading-relaxed">Lead researcher on circular economies. Advisor to G7 climate task force.</p>
-</div>
-</div>
-</div>
-</section>
-{/* AI Insight Pulse - Specialized Component */}
-<section className="py-24 px-8">
-<div className="max-w-4xl mx-auto">
-<div className="bg-tertiary-container/10 border border-primary/20 backdrop-blur-md rounded-2xl p-12 relative overflow-hidden">
-<div className="flex items-start gap-8 relative z-10">
-<div className="bg-primary p-4 rounded-xl text-white">
-<span className="material-symbols-outlined text-3xl">lightbulb</span>
-</div>
-<div>
-<h3 className="font-headline text-2xl font-bold mb-4">Why ProDecide AI?</h3>
-<p className="text-lg text-on-surface-variant leading-relaxed italic mb-8">
-                                "Decision fatigue costs Fortune 500 companies billions annually. We don't just provide data; we provide the narrative architecture that makes the right choice obvious."
-                            </p>
-<div className="flex items-center gap-2">
-<div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-<span className="text-xs font-bold tracking-widest uppercase text-primary">Live Optimization Stream</span>
-</div>
-</div>
-</div>
-{/* Decorative background graphic */}
-<div className="absolute right-0 top-0 bottom-0 w-64 bg-gradient-to-l from-primary/5 to-transparent pointer-events-none"></div>
-</div>
-</div>
-</section>
-</main>
-{/* Footer */}
-<footer className="bg-[#f2f4f6] dark:bg-slate-950">
-<div className="w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
-<div>
-<span className="text-lg font-bold text-slate-700 dark:text-slate-300">ProDecide AI</span>
-<p className="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 mt-2">© 2024 ProDecide AI. All rights reserved.</p>
-</div>
-<div className="flex flex-wrap justify-center gap-8">
-<a className="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Privacy Policy</a>
-<a className="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Terms of Service</a>
-<a className="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Contact Support</a>
-<a className="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">About Us</a>
-</div>
-<div className="flex gap-4">
-<button className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 hover:text-primary transition-colors">
-<span className="material-symbols-outlined text-sm">language</span>
-</button>
-<button className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 hover:text-primary transition-colors">
-<span className="material-symbols-outlined text-sm">share</span>
-</button>
-</div>
-</div>
-</footer>
+    <div className="bg-surface font-body text-on-surface antialiased">
+      <Navbar />
+      <div className="hero-animated-bg relative">
 
+
+        {/* Merged Top Section: Hero */}
+        <section className="relative pt-24 pb-32 px-8 overflow-hidden">
+          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20">
+            <div className="flex-1 text-left z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider uppercase mb-8">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                Next-Gen Decision Intelligence
+              </div>
+              <h1 className="font-headline text-5xl lg:text-7xl font-extrabold tracking-tight text-on-surface mb-8 leading-[1.05]">
+                The Architecture <br />of <span className="text-primary">Definitive</span> Choice.
+              </h1>
+              <p className="text-lg md:text-xl text-on-surface-variant mb-12 max-w-xl leading-relaxed">
+                Eliminate ambiguity with ProDecide. Our platform fuses deep-learning neural insights with the strategic nuance of world-class human consultants.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link className="premium-gradient text-white font-bold py-4 px-10 rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-center inline-block" to="/discovery">Start Your Discovery</Link>
+                <button className="bg-white/80 backdrop-blur-sm text-on-surface border border-slate-200 font-bold py-4 px-10 rounded-lg hover:bg-white transition-all">
+                  The Methodology
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 relative w-full">
+              {/* Abstract "Intelligence" Visual */}
+              <div className="relative group">
+                <div className="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-transparent blur-3xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                <div className="relative bg-white border border-slate-200 p-2 rounded-2xl shadow-2xl overflow-hidden">
+                  <img className="rounded-xl w-full aspect-[4/3] object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="Abstract 3D architectural intelligence structure" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZdLfr0vK_PXrmB9AE5OHi2BLCmq3_wZ6zHI_BoHPqmJnZ17J_u2hpA7314m2jCDho1pRCr_S-1XFHGZx0SphrxM-MBYcxtFeL1s7FjZehCBjzJWqrIxE0dSJ7nEWKdj2VG64wyMjJQuNoRjdRRQvHCoJ9cEyWWnrmeKOYHdUosn_L1mSySgAIiKckeIA04Fn9zi0HEj0pCvKnchnXOPk_szxQfLu2xEONPf-37P9voCncd11Sg8vBGvEwUQkoMZQQa5cR5okY4R0" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent"></div>
+                  {/* Floating Insight Card */}
+                  <div className="absolute bottom-8 left-8 right-8 glass-effect p-6 rounded-xl shadow-xl animate-float">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-1.5 bg-primary rounded-md">
+                        <span className="material-symbols-outlined text-white text-lg">psychology</span>
+                      </div>
+                      <span className="font-headline font-bold text-sm tracking-tight text-slate-900">Active Synthesis</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary w-[88%] animate-pulse"></div>
+                      </div>
+                      <p className="text-[11px] text-slate-600 font-medium">Risk Mitigation Strategy: 88% structural integrity verified.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <main>
+        {/* Refined Framework Section */}
+        <section className="bg-slate-50/50 py-32 px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-20 text-center md:text-left">
+              <h2 className="font-headline text-4xl font-bold tracking-tight mb-4 text-slate-900">A Framework for Clarity</h2>
+              <p className="text-on-surface-variant max-w-2xl">Precision-engineered phases to transform complex variables into decisive action.</p>
+            </div>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+              {/* Stage 1 */}
+              <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6">
+                  <span className="material-symbols-outlined text-xl">explore</span>
+                </div>
+                <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 01</span>
+                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900">Understand Your Situation</h3>
+                <p className="text-on-surface-variant text-sm leading-relaxed">We capture your goals, constraints, and what’s actually at stake.</p>
+              </div>
+              {/* Stage 2 */}
+              <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6">
+                  <span className="material-symbols-outlined text-xl">query_stats</span>
+                </div>
+                <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 02</span>
+                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900">Bring Clarity to the Problem</h3>
+                <p className="text-on-surface-variant text-sm leading-relaxed">Our AI structures your inputs and highlights what truly matters.</p>
+              </div>
+              {/* Stage 3 */}
+              <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6">
+                  <span className="material-symbols-outlined text-xl">person_search</span>
+                </div>
+                <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 03</span>
+                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900">Match You with the Right Expert</h3>
+                <p className="text-on-surface-variant text-sm leading-relaxed">Get connected to a consultant who fits your specific decision context.</p>
+              </div>
+              {/* Stage 4 */}
+              <div className="bg-slate-900 p-8 rounded-xl text-white shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white mb-6">
+                  <span className="material-symbols-outlined text-xl">verified_user</span>
+                </div>
+                <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 04</span>
+                <h3 className="font-headline text-xl font-bold mb-3 text-white">Make the Decision with Confidence</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">Work through your options in guided sessions and move forward with clarity.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Expert Section - Premium Directory */}
+        <section className="py-32 px-8 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-20">
+              <div className="max-w-xl">
+                <h2 className="font-headline text-4xl font-bold tracking-tight mb-4 text-slate-900">Human Intelligence, Augmented.</h2>
+                <p className="text-on-surface-variant leading-relaxed">Work directly with the top 1% of industry strategists, hand-matched to your specific challenge by our AI engine.</p>
+              </div>
+              <Link className="text-primary font-bold inline-flex items-center gap-2 group" to="/experts">
+                <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all">View Full Directory</span>
+                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              {/* Consultant 1 */}
+              <div className="consultant-card group cursor-pointer">
+                <div className="relative overflow-hidden rounded-xl mb-6 aspect-[4/5] bg-slate-100">
+                  <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="Professional female executive Sarah Chen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKmkV3e9nKo1J_wj7ErY6Jo6PA56ImpTbrbrf2JYmVGx5aBDub1zWrwrFnA5uF233QPgq6gde2uCEcMIQZ9qCI1iglD-skyrmtrLJKersPCe1Rvg8FNt_I1fpLuwsjQYgiu78gm-f7n_kPd-ghenwl5I_6wu21JAv54emIIUm2Q3Xhlsz6Pp9Pexoj5l_nceGikMwWkdDliA8XZlFE6xp5Tnxxwywkz1oD_R7uKfinJU1t1MFuopE34HN1MxJzjZljD1I13-6uyhk" />
+                  <div className="absolute bottom-4 left-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                    <Link className="w-full py-3 bg-white/90 backdrop-blur text-slate-900 font-bold text-xs uppercase tracking-widest rounded-lg text-center block" to="/experts">Consult With Sarah</Link>
+                  </div>
+                </div>
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-headline text-xl font-bold text-slate-900">Sarah Chen</h4>
+                  <div className="expertise-tag px-2 py-0.5 border border-slate-200 rounded text-[10px] font-bold text-slate-500 uppercase tracking-tighter transition-colors">Logistics</div>
+                </div>
+                <p className="text-xs text-slate-400 font-semibold mb-4 uppercase tracking-wider">Former COO at GlobalLogix</p>
+                <p className="text-sm text-on-surface-variant leading-relaxed">Specializes in multi-modal infrastructure optimization and supply chain resilience.</p>
+              </div>
+              {/* Consultant 2 */}
+              <div className="consultant-card group cursor-pointer">
+                <div className="relative overflow-hidden rounded-xl mb-6 aspect-[4/5] bg-slate-100">
+                  <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="Senior male consultant Marcus Thorne" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXjKQlFsexu8ZM3ElWg6wQMIVQV-Qe30MQDGhEcj6zoD8IJPVJ3HC9paxqHLneNw_yE8mxaQay6PAsWJ1xtRKYLBiBYc33Zbn8b-3rxQDp0Z4RMstc5B0jnpPYr8WW0bmLTowuj7C31WHCHJ5EIshKQDQxgUjpt-ZR5kjMbsSOKTZpbn78XKBjOKP0lEt9qYIpHw7TPvoA6FaHM38_UG69PNRs_YWCKxq6TX_tybB2TfPgls6GEUJ_DuCO17OFEQcoitR68UR9w_s" />
+                  <div className="absolute bottom-4 left-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                    <Link className="w-full py-3 bg-white/90 backdrop-blur text-slate-900 font-bold text-xs uppercase tracking-widest rounded-lg text-center block" to="/experts">Consult With Marcus</Link>
+                  </div>
+                </div>
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-headline text-xl font-bold text-slate-900">Marcus Thorne</h4>
+                  <div className="expertise-tag px-2 py-0.5 border border-slate-200 rounded text-[10px] font-bold text-slate-500 uppercase tracking-tighter transition-colors">FinTech</div>
+                </div>
+                <p className="text-xs text-slate-400 font-semibold mb-4 uppercase tracking-wider">Venture Capital Partner</p>
+                <p className="text-sm text-on-surface-variant leading-relaxed">Expertise in emerging market regulatory frameworks and digital asset integration.</p>
+              </div>
+              {/* Consultant 3 */}
+              <div className="consultant-card group cursor-pointer">
+                <div className="relative overflow-hidden rounded-xl mb-6 aspect-[4/5] bg-slate-100">
+                  <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="Female tech professional Dr. Elena Rodriguez" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ3aMjQwalbGojpGOM_DdB8d_djwk7zRuCEDSghyuCODxyYdKjlIwj-MQUT5lzdnlEVGUs2iH01ev4EfH_oAHtjLEzD-FMA1kr6FtU8T_TttS63-HqFKvCX4-EElt8nN8FUaOar-Oakv_oPGycld3k8KqfGrBwwlPGt4sDTQDNVRyHecirsPUYsDcglER67BUm7w-Rdup1eUAIiXBI75_K0FODJy_Q_gU2g60z681RhTSRIFsMYWdJo0cgKa6Pd1RI1mKa2XeDk3A" />
+                  <div className="absolute bottom-4 left-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                    <Link className="w-full py-3 bg-white/90 backdrop-blur text-slate-900 font-bold text-xs uppercase tracking-widest rounded-lg text-center block" to="/experts">Consult With Elena</Link>
+                  </div>
+                </div>
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-headline text-xl font-bold text-slate-900">Dr. Elena Rodriguez</h4>
+                  <div className="expertise-tag px-2 py-0.5 border border-slate-200 rounded text-[10px] font-bold text-slate-500 uppercase tracking-tighter transition-colors">ESG Systems</div>
+                </div>
+                <p className="text-xs text-slate-400 font-semibold mb-4 uppercase tracking-wider">G7 Climate Task Force Advisor</p>
+                <p className="text-sm text-on-surface-variant leading-relaxed">Lead researcher on circular economies and large-scale sustainability modeling.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* AI Insight Pulse */}
+        <section className="py-24 px-8 bg-slate-50">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white border border-slate-200 rounded-2xl p-12 relative overflow-hidden shadow-sm">
+              <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
+                <div className="bg-primary p-5 rounded-2xl text-white shadow-xl shadow-primary/20">
+                  <span className="material-symbols-outlined text-4xl">lightbulb</span>
+                </div>
+                <div className="text-center md:text-left">
+                  <h3 className="font-headline text-2xl font-bold mb-4 text-slate-900">Why ProDecide AI?</h3>
+                  <p className="text-lg text-on-surface-variant leading-relaxed italic mb-6">"ProDecide empowers professionals and individuals alike to navigate complex career paths and personal milestones. We don't just provide data; we provide the narrative architecture that makes the right choice obvious."</p>
+                  <div className="flex items-center justify-center md:justify-start gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-primary">Live Strategy Optimization</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="bg-[#f2f4f6] dark:bg-slate-950 border-t border-slate-200/50">
+        <div className="w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
+          <div>
+            <span className="text-lg font-bold text-slate-700 dark:text-slate-300">ProDecide AI</span>
+            <p className="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 mt-2">© 2024 ProDecide AI. All rights reserved.</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-8">
+            <a className="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Privacy Policy</a>
+            <a className="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Terms of Service</a>
+            <a className="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">Contact Support</a>
+            <a className="font-inter text-xs leading-relaxed text-slate-500 dark:text-slate-500 hover:text-[#0052FF] dark:hover:text-blue-400 transition-all" href="#">About Us</a>
+          </div>
+          <div className="flex gap-4">
+            <button className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 hover:text-primary transition-colors">
+              <span className="material-symbols-outlined text-sm">language</span>
+            </button>
+            <button className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 hover:text-primary transition-colors">
+              <span className="material-symbols-outlined text-sm">share</span>
+            </button>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
