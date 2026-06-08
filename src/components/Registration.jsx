@@ -70,7 +70,10 @@ export default function Registration() {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
+    setFormData(prev => ({ 
+      ...prev, 
+      [id]: id === 'email' ? value.toLowerCase().trim() : value 
+    }));
   };
 
   const handleExpertiseToggle = (option) => {

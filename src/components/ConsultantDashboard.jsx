@@ -46,23 +46,33 @@ export default function ConsultantDashboard() {
     }
   }, []);
 
-  const fetchProfile = async (email) => {
+  const fetchProfile = async (email, showAlert = false) => {
     try {
       const response = await fetch('/api/auth?action=login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.toLowerCase().trim() }),
       });
       if (response.ok) {
         const data = await response.json();
         setUser(data.consultant);
         localStorage.setItem('consultant_user', JSON.stringify(data.consultant));
+        return true;
       } else {
+        const errData = await response.json();
+        if (showAlert) {
+          alert(errData.error || 'No consultant profile found. Please register first.');
+        }
         // Clear stale session
         localStorage.removeItem('consultant_user');
+        return false;
       }
     } catch (err) {
       console.error('Fetch profile error:', err);
+      if (showAlert) {
+        alert('An unexpected connection error occurred.');
+      }
+      return false;
     } finally {
       setLoading(false);
     }
@@ -76,7 +86,7 @@ export default function ConsultantDashboard() {
       const res = await fetch('/api/auth?action=send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailInput }),
+        body: JSON.stringify({ email: emailInput.toLowerCase().trim() }),
       });
       if (!res.ok) {
         const err = await res.json();
@@ -98,13 +108,13 @@ export default function ConsultantDashboard() {
       const res = await fetch('/api/auth?action=verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailInput, code: otpCode }),
+        body: JSON.stringify({ email: emailInput.toLowerCase().trim(), code: otpCode }),
       });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || 'Invalid OTP code');
       }
-      await fetchProfile(emailInput);
+      await fetchProfile(emailInput.toLowerCase().trim(), true);
     } catch (err) {
       alert(err.message);
     } finally {

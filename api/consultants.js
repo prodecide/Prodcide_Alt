@@ -21,6 +21,9 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: 'Name and email are required' });
             }
             
+            // Normalize email address to avoid casing mismatch
+            newConsultant.email = newConsultant.email.toLowerCase().trim();
+            
             // Default new consultants to pending
             newConsultant.status = 'pending';
             
