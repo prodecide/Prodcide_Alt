@@ -5,6 +5,7 @@ export default function Admin() {
     const [isAuthenticated, setIsAuthenticated] = useState(
         localStorage.getItem('prodecide_admin_auth') === 'true'
     );
+    const [username, setUsername] = useState('');
     const [passcode, setPasscode] = useState('');
     const [loginError, setLoginError] = useState('');
     const [consultants, setConsultants] = useState([]);
@@ -14,7 +15,8 @@ export default function Admin() {
     const [actioningId, setActioningId] = useState(null);
     const [toast, setToast] = useState(null);
 
-    // Get expected passcode from environment or default
+    // Get expected credentials from environment or default
+    const expectedUsername = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
     const expectedPasscode = import.meta.env.VITE_ADMIN_PASSCODE || '1234';
 
     useEffect(() => {
@@ -46,18 +48,19 @@ export default function Admin() {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (passcode === expectedPasscode) {
+        if (username === expectedUsername && passcode === expectedPasscode) {
             setIsAuthenticated(true);
             localStorage.setItem('prodecide_admin_auth', 'true');
             setLoginError('');
         } else {
-            setLoginError('Invalid admin passcode. Please try again.');
+            setLoginError('Invalid admin username or password. Please try again.');
         }
     };
 
     const handleLogout = () => {
         setIsAuthenticated(false);
         localStorage.removeItem('prodecide_admin_auth');
+        setUsername('');
         setPasscode('');
     };
 
@@ -101,11 +104,23 @@ export default function Admin() {
                         <div className="text-center mb-8">
                             <span className="material-symbols-outlined text-primary text-5xl mb-2">admin_panel_settings</span>
                             <h2 className="text-2xl font-bold tracking-tight">Admin Gate</h2>
-                            <p className="text-outline text-sm mt-1">Please enter your passcode to access dashboard</p>
+                            <p className="text-outline text-sm mt-1">Please enter credentials to access dashboard</p>
                         </div>
-                        <form onSubmit={handleLogin} className="space-y-6">
+                        <form onSubmit={handleLogin} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold mb-2">Passcode</label>
+                                <label className="block text-sm font-semibold mb-2">Username</label>
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Enter username"
+                                    className="w-full px-4 py-3 rounded-xl bg-surface border border-outline/20 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold"
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold mb-2">Password</label>
                                 <input
                                     type="password"
                                     value={passcode}
@@ -113,7 +128,6 @@ export default function Admin() {
                                     placeholder="••••"
                                     className="w-full px-4 py-3 rounded-xl bg-surface border border-outline/20 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary text-center tracking-widest text-lg font-bold"
                                     required
-                                    autoFocus
                                 />
                             </div>
                             {loginError && (
@@ -121,7 +135,7 @@ export default function Admin() {
                             )}
                             <button
                                 type="submit"
-                                className="w-full bg-primary hover:bg-primary/95 text-white font-semibold py-3 px-4 rounded-xl transition shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2"
+                                className="w-full bg-primary hover:bg-primary/95 text-white font-semibold py-3 px-4 rounded-xl transition shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2 mt-2"
                             >
                                 <span className="material-symbols-outlined text-lg">login</span>
                                 Verify & Access
