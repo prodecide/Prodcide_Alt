@@ -29,7 +29,14 @@ export default async function handler(req, res) {
             
             // Send email notification (failsafe)
             try {
-                await sendNewConsultantAlert(insertedDoc);
+                const protocol = req.headers['x-forwarded-proto'] || 'http';
+                const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:3001';
+                // Adjust port if it's localhost:3001 (backend API server) to localhost:5173 (Vite dev server)
+                let origin = `${protocol}://${host}`;
+                if (host.includes('localhost:3001')) {
+                    origin = 'http://localhost:5173';
+                }
+                await sendNewConsultantAlert(insertedDoc, origin);
             } catch (emailErr) {
                 console.error('Failed to send application email notification:', emailErr);
             }

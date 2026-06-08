@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-export async function sendNewConsultantAlert(consultant) {
+export async function sendNewConsultantAlert(consultant, origin = 'http://localhost:5173') {
     const adminEmail = 'prodecideonline@gmail.com';
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
     const port = parseInt(process.env.SMTP_PORT || '587', 10);
@@ -60,7 +60,7 @@ export async function sendNewConsultantAlert(consultant) {
             </div>
 
             <div style="text-align: center; margin-top: 30px;">
-                <a href="http://localhost:5173/admin" style="background-color: #0052FF; color: white; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block;">
+                <a href="${origin}/admin" style="background-color: #0052FF; color: white; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block;">
                     Open Admin Dashboard to Review
                 </a>
             </div>
