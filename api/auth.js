@@ -5,6 +5,7 @@ import { sendOtpEmail } from './utils/email.js';
 export default async function handler(req, res) {
     try {
         const client = await clientPromise;
+        const isMock = !!client.isMock;
         const database = client.db('prodecide');
         const consultants = database.collection('consultants');
         const otps = database.collection('otps');
@@ -31,7 +32,7 @@ export default async function handler(req, res) {
                 // Send email
                 await sendOtpEmail(email, code);
 
-                return res.status(200).json({ success: true, message: 'OTP sent successfully' });
+                return res.status(200).json({ success: true, message: 'OTP sent successfully', isMock });
             }
 
             if (action === 'verify-otp') {
@@ -57,7 +58,7 @@ export default async function handler(req, res) {
                     return res.status(400).json({ error: 'OTP code has expired' });
                 }
 
-                return res.status(200).json({ success: true, verified: true });
+                return res.status(200).json({ success: true, verified: true, isMock });
             }
 
             if (action === 'google-link') {
@@ -88,12 +89,12 @@ export default async function handler(req, res) {
                             googleId,
                             status: consultant.status || 'pending',
                             profileImage: consultant.profileImage || profileImage
-                        } 
+                         } 
                     }
                 );
 
                 const updated = await consultants.findOne({ email: email.toLowerCase().trim() });
-                return res.status(200).json({ success: true, consultant: updated });
+                return res.status(200).json({ success: true, consultant: updated, isMock });
             }
 
             if (action === 'login') {
@@ -110,7 +111,7 @@ export default async function handler(req, res) {
                     return res.status(404).json({ error: 'No consultant profile found. Please register first.' });
                 }
 
-                return res.status(200).json({ success: true, consultant });
+                return res.status(200).json({ success: true, consultant, isMock });
             }
         }
 
