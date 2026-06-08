@@ -6,6 +6,7 @@ export default async function handler(req, res) {
     try {
         const client = await clientPromise;
         const isMock = !!client.isMock;
+        const connectionError = client.connectionError || null;
         const database = client.db('prodecide');
         const consultants = database.collection('consultants');
         const otps = database.collection('otps');
@@ -32,7 +33,7 @@ export default async function handler(req, res) {
                 // Send email
                 await sendOtpEmail(email, code);
 
-                return res.status(200).json({ success: true, message: 'OTP sent successfully', isMock });
+                return res.status(200).json({ success: true, message: 'OTP sent successfully', isMock, connectionError });
             }
 
             if (action === 'verify-otp') {
