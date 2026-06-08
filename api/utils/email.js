@@ -106,3 +106,60 @@ export async function sendNewConsultantAlert(consultant, origin = 'http://localh
         throw error;
     }
 }
+
+export async function sendOtpEmail(email, code) {
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASSWORD;
+
+    const subject = `🔑 Your ProDecide Verification Code: ${code}`;
+    
+    const htmlBody = `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <h2 style="color: #0052FF; margin-top: 0; font-family: 'Helvetica Neue', Helvetica, sans-serif; font-weight: bold; letter-spacing: -0.5px;">ProDecide Verification</h2>
+            <p style="color: #334155; font-size: 15px; line-height: 1.5;">Please use the following 6-digit code to verify your identity on the ProDecide platform:</p>
+            <div style="background-color: #f8fafc; padding: 18px; text-align: center; border-radius: 10px; margin: 25px 0; border: 1px solid #cbd5e1;">
+                <span style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #0f172a; font-family: monospace;">${code}</span>
+            </div>
+            <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
+                This code will remain valid for 10 minutes. If you did not request this verification code, please disregard this email.
+            </p>
+        </div>
+    `;
+
+    if (!user || !pass) {
+        console.warn("⚠️ SMTP credentials (SMTP_USER/SMTP_PASSWORD) are not set. Logging OTP code to console:");
+        console.log("-----------------------------------------");
+        console.log(`To: ${email}`);
+        console.log(`Subject: ${subject}`);
+        console.log(`Verification Code: ${code}`);
+        console.log("-----------------------------------------");
+        return { mock: true, sent: true };
+    }
+
+    try {
+        const transporter = nodemailer.createTransport({
+            host,
+            port,
+            secure: port === 465,
+            auth: {
+                user,
+                pass,
+            },
+        });
+
+        const info = await transporter.sendMail({
+            from: `"ProDecide Security" <${user}>`,
+            to: email,
+            subject,
+            html: htmlBody,
+        });
+
+        console.log("✉️ OTP verification email sent successfully to %s", email);
+        return { sent: true, messageId: info.messageId };
+    } catch (error) {
+        console.error("❌ Failed to send SMTP OTP email:", error);
+        throw error;
+    }
+}

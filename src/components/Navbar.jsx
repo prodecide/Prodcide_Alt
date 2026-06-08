@@ -85,7 +85,7 @@ export default function Navbar() {
                     User Portal
                   </Link>
                   <Link 
-                    to="/registration" 
+                    to="/consultant-dashboard" 
                     onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
                   >

@@ -5,6 +5,7 @@ dotenv.config({ path: '.env.local' });
 
 // Now import the handler after config is loaded
 const { default: consultantsHandler } = await import('./api/consultants.js');
+const { default: authHandler } = await import('./api/auth.js');
 
 const app = express();
 const port = 3001;
@@ -25,6 +26,7 @@ const vercelToExpress = (handler) => async (req, res) => {
 };
 
 app.all('/api/consultants', vercelToExpress(consultantsHandler));
+app.all('/api/auth', vercelToExpress(authHandler));
 
 app.listen(port, () => {
     console.log(`Local API server running at http://localhost:${port}`);

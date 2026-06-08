@@ -7,6 +7,7 @@ import Experts from './components/Experts';
 import Form from './components/Form';
 import Registration from './components/Registration';
 import Admin from './components/Admin';
+import ConsultantDashboard from './components/ConsultantDashboard';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/form" element={<Form />} />
           <Route path="/registration" element={<Registration />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/consultant-dashboard" element={<ConsultantDashboard />} />
         </Routes>
       </div>
     </Router>
