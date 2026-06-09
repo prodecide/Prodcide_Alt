@@ -20,12 +20,20 @@ export default async function handler(req, res) {
                     return res.status(400).json({ error: 'Email is required' });
                 }
 
+                const normalizedEmail = email.toLowerCase().trim();
+
+                // Verify the consultant is registered before sending the OTP code
+                const consultant = await consultants.findOne({ email: normalizedEmail });
+                if (!consultant) {
+                    return res.status(404).json({ error: 'This email is not registered as a consultant. Please register first.' });
+                }
+
                 // Generate a 6-digit OTP code
                 const code = Math.floor(100000 + Math.random() * 900000).toString();
 
                 // Save to OTP collection
                 await otps.insertOne({
-                    email: email.toLowerCase().trim(),
+                    email: normalizedEmail,
                     code,
                     createdAt: new Date()
                 });
