@@ -14,6 +14,8 @@ export default function Admin() {
     const [activeTab, setActiveTab] = useState('pending'); // 'pending' or 'approved'
     const [actioningId, setActioningId] = useState(null);
     const [toast, setToast] = useState(null);
+    const [processingId, setProcessingId] = useState(null);
+    const [extractedProfiles, setExtractedProfiles] = useState({});
 
     // Get expected credentials from environment or default
     const expectedUsername = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
@@ -64,15 +66,23 @@ export default function Admin() {
         setPasscode('');
     };
 
-    const handleStatusUpdate = async (id, newStatus) => {
+    const handleStatusUpdate = async (id, newStatus, profileData = null) => {
         setActioningId(id);
         try {
+            const body = { id, status: newStatus };
+            if (profileData) {
+                body.bio = profileData.bio;
+                body.experienceDetails = profileData.experienceDetails;
+                body.educationDetails = profileData.educationDetails;
+                body.expertise = profileData.expertise;
+            }
+
             const res = await fetch('/api/consultants', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ id, status: newStatus })
+                body: JSON.stringify(body)
             });
 
             if (!res.ok) {
@@ -81,6 +91,12 @@ export default function Admin() {
             }
 
             showToast(`Consultant application successfully ${newStatus === 'approved' ? 'approved' : 'rejected'}.`);
+            // Clear from extractedProfiles state
+            setExtractedProfiles(prev => {
+                const copy = { ...prev };
+                delete copy[id];
+                return copy;
+            });
             // Refresh list
             await fetchConsultants();
         } catch (err) {
@@ -88,6 +104,41 @@ export default function Admin() {
         } finally {
             setActioningId(null);
         }
+    };
+
+    const handlePdfUpload = (e, consultantId) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async () => {
+            const base64Data = reader.result.split(',')[1];
+            setProcessingId(consultantId);
+            try {
+                const res = await fetch('/api/generate-bio', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pdfData: base64Data })
+                });
+
+                if (!res.ok) {
+                    const errorJson = await res.json().catch(() => ({}));
+                    throw new Error(errorJson.error || 'Failed to generate profile details');
+                }
+
+                const profileData = await res.json();
+                setExtractedProfiles(prev => ({
+                    ...prev,
+                    [consultantId]: profileData
+                }));
+                showToast('AI Profile successfully extracted! Review and edit details below.', 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                setProcessingId(null);
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     const pendingList = consultants.filter((c) => c.status === 'pending');
@@ -150,14 +201,13 @@ export default function Admin() {
     return (
         <div className="bg-surface font-body text-on-surface min-h-screen pb-16">
             <Navbar />
-            
+
             {/* Toast Notification */}
             {toast && (
-                <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl transition-all border ${
-                    toast.type === 'error' 
-                        ? 'bg-rose-50 border-rose-200 text-rose-800' 
+                <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl transition-all border ${toast.type === 'error'
+                        ? 'bg-rose-50 border-rose-200 text-rose-800'
                         : 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                }`}>
+                    }`}>
                     <span className="material-symbols-outlined">
                         {toast.type === 'error' ? 'error' : 'check_circle'}
                     </span>
@@ -188,11 +238,10 @@ export default function Admin() {
                 <div className="flex border-b border-outline/10 mb-8">
                     <button
                         onClick={() => setActiveTab('pending')}
-                        className={`flex items-center gap-2 pb-4 px-4 font-semibold text-base transition border-b-2 -mb-[2px] ${
-                            activeTab === 'pending'
+                        className={`flex items-center gap-2 pb-4 px-4 font-semibold text-base transition border-b-2 -mb-[2px] ${activeTab === 'pending'
                                 ? 'border-primary text-primary'
                                 : 'border-transparent text-outline hover:text-on-surface'
-                        }`}
+                            }`}
                     >
                         <span className="material-symbols-outlined text-lg">hourglass_empty</span>
                         Pending Approval
@@ -204,11 +253,10 @@ export default function Admin() {
                     </button>
                     <button
                         onClick={() => setActiveTab('approved')}
-                        className={`flex items-center gap-2 pb-4 px-4 font-semibold text-base transition border-b-2 -mb-[2px] ${
-                            activeTab === 'approved'
+                        className={`flex items-center gap-2 pb-4 px-4 font-semibold text-base transition border-b-2 -mb-[2px] ${activeTab === 'approved'
                                 ? 'border-primary text-primary'
                                 : 'border-transparent text-outline hover:text-on-surface'
-                        }`}
+                            }`}
                     >
                         <span className="material-symbols-outlined text-lg">verified</span>
                         Active Directory
@@ -250,7 +298,7 @@ export default function Admin() {
                                                 <span className="material-symbols-outlined text-primary text-3xl">person</span>
                                             )}
                                         </div>
-                                        
+
                                         {/* Info details */}
                                         <div className="space-y-4 flex-1">
                                             <div>
@@ -277,11 +325,221 @@ export default function Admin() {
                                                 </div>
                                             </div>
 
-                                            <div className="border-t border-outline/5 pt-4">
+                                             <div className="border-t border-outline/5 pt-4">
                                                 <span className="text-outline text-sm font-medium block mb-1">Biography:</span>
-                                                <p className="text-sm text-on-surface/90 italic bg-surface/50 p-4 rounded-xl border border-outline/5">
+                                                <p className="text-sm text-on-surface/90 italic bg-surface/50 p-4 rounded-xl border border-outline/5 mb-4">
                                                     "{item.bio || 'No biography details provided.'}"
                                                 </p>
+                                            </div>
+
+                                            {/* PDF Upload and AI Bio Extractor Section */}
+                                            <div className="border-t border-outline/5 pt-6 mt-4">
+                                                <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10">
+                                                    <h4 className="text-sm font-bold text-primary flex items-center gap-2 mb-2">
+                                                        <span className="material-symbols-outlined text-lg">auto_awesome</span>
+                                                        AI-Powered LinkedIn Onboarding
+                                                    </h4>
+                                                    <p className="text-xs text-outline mb-4">
+                                                        Upload the consultant's LinkedIn PDF export. Our AI will extract their work history, education history, and specialized biography.
+                                                    </p>
+
+                                                    {!extractedProfiles[item._id] ? (
+                                                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                                                            <input
+                                                                type="file"
+                                                                accept=".pdf"
+                                                                onChange={(e) => handlePdfUpload(e, item._id)}
+                                                                className="hidden"
+                                                                id={`pdf-file-${item._id}`}
+                                                                disabled={processingId !== null}
+                                                            />
+                                                            <label
+                                                                htmlFor={`pdf-file-${item._id}`}
+                                                                className="w-full sm:w-auto bg-primary hover:bg-[#003ec7] text-white font-bold text-xs py-3 px-5 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                                                            >
+                                                                <span className="material-symbols-outlined text-base">upload_file</span>
+                                                                Upload LinkedIn PDF
+                                                            </label>
+                                                            {processingId === item._id && (
+                                                                <div className="flex items-center gap-2 text-primary text-xs font-semibold">
+                                                                    <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                                                                    <span>Extracting details from PDF...</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-4 pt-2">
+                                                            <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-outline/10 space-y-4 text-left">
+                                                                <div className="flex items-center justify-between border-b border-outline/5 pb-2">
+                                                                    <span className="text-xs font-bold text-slate-700 uppercase">Review Extracted Profile Data</span>
+                                                                    <button
+                                                                        onClick={() => setExtractedProfiles(prev => {
+                                                                            const copy = { ...prev };
+                                                                            delete copy[item._id];
+                                                                            return copy;
+                                                                        })}
+                                                                        className="text-xs text-rose-500 hover:underline font-semibold"
+                                                                    >
+                                                                        Reset Upload
+                                                                    </button>
+                                                                </div>
+
+                                                                {/* Bio Edit */}
+                                                                <div>
+                                                                    <label className="block text-xs font-bold text-slate-500 mb-1">Generated Biography</label>
+                                                                    <textarea
+                                                                        value={extractedProfiles[item._id].bio}
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            setExtractedProfiles(prev => ({
+                                                                                ...prev,
+                                                                                [item._id]: { ...prev[item._id], bio: val }
+                                                                            }));
+                                                                        }}
+                                                                        className="w-full text-xs p-3 border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-1 focus:ring-primary h-24"
+                                                                    />
+                                                                </div>
+
+                                                                {/* Skills / Expertise Edit */}
+                                                                <div>
+                                                                    <label className="block text-xs font-bold text-slate-500 mb-1">Specialized Skills (Comma separated)</label>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={Array.isArray(extractedProfiles[item._id].expertise) ? extractedProfiles[item._id].expertise.join(', ') : extractedProfiles[item._id].expertise}
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            setExtractedProfiles(prev => ({
+                                                                                ...prev,
+                                                                                [item._id]: { ...prev[item._id], expertise: val.split(',').map(s => s.trim()) }
+                                                                            }));
+                                                                        }}
+                                                                        className="w-full text-xs p-3 border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-1 focus:ring-primary"
+                                                                    />
+                                                                </div>
+
+                                                                {/* Work Experience Edit */}
+                                                                <div>
+                                                                    <span className="block text-xs font-bold text-slate-500 mb-2">Work Experience Timeline</span>
+                                                                    <div className="space-y-3">
+                                                                        {extractedProfiles[item._id].experienceDetails?.map((exp, idx) => (
+                                                                            <div key={idx} className="p-3 bg-slate-50 rounded-lg border border-slate-200/50 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    placeholder="Duration (e.g. 2018 - Present)"
+                                                                                    value={exp.duration}
+                                                                                    onChange={(e) => {
+                                                                                        const updatedExp = [...extractedProfiles[item._id].experienceDetails];
+                                                                                        updatedExp[idx].duration = e.target.value;
+                                                                                        setExtractedProfiles(prev => ({
+                                                                                            ...prev,
+                                                                                            [item._id]: { ...prev[item._id], experienceDetails: updatedExp }
+                                                                                        }));
+                                                                                    }}
+                                                                                    className="text-xs p-2 border border-slate-200 rounded bg-white"
+                                                                                />
+                                                                                <input
+                                                                                    type="text"
+                                                                                    placeholder="Role/Title"
+                                                                                    value={exp.role}
+                                                                                    onChange={(e) => {
+                                                                                        const updatedExp = [...extractedProfiles[item._id].experienceDetails];
+                                                                                        updatedExp[idx].role = e.target.value;
+                                                                                        setExtractedProfiles(prev => ({
+                                                                                            ...prev,
+                                                                                            [item._id]: { ...prev[item._id], experienceDetails: updatedExp }
+                                                                                        }));
+                                                                                    }}
+                                                                                    className="text-xs p-2 border border-slate-200 rounded bg-white"
+                                                                                />
+                                                                                <input
+                                                                                    type="text"
+                                                                                    placeholder="Company"
+                                                                                    value={exp.company}
+                                                                                    onChange={(e) => {
+                                                                                        const updatedExp = [...extractedProfiles[item._id].experienceDetails];
+                                                                                        updatedExp[idx].company = e.target.value;
+                                                                                        setExtractedProfiles(prev => ({
+                                                                                            ...prev,
+                                                                                            [item._id]: { ...prev[item._id], experienceDetails: updatedExp }
+                                                                                        }));
+                                                                                    }}
+                                                                                    className="text-xs p-2 border border-slate-200 rounded bg-white"
+                                                                                />
+                                                                                <input
+                                                                                    type="text"
+                                                                                    placeholder="Job Description Summary"
+                                                                                    value={exp.description}
+                                                                                    onChange={(e) => {
+                                                                                        const updatedExp = [...extractedProfiles[item._id].experienceDetails];
+                                                                                        updatedExp[idx].description = e.target.value;
+                                                                                        setExtractedProfiles(prev => ({
+                                                                                            ...prev,
+                                                                                            [item._id]: { ...prev[item._id], experienceDetails: updatedExp }
+                                                                                        }));
+                                                                                    }}
+                                                                                    className="text-xs p-2 border border-slate-200 rounded bg-white sm:col-span-3"
+                                                                                />
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Education Edit */}
+                                                                <div>
+                                                                    <span className="block text-xs font-bold text-slate-500 mb-2">Education Timeline</span>
+                                                                    <div className="space-y-3">
+                                                                        {extractedProfiles[item._id].educationDetails?.map((edu, idx) => (
+                                                                            <div key={idx} className="p-3 bg-slate-50 rounded-lg border border-slate-200/50 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    placeholder="Degree"
+                                                                                    value={edu.degree}
+                                                                                    onChange={(e) => {
+                                                                                        const updatedEdu = [...extractedProfiles[item._id].educationDetails];
+                                                                                        updatedEdu[idx].degree = e.target.value;
+                                                                                        setExtractedProfiles(prev => ({
+                                                                                            ...prev,
+                                                                                            [item._id]: { ...prev[item._id], educationDetails: updatedEdu }
+                                                                                        }));
+                                                                                    }}
+                                                                                    className="text-xs p-2 border border-slate-200 rounded bg-white"
+                                                                                />
+                                                                                <input
+                                                                                    type="text"
+                                                                                    placeholder="School/University"
+                                                                                    value={edu.school}
+                                                                                    onChange={(e) => {
+                                                                                        const updatedEdu = [...extractedProfiles[item._id].educationDetails];
+                                                                                        updatedEdu[idx].school = e.target.value;
+                                                                                        setExtractedProfiles(prev => ({
+                                                                                            ...prev,
+                                                                                            [item._id]: { ...prev[item._id], educationDetails: updatedEdu }
+                                                                                        }));
+                                                                                    }}
+                                                                                    className="text-xs p-2 border border-slate-200 rounded bg-white"
+                                                                                />
+                                                                                <input
+                                                                                    type="text"
+                                                                                    placeholder="Year"
+                                                                                    value={edu.year}
+                                                                                    onChange={(e) => {
+                                                                                        const updatedEdu = [...extractedProfiles[item._id].educationDetails];
+                                                                                        updatedEdu[idx].year = e.target.value;
+                                                                                        setExtractedProfiles(prev => ({
+                                                                                            ...prev,
+                                                                                            [item._id]: { ...prev[item._id], educationDetails: updatedEdu }
+                                                                                        }));
+                                                                                    }}
+                                                                                    className="text-xs p-2 border border-slate-200 rounded bg-white"
+                                                                                />
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -289,12 +547,12 @@ export default function Admin() {
                                     {/* Action Buttons */}
                                     <div className="flex lg:flex-col justify-end gap-3 lg:w-48 pt-4 lg:pt-0 border-t lg:border-t-0 border-outline/5 lg:justify-center">
                                         <button
-                                            onClick={() => handleStatusUpdate(item._id, 'approved')}
+                                            onClick={() => handleStatusUpdate(item._id, 'approved', extractedProfiles[item._id])}
                                             disabled={actioningId !== null}
                                             className="flex-1 lg:flex-none bg-primary hover:bg-primary/95 text-white py-3 px-4 rounded-xl font-bold text-sm transition shadow-md hover:shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50"
                                         >
                                             <span className="material-symbols-outlined text-lg">check_circle</span>
-                                            Approve User
+                                            {extractedProfiles[item._id] ? 'Save & Approve' : 'Approve User'}
                                         </button>
                                         <button
                                             onClick={() => handleStatusUpdate(item._id, 'rejected')}
@@ -338,7 +596,7 @@ export default function Admin() {
                                             </span>
                                         </div>
                                         <p className="text-outline text-xs mt-2 line-clamp-2 italic">"{item.bio}"</p>
-                                        
+
                                         <div className="mt-4 flex justify-between items-center pt-3 border-t border-outline/5">
                                             <span className="text-outline text-xs">{item.organization || 'Independent'}</span>
                                             <button

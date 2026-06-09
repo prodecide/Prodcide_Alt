@@ -97,12 +97,13 @@ export default function Experts() {
                     "{c.bio}"
                   </p>
 
-                  <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
-                    <div>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Consultation Fee</p>
-                      <p className="font-black text-on-surface">₹{c.price || '2,500'}<span className="text-slate-400 text-[10px] font-medium uppercase ml-1">/Session</span></p>
-                    </div>
-                    <Link to="/form" state={{ consultant: c }} className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-primary transition-colors active:scale-95 shadow-lg shadow-slate-900/10">Book Now</Link>
+                  <div className="pt-4 border-t border-slate-50 flex items-center justify-between gap-3">
+                    <Link to={`/profile/${c._id}`} className="flex-1 text-center bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-xs transition-colors active:scale-95">
+                      View Profile
+                    </Link>
+                    <Link to="/form" state={{ consultant: c }} className="flex-1 text-center bg-primary text-white px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-[#003ec7] transition-colors active:scale-95 shadow-lg shadow-primary/10">
+                      Book Now
+                    </Link>
                   </div>
                 </div>
               </div>

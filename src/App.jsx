@@ -8,6 +8,7 @@ import Form from './components/Form';
 import Registration from './components/Registration';
 import Admin from './components/Admin';
 import ConsultantDashboard from './components/ConsultantDashboard';
+import ConsultantProfile from './components/ConsultantProfile';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/discovery" element={<Discovery />} />
           <Route path="/about" element={<About />} />
           <Route path="/experts" element={<Experts />} />
+          <Route path="/profile/:id" element={<ConsultantProfile />} />
           <Route path="/form" element={<Form />} />
           <Route path="/registration" element={<Registration />} />
           <Route path="/admin" element={<Admin />} />

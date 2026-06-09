@@ -9,6 +9,20 @@ export default async function handler(req, res) {
         const consultants = database.collection('consultants');
 
         if (req.method === 'GET') {
+            const { id } = req.query;
+            if (id) {
+                let filter;
+                if (typeof id === 'string' && id.length === 24 && /^[0-9a-fA-F]{24}$/.test(id)) {
+                    filter = { _id: new ObjectId(id) };
+                } else {
+                    filter = { _id: id };
+                }
+                const consultant = await consultants.findOne(filter);
+                if (!consultant) {
+                    return res.status(404).json({ error: 'Consultant not found' });
+                }
+                return res.status(200).json(consultant);
+            }
             const showAll = req.query.all === 'true';
             const query = showAll ? {} : { status: { $ne: 'pending' } };
             const allConsultants = await consultants.find(query).toArray();
@@ -20,16 +34,16 @@ export default async function handler(req, res) {
             if (!newConsultant.fullName || !newConsultant.email) {
                 return res.status(400).json({ error: 'Name and email are required' });
             }
-            
+
             // Normalize email address to avoid casing mismatch
             newConsultant.email = newConsultant.email.toLowerCase().trim();
-            
+
             // Default new consultants to pending
             newConsultant.status = 'pending';
-            
+
             const result = await consultants.insertOne(newConsultant);
             const insertedDoc = { ...newConsultant, _id: result.insertedId };
-            
+
             // Send email notification (failsafe)
             try {
                 const protocol = req.headers['x-forwarded-proto'] || 'http';
@@ -48,9 +62,9 @@ export default async function handler(req, res) {
         }
 
         if (req.method === 'PUT') {
-            const { id, status } = req.body;
-            if (!id || !status) {
-                return res.status(400).json({ error: 'ID and status are required' });
+            const { id, status, bio, experienceDetails, educationDetails, expertise } = req.body;
+            if (!id) {
+                return res.status(400).json({ error: 'ID is required' });
             }
 
             let filter = { _id: id };
@@ -62,16 +76,23 @@ export default async function handler(req, res) {
                 // Keep string ID filter
             }
 
+            const updateFields = {};
+            if (status) updateFields.status = status;
+            if (bio !== undefined) updateFields.bio = bio;
+            if (experienceDetails !== undefined) updateFields.experienceDetails = experienceDetails;
+            if (educationDetails !== undefined) updateFields.educationDetails = educationDetails;
+            if (expertise !== undefined) updateFields.expertise = expertise;
+
             const result = await consultants.updateOne(
                 filter,
-                { $set: { status } }
+                { $set: updateFields }
             );
 
             if (result.matchedCount === 0) {
                 return res.status(404).json({ error: 'Consultant not found' });
             }
 
-            return res.status(200).json({ success: true, message: `Consultant ${status} successfully` });
+            return res.status(200).json({ success: true, message: `Consultant updated successfully` });
         }
 
         return res.status(405).json({ error: 'Method not allowed' });
