@@ -5,7 +5,16 @@ export default function Navbar() {
   const location = useLocation();
   const pathname = location.pathname;
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const storedName = localStorage.getItem('discovery_verified_name');
+    const storedEmail = localStorage.getItem('discovery_verified_email');
+    if (storedName) setUserName(storedName);
+    if (storedEmail) setUserEmail(storedEmail);
+  }, [location.pathname]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -49,6 +58,12 @@ export default function Navbar() {
             <span className="material-symbols-outlined text-xl">notifications</span>
           </button>
           
+          {userName && (
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 hidden md:inline-block bg-slate-100/60 dark:bg-slate-800/60 px-3 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+              {userName}
+            </span>
+          )}
+
           {/* Interactive Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button 
@@ -61,10 +76,16 @@ export default function Navbar() {
                 className="w-full h-full object-cover" 
               />
             </button>
-
+ 
             {dropdownOpen && (
               <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-white dark:bg-[#191c1e] border border-slate-200/50 dark:border-slate-800 shadow-xl py-2 z-50 transform origin-top-right transition-all">
-                <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
+                {userName && (
+                  <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{userName}</p>
+                    {userEmail && <p className="text-[10px] text-slate-400 truncate">{userEmail}</p>}
+                  </div>
+                )}
+                <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
                   <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Switch Portal</p>
                 </div>
                 <div className="p-1.5 space-y-1">

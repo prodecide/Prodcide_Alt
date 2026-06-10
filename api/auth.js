@@ -93,12 +93,12 @@ export default async function handler(req, res) {
 
                 await consultants.updateOne(
                     filter,
-                    { 
-                        $set: { 
+                    {
+                        $set: {
                             googleId,
                             status: consultant.status || 'pending',
                             profileImage: consultant.profileImage || profileImage
-                         } 
+                        }
                     }
                 );
 
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
 
             if (action === 'login') {
                 const { email, googleId } = req.body;
-                
+
                 let consultant = null;
                 if (googleId) {
                     consultant = await consultants.findOne({ googleId });

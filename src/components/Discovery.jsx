@@ -16,6 +16,19 @@ export default function Discovery() {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isAITyping, setIsAITyping] = useState(false);
+  const [limitExceeded, setLimitExceeded] = useState(false);
+  
+  // Authentication states
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    !!localStorage.getItem('discovery_verified_email')
+  );
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authName, setAuthName] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authOtp, setAuthOtp] = useState('');
+  const [authStep, setAuthStep] = useState('email'); // 'email' or 'otp'
+  const [authError, setAuthError] = useState('');
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
   
   // Context Engine states (extracted dynamically from Gemini)
   const [criticalGaps, setCriticalGaps] = useState([]);
@@ -43,12 +56,86 @@ export default function Discovery() {
     }
   }, [messages, isAITyping]);
 
-  const handleInitialAnalyze = async () => {
+  // Handle Send OTP
+  const handleSendOtp = async () => {
+    if (!authName.trim()) {
+      setAuthError('Please enter your name.');
+      return;
+    }
+    if (!authEmail.trim() || !authEmail.includes('@')) {
+      setAuthError('Please enter a valid email address.');
+      return;
+    }
+    setAuthError('');
+    setIsAuthLoading(true);
+    try {
+      const response = await fetch('/api/auth?action=send-general-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: authEmail })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to send OTP code.');
+      
+      setAuthStep('otp');
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
+  // Handle Verify OTP
+  const handleVerifyOtp = async () => {
+    if (!authOtp.trim() || authOtp.length < 6) {
+      setAuthError('Please enter a valid 6-digit OTP code.');
+      return;
+    }
+    setAuthError('');
+    setIsAuthLoading(true);
+    try {
+      const response = await fetch('/api/auth?action=verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: authEmail, code: authOtp })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Verification failed.');
+      
+      // Save authenticated details
+      localStorage.setItem('discovery_verified_name', authName.trim());
+      localStorage.setItem('discovery_verified_email', authEmail.toLowerCase().trim());
+      setIsAuthenticated(true);
+      setShowAuthModal(false);
+      
+      // Trigger state sync event so Navbar updates immediately
+      window.dispatchEvent(new Event('storage'));
+      
+      // Proceed to analysis flow
+      handleInitialAnalyze();
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleAnalyzeClick = () => {
     if (!challengeText.trim()) {
       alert("Please describe your challenge before analyzing.");
       return;
     }
+    if (!isAuthenticated) {
+      setAuthError('');
+      setAuthStep('email');
+      setAuthOtp('');
+      setShowAuthModal(true);
+    } else {
+      handleInitialAnalyze();
+    }
+  };
 
+  const handleInitialAnalyze = async () => {
     setIsAnalyzing(true);
     
     // Simulate analyzing overlay for 1.8 seconds before opening the chat
@@ -85,6 +172,7 @@ export default function Discovery() {
         setCurrentSkills(data.currentSkills || []);
         setSuggestedPaths(data.suggestedPaths || []);
         setReadyToSuggest(data.readyToSuggest || false);
+        if (data.limitExceeded) setLimitExceeded(true);
 
         setMessages(prev => [
           ...prev,
@@ -100,7 +188,7 @@ export default function Discovery() {
           ...prev,
           {
             sender: 'ai',
-            text: "I experienced a temporary connection glitch with the main intelligence hub. Please write your next message so we can continue mapping your strategic transition.",
+            text: "I experienced a temporary connection glitch. Please write your next message so we can continue mapping your strategic transition.",
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
@@ -111,7 +199,7 @@ export default function Discovery() {
   };
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || limitExceeded) return;
 
     const userMsg = {
       sender: 'user',
@@ -132,11 +220,14 @@ export default function Discovery() {
         },
         body: JSON.stringify({
           messages: updatedMessages,
-          selectedDomain: selectedDomain
+          selectedDomain: selectedDomain,
+          criticalGaps,
+          currentSkills,
+          suggestedPaths
         })
       });
 
-      if (!response.ok) throw new Error("Failed to send message to discovery agent");
+      if (!response.ok) throw new Error("Failed to send message");
       const data = await response.json();
 
       // Update context details
@@ -144,6 +235,7 @@ export default function Discovery() {
       if (data.currentSkills) setCurrentSkills(data.currentSkills);
       if (data.suggestedPaths) setSuggestedPaths(data.suggestedPaths);
       if (data.readyToSuggest !== undefined) setReadyToSuggest(data.readyToSuggest);
+      if (data.limitExceeded) setLimitExceeded(true);
 
       setMessages(prev => [
         ...prev,
@@ -213,7 +305,7 @@ export default function Discovery() {
                 <div className="flex justify-between items-center px-4 py-3 bg-[#f2f4f6] rounded-lg">
                   <div className="flex gap-2"></div>
                   <button 
-                    onClick={handleInitialAnalyze}
+                    onClick={handleAnalyzeClick}
                     className="bg-gradient-to-br from-[#003ec7] to-[#0052ff] text-white px-6 py-2 rounded-md font-medium flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all"
                   >
                     <span>Analyze Problem</span>
@@ -300,10 +392,14 @@ export default function Discovery() {
             <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h1 className="font-headline text-2xl font-bold tracking-tight text-slate-900">AI Discovery Phase</h1>
-                <p className="text-sm text-slate-500">Navigating complex career transitions with deep intelligence.</p>
+                <p className="text-sm text-slate-500 font-medium">Navigating complex career transitions with deep intelligence.</p>
               </div>
-              <div className="flex gap-2">
-                <span className="px-3 py-1 bg-blue-50 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest">Active Insight</span>
+              <div className="flex items-center gap-3">
+                {/* Session Message Limit Indicator */}
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border ${messages.length >= 8 ? 'bg-red-50 text-red-600 border-red-100' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                  SESSION QUOTA: {messages.length}/8 MESSAGES
+                </span>
+                <span className="px-3 py-1 bg-blue-50 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest border border-blue-100">Active Insight</span>
               </div>
             </div>
 
@@ -366,20 +462,27 @@ export default function Discovery() {
                         handleSendMessage();
                       }
                     }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 pr-36 text-sm focus:ring-4 focus:ring-[#003ec7]/10 focus:border-primary transition-all resize-none shadow-sm placeholder:text-slate-400" 
-                    placeholder="Describe your goals, experience, or reply to the assistant's questions..." 
+                    disabled={limitExceeded}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 pr-36 text-sm focus:ring-4 focus:ring-[#003ec7]/10 focus:border-primary transition-all resize-none shadow-sm placeholder:text-slate-400 disabled:opacity-50" 
+                    placeholder={limitExceeded ? "Session message limit reached. Please view recommended paths." : "Describe your goals, experience, or reply to the assistant's questions..."} 
                     rows="2"
                   />
                   <div className="absolute right-4 bottom-4 flex items-center gap-3">
                     <button 
                       onClick={handleSendMessage}
-                      className="bg-primary hover:bg-[#003ec7]/90 text-white px-6 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-lg active:scale-95"
+                      disabled={limitExceeded || !inputValue.trim()}
+                      className="bg-primary hover:bg-[#003ec7]/90 text-white px-6 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-lg active:scale-95 disabled:opacity-50"
                     >
                       <span>Send</span>
                       <span className="material-symbols-outlined text-sm">send</span>
                     </button>
                   </div>
                 </div>
+                {limitExceeded && (
+                  <p className="text-center text-xs text-red-600 font-semibold mt-3">
+                    ⚠️ Session quota reached. Please select a suggested path from the right panel to proceed.
+                  </p>
+                )}
                 <p className="text-center text-[10px] text-slate-400 mt-4 uppercase tracking-widest opacity-70">
                   ProDecide Intelligence • Strategic Career Output Verification Required
                 </p>
@@ -388,8 +491,6 @@ export default function Discovery() {
           </main>
 
           {/* ─── Context Engine Sidebar ─── */}
-          {/* If readyToSuggest is false: displays as a clean sidebar on the right */}
-          {/* If readyToSuggest is true: layout shifts to put Suggested Paths in focus in the center */}
           {!readyToSuggest ? (
             <aside className="w-80 h-[calc(100vh-80px)] sticky top-0 hidden lg:flex flex-col bg-[#f2f4f6] border-l border-slate-100">
               <div className="p-6 overflow-y-auto flex-grow space-y-8">
@@ -533,7 +634,7 @@ export default function Discovery() {
                   ))}
                 </div>
 
-                {/* Additional Summary lists */}
+                {/* Summary list */}
                 <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl">
                   <div>
                     <h5 className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Acquired Skills</h5>
@@ -577,6 +678,84 @@ export default function Discovery() {
         </div>
       )}
 
+      {/* ─── Auth Verification Modal ─── */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-[10000] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="font-headline text-xl font-bold text-slate-900">Verify Identity</h3>
+              <button onClick={() => setShowAuthModal(false)} className="text-slate-400 hover:text-slate-600">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Please enter your name and verify your email address to unlock the AI Discovery chatbot.
+            </p>
+
+            {authStep === 'email' ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-2">Full Name</label>
+                  <input 
+                    type="text" 
+                    value={authName} 
+                    onChange={(e) => setAuthName(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                    placeholder="Enter your name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-2">Email Address</label>
+                  <input 
+                    type="email" 
+                    value={authEmail} 
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                    placeholder="name@example.com"
+                  />
+                </div>
+                {authError && <p className="text-xs text-red-500">{authError}</p>}
+                <button 
+                  onClick={handleSendOtp}
+                  disabled={isAuthLoading}
+                  className="w-full bg-primary hover:bg-[#003ec7] text-white py-3 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                >
+                  {isAuthLoading ? 'Sending OTP...' : 'Send OTP Code'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-2">Verification Code</label>
+                  <input 
+                    type="text" 
+                    value={authOtp} 
+                    onChange={(e) => setAuthOtp(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-center tracking-widest font-mono text-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                    placeholder="123456"
+                    maxLength={6}
+                  />
+                </div>
+                {authError && <p className="text-xs text-red-500">{authError}</p>}
+                <button 
+                  onClick={handleVerifyOtp}
+                  disabled={isAuthLoading}
+                  className="w-full bg-primary hover:bg-[#003ec7] text-white py-3 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                >
+                  {isAuthLoading ? 'Verifying...' : 'Verify & Continue'}
+                </button>
+                <button 
+                  onClick={() => setAuthStep('email')} 
+                  className="w-full text-center text-xs text-slate-500 hover:text-primary font-semibold transition-colors mt-2"
+                >
+                  Change Details
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* AI Analysis Initial Overlay */}
       {isAnalyzing && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[9999] transition-all duration-300">
@@ -600,7 +779,6 @@ export default function Discovery() {
         </div>
       )}
 
-      {/* Style settings for custom bounce/dot animation */}
       <style>{`
         @keyframes slideProgress {
           0% { transform: translateX(-100%); }
