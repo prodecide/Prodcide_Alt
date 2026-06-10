@@ -14,6 +14,29 @@ export default async function handler(req, res) {
         const { action } = req.query;
 
         if (req.method === 'POST') {
+            if (action === 'send-general-otp') {
+                const { email } = req.body;
+                if (!email) {
+                    return res.status(400).json({ error: 'Email is required' });
+                }
+
+                const normalizedEmail = email.toLowerCase().trim();
+
+                // Generate a 6-digit OTP code
+                const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+                // Save to OTP collection
+                await otps.insertOne({
+                    email: normalizedEmail,
+                    code,
+                    createdAt: new Date()
+                });
+
+                // Send email
+                await sendOtpEmail(normalizedEmail, code);
+
+                return res.status(200).json({ success: true, message: 'OTP sent successfully', isMock, connectionError });
+            }
             if (action === 'send-otp') {
                 const { email } = req.body;
                 if (!email) {
