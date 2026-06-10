@@ -8,66 +8,26 @@ export default function About() {
       <Navbar />
 
       {/* SideNavBar Shell */}
-      <aside className="h-screen w-72 fixed left-0 top-0 z-40 bg-[#f2f4f6] flex flex-col gap-2 p-6 font-inter text-sm font-medium pt-24">
-        <div className="mb-10 px-4">
+      <aside className="h-screen w-72 fixed left-0 top-0 z-40 bg-[#f2f4f6] flex-col gap-2 p-6 font-inter text-sm font-medium hidden lg:flex">
+        <div className="mb-10 mt-16 px-4">
           <div className="font-manrope font-extrabold text-[#003ec7] text-2xl tracking-tighter">ProDecide</div>
           <div className="text-xs text-slate-500 font-bold tracking-widest uppercase mt-1">Informed Architect</div>
         </div>
         <nav className="flex-grow flex flex-col gap-1">
-          <Link className="text-slate-600 py-3 px-4 hover:bg-[#e6e8ea] rounded-md transition-colors flex items-center gap-3" to="/">
-            <span className="material-symbols-outlined">grid_view</span> Overview
-          </Link>
-          <Link className="text-slate-600 py-3 px-4 hover:bg-[#e6e8ea] rounded-md transition-colors flex items-center gap-3" to="/experts">
-            <span className="material-symbols-outlined">diversity_3</span> Matchmaker
-          </Link>
-          <Link className="text-slate-600 py-3 px-4 hover:bg-[#e6e8ea] rounded-md transition-colors flex items-center gap-3" to="/discovery">
-            <span className="material-symbols-outlined">architecture</span> Strategy
-          </Link>
           <Link className="text-[#0052FF] font-bold bg-[#ffffff] rounded-lg shadow-sm py-3 px-4 flex items-center gap-3" to="/about">
-            <span className="material-symbols-outlined">inventory_2</span> Team Assets
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>diversity_3</span>Overview
           </Link>
-          <a className="text-slate-600 py-3 px-4 hover:bg-[#e6e8ea] rounded-md transition-colors flex items-center gap-3" href="#">
-            <span className="material-symbols-outlined">history</span> Archives
-          </a>
         </nav>
         <div className="mt-auto border-t-0 flex flex-col gap-1">
-          <Link to="/discovery" className="gradient-cta text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 mb-6 shadow-lg shadow-primary/20 text-center">
-            <span className="material-symbols-outlined">add</span> New Request
-          </Link>
           <a className="text-slate-600 py-3 px-4 hover:bg-[#e6e8ea] rounded-md transition-colors flex items-center gap-3" href="#">
             <span className="material-symbols-outlined">help</span> Help Center
-          </a>
-          <a className="text-slate-600 py-3 px-4 hover:bg-[#e6e8ea] rounded-md transition-colors flex items-center gap-3" href="#">
-            <span className="material-symbols-outlined">settings</span> Settings
           </a>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="ml-72 pt-28 pb-12 px-12">
+      <main className="lg:ml-72 pt-28 pb-12 px-6 md:px-12">
         <div className="max-w-7xl mx-auto">
-          {/* Asymmetric Header */}
-          <section className="grid grid-cols-12 gap-8 mb-16 items-end">
-            <div className="col-span-12 lg:col-span-7">
-              <h1 className="text-[3.5rem] leading-[1.1] font-black font-headline text-on-surface tracking-tight mb-6">
-                Consultant <span className="text-primary">Matchmaker</span>
-              </h1>
-              <p className="text-lg text-secondary leading-relaxed max-w-xl">
-                Synthesizing elite human capital with architectural precision. Our matching engine leverages intelligence depth to align leadership vision with specialist execution.
-              </p>
-            </div>
-            <div className="col-span-12 lg:col-span-5 flex justify-end gap-3">
-              <div className="bg-surface-container-low px-6 py-4 rounded-2xl flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined">auto_awesome</span>
-                </div>
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-widest text-secondary">Matching Logic</div>
-                  <div className="text-lg font-bold text-on-surface">Neural Alignment v4.2</div>
-                </div>
-              </div>
-            </div>
-          </section>
 
           {/* Our Team Foundation: Bento Grid */}
           <section className="mb-20">
@@ -87,7 +47,7 @@ export default function About() {
                   </div>
                   <h3 className="text-xl font-bold mb-4">Vision</h3>
                   <p className="text-on-surface-variant leading-relaxed text-lg italic font-medium">
-                    "To architect the future of definitive decision-making."
+                    "A world where every person discovers their true potential without wasted time or effort, leading to fulfilling careers and happier lives."
                   </p>
                 </div>
               </div>
@@ -98,7 +58,7 @@ export default function About() {
                     <div className="inline-block bg-primary px-3 py-1 rounded-sm text-[10px] font-bold tracking-widest uppercase mb-4">Core Objective</div>
                     <h3 className="text-2xl font-bold mb-4 font-headline">Mission</h3>
                     <p className="text-secondary-fixed text-xl leading-relaxed font-light">
-                      Empowering leaders with <span className="text-white font-bold">AI-synthesized intelligence</span> and <span className="text-white font-bold">elite human expertise</span> to navigate the complexities of modern enterprise strategy.
+                      To empower individuals to make confident, data-driven career choices through expert mentorship and precise behavioral insights, eliminating the guesswork from their future
                     </p>
                   </div>
                   <div className="w-full md:w-64 h-48 rounded-xl overflow-hidden shadow-2xl flex-shrink-0">
@@ -134,30 +94,6 @@ export default function About() {
                   <h4 className="text-lg font-black font-headline tracking-tight">Network Curator</h4>
                   <p className="text-xs text-primary font-bold uppercase tracking-widest mb-3">Global Intelligence</p>
                   <p className="text-sm text-on-surface-variant">Sourcing and validating the world's top 1% subject matter experts.</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Insight Pulse (Specialized AI Component) */}
-          <section className="mb-16">
-            <div className="glass-panel p-8 rounded-2xl border border-primary/10 shadow-xl relative overflow-hidden">
-              <div className="absolute -top-12 -right-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
-              <div className="flex items-start gap-6 relative z-10">
-                <div className="bg-tertiary-container p-4 rounded-xl text-white">
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>psychology_alt</span>
-                </div>
-                <div className="flex-grow">
-                  <h3 className="text-xl font-bold mb-2 font-headline">Intelligence Suggestion</h3>
-                  <p className="text-on-surface-variant mb-6 text-lg">Based on your recent architectural shifts, we've identified three Lead Consultants who specialize in 'Definitive Decision-Making' within your industry sector.</p>
-                  <div className="flex flex-wrap gap-4">
-                    <Link to="/experts" className="bg-white px-6 py-3 rounded-lg font-bold border border-outline-variant/30 hover:border-primary transition-colors flex items-center gap-2">
-                      Review Matches <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                    </Link>
-                    <button className="text-primary font-bold px-4 py-3 flex items-center gap-2">
-                      View Logic <span className="material-symbols-outlined text-sm text-primary">data_exploration</span>
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
