@@ -24,7 +24,7 @@ export default function Home() {
                 The Architecture <br />of <span className="text-primary">Definitive</span> Choice.
               </h1>
               <p className="text-lg md:text-xl text-on-surface-variant mb-12 max-w-xl leading-relaxed">
-                Eliminate ambiguity with ProDecide. Our platform fuses deep-learning neural insights with the strategic nuance of world-class human consultants.
+                We help students and professionals make high-stakes career decisions. Fusing predictive career mapping with real-world mentorship from industry executives.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link className="premium-gradient text-white font-bold py-4 px-10 rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-center inline-block" to="/discovery">Start Your Discovery</Link>
