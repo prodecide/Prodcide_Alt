@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
 
 export default function Home() {
+  const frameworkRef = useRef(null);
   return (
     <div className="bg-surface font-body text-on-surface antialiased">
       <Navbar />
@@ -28,7 +29,10 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link className="premium-gradient text-white font-bold py-4 px-10 rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-center inline-block" to="/discovery">Start Your Discovery</Link>
-                <button className="bg-white/80 backdrop-blur-sm text-on-surface border border-slate-200 font-bold py-4 px-10 rounded-lg hover:bg-white transition-all">
+                <button 
+                  onClick={() => frameworkRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                  className="bg-white/80 backdrop-blur-sm text-on-surface border border-slate-200 font-bold py-4 px-10 rounded-lg hover:bg-white transition-all"
+                >
                   The Methodology
                 </button>
               </div>
@@ -64,7 +68,7 @@ export default function Home() {
 
       <main>
         {/* Refined Framework Section */}
-        <section className="bg-slate-50/50 py-32 px-8">
+        <section ref={frameworkRef} className="bg-slate-50/50 py-32 px-8">
           <div className="max-w-7xl mx-auto">
             <div className="mb-20 text-center md:text-left">
               <h2 className="font-headline text-4xl font-bold tracking-tight mb-4 text-slate-900">A Framework for Clarity</h2>
