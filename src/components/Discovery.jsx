@@ -189,6 +189,17 @@ export default function Discovery() {
     }
   }, [messages, isAITyping]);
 
+  // Sync AI Career Path results to local storage for the dashboard
+  useEffect(() => {
+    if (suggestedPaths.length > 0 || criticalGaps.length > 0 || currentSkills.length > 0) {
+      localStorage.setItem('discovery_results', JSON.stringify({
+        suggestedPaths,
+        criticalGaps,
+        currentSkills
+      }));
+    }
+  }, [suggestedPaths, criticalGaps, currentSkills]);
+
   // Handle Send OTP
   const handleSendOtp = async () => {
     if (!authName.trim()) {
@@ -259,10 +270,17 @@ export default function Discovery() {
       return;
     }
     if (!isAuthenticated) {
-      setAuthError('');
-      setAuthStep('email');
-      setAuthOtp('');
-      setShowAuthModal(true);
+      // Save onboarding form data and challenge to localStorage
+      localStorage.setItem('discovery_challenge_text', challengeText);
+      localStorage.setItem('discovery_onboarding_context', JSON.stringify({
+        name: onboardingName,
+        age: onboardingAge,
+        class: onboardingClass,
+        subject: onboardingSubject,
+        job: onboardingJob,
+        education: onboardingEducation
+      }));
+      navigate('/dashboard?tab=profile');
     } else {
       handleInitialAnalyze();
     }
@@ -341,6 +359,41 @@ export default function Discovery() {
       }
     }, 1800);
   };
+
+  // Handle return redirect from Dashboard authentication
+  useEffect(() => {
+    const savedChallenge = localStorage.getItem('discovery_challenge_text');
+    const savedContextStr = localStorage.getItem('discovery_onboarding_context');
+    const email = localStorage.getItem('discovery_verified_email');
+    
+    if (savedChallenge && email) {
+      setChallengeText(savedChallenge);
+      setIsAuthenticated(true);
+      
+      if (savedContextStr) {
+        try {
+          const savedContext = JSON.parse(savedContextStr);
+          setOnboardingName(savedContext.name || '');
+          setOnboardingAge(savedContext.age || '');
+          setOnboardingClass(savedContext.class || '');
+          setOnboardingSubject(savedContext.subject || '');
+          setOnboardingJob(savedContext.job || '');
+          setOnboardingEducation(savedContext.education || '');
+        } catch (e) {
+          console.error("Failed to parse saved onboarding context", e);
+        }
+      }
+      
+      // Clean up keys
+      localStorage.removeItem('discovery_challenge_text');
+      localStorage.removeItem('discovery_onboarding_context');
+      
+      // Auto-trigger analysis
+      setTimeout(() => {
+        handleInitialAnalyze();
+      }, 500);
+    }
+  }, []);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || limitExceeded) return;
@@ -1028,10 +1081,17 @@ export default function Discovery() {
                     Continue Chatting
                   </button>
                   <button 
-                    onClick={() => navigate('/experts', { state: { challenge: challengeText } })}
+                    onClick={() => {
+                      localStorage.setItem('discovery_results', JSON.stringify({
+                        suggestedPaths,
+                        criticalGaps,
+                        currentSkills
+                      }));
+                      navigate('/dashboard?tab=insights');
+                    }}
                     className="px-5 py-2.5 bg-primary hover:bg-[#003ec7] text-white font-bold rounded-xl text-xs shadow-lg shadow-primary/10 transition-colors"
                   >
-                    View All Matching Experts
+                    View Strategic Insights & Recommendations
                   </button>
                 </div>
               </div>
