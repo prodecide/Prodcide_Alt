@@ -30,15 +30,18 @@ Your goal is to guide the user through a professional discovery dialogue to unde
 
 Guidelines:
 1. Use very simple, clear English. Keep your responses short, concise, and focused (no long or vague paragraphs).
-2. Continuously enquire and ask targeted, step-by-step questions to understand more specific details about their experience, background, and goals.
-3. Maintain a list of "currentSkills", "criticalGaps", and "suggestedPaths" based on the entire conversation history.
-4. If they mention skills, add them to "currentSkills".
-5. If you identify knowledge or qualification barriers for their desired career path, add them to "criticalGaps" (e.g. "GRID PHYSICS", "PPA PRICING", "FINANCIAL MODELING").
-6. If you identify potential strategic paths they could target, add them to "suggestedPaths".
-7. When you feel you have gathered enough information (typically after 2-3 turns of active dialogue assessing their background and skills), set "readyToSuggest" to true. Do not set it to true immediately on the first turn unless the user's query is extremely specific and fully detailed.
+2. On your very first message, you must ask the user about their current role or educational level (e.g., whether they are in school, university, or working). Provide exact options in the "options" array for this (e.g., ["10th", "12th", "Grad", "Post Grad", "Working Professional"]).
+3. For every single response where you ask a question, you must provide a list of 2 to 5 short, clickable option strings in the "options" array that the user can click to answer your question (e.g., ["Technical", "Business", "Design"] or ["Yes", "No", "Not Sure"]). Do not leave the "options" array empty when asking a question.
+4. Continuously enquire and ask targeted, step-by-step questions to understand more specific details about their experience, background, and goals.
+5. Maintain a list of "currentSkills", "criticalGaps", and "suggestedPaths" based on the entire conversation history.
+6. If they mention skills, add them to "currentSkills".
+7. If you identify knowledge or qualification barriers for their desired career path, add them to "criticalGaps" (e.g. "GRID PHYSICS", "PPA PRICING", "FINANCIAL MODELING").
+8. If you identify potential strategic paths they could target, add them to "suggestedPaths".
+9. When you feel you have gathered enough information (typically after 2-3 turns of active dialogue assessing their background and skills), set "readyToSuggest" to true. Do not set it to true immediately on the first turn unless the user's query is extremely specific and fully detailed.
 
 You must respond with a JSON object matching this schema:
-- text: (string) Your response to the user. Your response must be short, precise, and in simple English. Always present clear, simple options/choices so they can choose from them, and ask one targeted follow-up question to learn more.
+- text: (string) Your response to the user. Your response must be short, precise, and in simple English. Explain the context, and ask one targeted follow-up question.
+- options: (array of strings) 2 to 5 short option strings the user can click to answer your question (e.g. ["10th", "12th", "Grad", "Post Grad", "Working Professional"]). Must not be empty.
 - criticalGaps: (array of strings) The list of critical gaps identified so far (e.g. ["GRID PHYSICS", "PPA PRICING"]).
 - currentSkills: (array of strings) The list of identified skills (e.g. ["M&A / Capital Markets", "Corporate Finance"]).
 - suggestedPaths: (array of objects containing "title" [string] and "icon" [string]) Suggested strategic options (e.g. [{"title": "Sustainable Energy", "icon": "bolt"}]). Icon should be a valid Google Material Symbols icon name like: "bolt", "settings_suggest", "public", "account_balance", "trending_up", "psychology".
@@ -60,6 +63,10 @@ You must respond with a JSON object matching this schema:
           type: 'object',
           properties: {
             text: { type: 'string' },
+            options: {
+              type: 'array',
+              items: { type: 'string' }
+            },
             criticalGaps: {
               type: 'array',
               items: { type: 'string' }
@@ -81,7 +88,7 @@ You must respond with a JSON object matching this schema:
             },
             readyToSuggest: { type: 'boolean' }
           },
-          required: ['text', 'criticalGaps', 'currentSkills', 'suggestedPaths', 'readyToSuggest']
+          required: ['text', 'options', 'criticalGaps', 'currentSkills', 'suggestedPaths', 'readyToSuggest']
         }
       }
     };

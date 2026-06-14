@@ -39,6 +39,78 @@ export default function Discovery() {
   const domainDropdownRef = useRef(null);
   const chatMessagesEndRef = useRef(null);
 
+  const getFallbackResponse = (userMsgText, historyList) => {
+    const userHistory = historyList.filter(m => m.sender === 'user').map(m => m.text);
+    if (userMsgText && !userHistory.includes(userMsgText)) {
+      userHistory.push(userMsgText);
+    }
+
+    let text = "Welcome! Let's map your strategy transition. Could you tell me if you are currently a student or a working professional?";
+    let options = ["Student", "Working Professional"];
+    let ready = false;
+
+    const hasStudent = userHistory.some(t => t.toLowerCase().includes('student'));
+    const hasProfessional = userHistory.some(t => t.toLowerCase().includes('professional') || t.toLowerCase().includes('working'));
+
+    if (hasStudent) {
+      const classOptions = ["10th", "12th", "Grad", "Post Grad"];
+      const hasClass = userHistory.some(t => classOptions.map(c => c.toLowerCase()).includes(t.toLowerCase()));
+
+      if (!hasClass) {
+        text = "Got it. What class or educational level are you currently in?";
+        options = classOptions;
+      } else {
+        const goalOptions = ["Pivoting to Tech", "Management Consulting", "Higher Studies Abroad", "Starting a Startup"];
+        const hasGoal = userHistory.some(t => goalOptions.map(g => g.toLowerCase()).includes(t.toLowerCase()));
+
+        if (!hasGoal) {
+          text = "Great! What is your primary career goal after this academic phase?";
+          options = goalOptions;
+        } else {
+          text = "Perfect! I have synthesized your profile. I suggest starting a discovery mapping to AI, consulting, or quantitative finance. Let's look at your roadmap.";
+          options = [];
+          ready = true;
+          
+          setCriticalGaps(["System Architecture", "Professional Mentorship", "Data Structures"]);
+          setCurrentSkills(["Logical Analysis", "Self-motivation", "Creative Thinking"]);
+          setSuggestedPaths([
+            { title: "AI & Software Systems", icon: "psychology" },
+            { title: "Management Consulting", icon: "trending_up" }
+          ]);
+        }
+      }
+    } else if (hasProfessional) {
+      const roleOptions = ["Tech / Engineering", "Finance & Banking", "Business Strategy", "Operations / PM"];
+      const hasRole = userHistory.some(t => roleOptions.map(r => r.toLowerCase()).includes(t.toLowerCase()));
+
+      if (!hasRole) {
+        text = "Great. What is your current functional focus or job role?";
+        options = roleOptions;
+      } else {
+        const goalOptions = ["Pivoting to a new field", "Upskilling in current field", "Starting a business", "Not Sure"];
+        const hasGoal = userHistory.some(t => goalOptions.map(g => g.toLowerCase()).includes(t.toLowerCase()));
+
+        if (!hasGoal) {
+          text = "Understood. What is your primary goal for this career transition?";
+          options = goalOptions;
+        } else {
+          text = "Perfect! I have mapped your transition metrics. Here are the target paths and expert options.";
+          options = [];
+          ready = true;
+
+          setCriticalGaps(["System Design", "Cloud Infrastructure", "Quantitative Finance"]);
+          setCurrentSkills(["Problem Solving", "Logical Reasoning", "Analytical Thinking"]);
+          setSuggestedPaths([
+            { title: "AI & Software Systems", icon: "psychology" },
+            { title: "Financial Risk & Strategy", icon: "account_balance" }
+          ]);
+        }
+      }
+    }
+
+    return { text, options, readyToSuggest: ready };
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (domainDropdownRef.current && !domainDropdownRef.current.contains(event.target)) {
@@ -179,16 +251,19 @@ export default function Discovery() {
           {
             sender: 'ai',
             text: data.text,
+            options: data.options || [],
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
       } catch (err) {
         console.error("Discovery error:", err);
+        const fallback = getFallbackResponse("", []);
         setMessages(prev => [
           ...prev,
           {
             sender: 'ai',
-            text: "I experienced a temporary connection glitch. Please write your next message so we can continue mapping your strategic transition.",
+            text: fallback.text,
+            options: fallback.options,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
@@ -242,16 +317,98 @@ export default function Discovery() {
         {
           sender: 'ai',
           text: data.text,
+          options: data.options || [],
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
     } catch (err) {
       console.error("Discovery send error:", err);
+      const fallback = getFallbackResponse(userMsg.text, updatedMessages);
+      if (fallback.readyToSuggest) setReadyToSuggest(true);
       setMessages(prev => [
         ...prev,
         {
           sender: 'ai',
-          text: "My neural bridge is currently running hot. Let me process this details further. What other experience can you share?",
+          text: fallback.text,
+          options: fallback.options,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+    } finally {
+      setIsAITyping(false);
+    }
+  };
+
+  const handleOptionClick = async (optionText) => {
+    if (isAITyping || limitExceeded) return;
+
+    const userMsg = {
+      sender: 'user',
+      text: optionText,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setMessages(prev => {
+      const updated = [...prev];
+      if (updated.length > 0 && updated[updated.length - 1].sender === 'ai') {
+        updated[updated.length - 1] = { ...updated[updated.length - 1], options: [] };
+      }
+      return [...updated, userMsg];
+    });
+    
+    setIsAITyping(true);
+
+    try {
+      const updatedMessages = [...messages.map(m => {
+        if (m.options) {
+          const { options, ...rest } = m;
+          return rest;
+        }
+        return m;
+      }), userMsg];
+      
+      const response = await fetch('/api/discovery-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: updatedMessages,
+          selectedDomain: selectedDomain,
+          criticalGaps,
+          currentSkills,
+          suggestedPaths
+        })
+      });
+
+      if (!response.ok) throw new Error("Failed to send option message");
+      const data = await response.json();
+
+      if (data.criticalGaps) setCriticalGaps(data.criticalGaps);
+      if (data.currentSkills) setCurrentSkills(data.currentSkills);
+      if (data.suggestedPaths) setSuggestedPaths(data.suggestedPaths);
+      if (data.readyToSuggest !== undefined) setReadyToSuggest(data.readyToSuggest);
+      if (data.limitExceeded) setLimitExceeded(true);
+
+      setMessages(prev => [
+        ...prev,
+        {
+          sender: 'ai',
+          text: data.text,
+          options: data.options || [],
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+    } catch (err) {
+      console.error("Discovery send option error:", err);
+      const fallback = getFallbackResponse(userMsg.text, updatedMessages);
+      if (fallback.readyToSuggest) setReadyToSuggest(true);
+      setMessages(prev => [
+        ...prev,
+        {
+          sender: 'ai',
+          text: fallback.text,
+          options: fallback.options,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
@@ -416,6 +573,19 @@ export default function Discovery() {
                         <div className="bg-[#f2f4f6] p-6 rounded-2xl rounded-tl-none border border-slate-200/40 shadow-sm">
                           <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                         </div>
+                        {i === messages.length - 1 && msg.options && msg.options.length > 0 && !isAITyping && (
+                          <div className="flex flex-wrap gap-2 mt-1 ml-1 animate-fade-in">
+                            {msg.options.map((opt, oIdx) => (
+                              <button
+                                key={oIdx}
+                                onClick={() => handleOptionClick(opt)}
+                                className="bg-[#0052FF] text-white hover:bg-[#003ec7] px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 border-none"
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest ml-2">{msg.time || 'AI Agent'}</span>
                       </div>
                     </div>
