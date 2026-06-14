@@ -30,7 +30,7 @@ const consultants = [
     price: "18,000",
     bio: "Quantitative analyst specializing in high-volatility market navigations and risk mitigation.",
     organization: "Rodriguez Capital",
-    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuD9_vE-6-z-L-6-Y2SPhK49S0W5FjT0oP9w-M6Z-Y"
+    imageUrl: "/elena_portrait.png"
   }
 ];
 

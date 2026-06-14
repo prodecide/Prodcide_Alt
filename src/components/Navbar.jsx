@@ -8,6 +8,10 @@ export default function Navbar() {
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const dropdownRef = useRef(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchVal, setSearchVal] = useState('');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationsRef = useRef(null);
 
   useEffect(() => {
     const storedName = localStorage.getItem('discovery_verified_name');
@@ -20,6 +24,9 @@ export default function Navbar() {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setNotificationsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -51,12 +58,68 @@ export default function Navbar() {
           <Link to="/registration" className="px-5 py-2 rounded-full border border-[#0052FF] text-[#0052FF] font-bold hover:bg-[#0052FF]/5 transition-all text-sm hidden sm:inline-block">
             Join as Expert
           </Link>
-          <button className="p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600">
-            <span className="material-symbols-outlined text-xl">search</span>
-          </button>
-          <button className="p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600">
-            <span className="material-symbols-outlined text-xl">notifications</span>
-          </button>
+          {/* Interactive Search Expandable Input */}
+          <div className="flex items-center">
+            {searchOpen ? (
+              <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 animate-fade-in">
+                <input 
+                  type="text" 
+                  placeholder="Search network..." 
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                  className="bg-transparent border-none outline-none text-xs w-32 md:w-44 text-slate-700 dark:text-slate-200 placeholder-slate-400 font-bold"
+                  autoFocus
+                />
+                <button onClick={() => { setSearchOpen(false); setSearchVal(''); }} className="text-slate-400 hover:text-slate-600 flex items-center">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setSearchOpen(true)} className="p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 flex">
+                <span className="material-symbols-outlined text-xl">search</span>
+              </button>
+            )}
+          </div>
+
+          {/* Interactive Notifications Panel */}
+          <div className="relative" ref={notificationsRef}>
+            <button 
+              onClick={() => setNotificationsOpen(!notificationsOpen)}
+              className="p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 relative flex"
+            >
+              <span className="material-symbols-outlined text-xl">notifications</span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            
+            {notificationsOpen && (
+              <div className="absolute right-0 mt-3 w-80 rounded-2xl bg-white dark:bg-[#191c1e] border border-slate-200/50 dark:border-slate-800 shadow-xl py-3 z-50 transform origin-top-right transition-all">
+                <div className="px-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Notifications</p>
+                  <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">2 New</span>
+                </div>
+                <div className="max-h-60 overflow-y-auto mt-2 divide-y divide-slate-100 dark:divide-slate-800">
+                  <div className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                    <div className="flex gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Matching algorithm complete</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">3 consulting experts have been hand-matched to your assessment.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                    <div className="flex gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Welcome to ProDecide AI!</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">Click 'Start Your Discovery' to get custom, neural-guided strategy mapping.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
           
           {userName && (
             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 hidden md:inline-block bg-slate-100/60 dark:bg-slate-800/60 px-3 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">

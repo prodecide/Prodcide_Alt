@@ -76,36 +76,36 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
               {/* Stage 1 */}
-              <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6">
-                  <span className="material-symbols-outlined text-xl">explore</span>
+              <div className="group bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                  <span className="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform">explore</span>
                 </div>
                 <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 01</span>
                 <h3 className="font-headline text-xl font-bold mb-3 text-slate-900">Understand Your Situation</h3>
                 <p className="text-on-surface-variant text-sm leading-relaxed">We capture your goals, constraints, and what’s actually at stake.</p>
               </div>
               {/* Stage 2 */}
-              <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6">
-                  <span className="material-symbols-outlined text-xl">query_stats</span>
+              <div className="group bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                  <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">query_stats</span>
                 </div>
                 <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 02</span>
                 <h3 className="font-headline text-xl font-bold mb-3 text-slate-900">Bring Clarity to the Problem</h3>
                 <p className="text-on-surface-variant text-sm leading-relaxed">Our AI structures your inputs and highlights what truly matters.</p>
               </div>
               {/* Stage 3 */}
-              <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6">
-                  <span className="material-symbols-outlined text-xl">person_search</span>
+              <div className="group bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                  <span className="material-symbols-outlined text-xl group-hover:-translate-y-0.5 transition-transform">person_search</span>
                 </div>
                 <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 03</span>
                 <h3 className="font-headline text-xl font-bold mb-3 text-slate-900">Match You with the Right Expert</h3>
                 <p className="text-on-surface-variant text-sm leading-relaxed">Get connected to a consultant who fits your specific decision context.</p>
               </div>
               {/* Stage 4 */}
-              <div className="bg-slate-900 p-8 rounded-xl text-white shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white mb-6">
-                  <span className="material-symbols-outlined text-xl">verified_user</span>
+              <div className="group bg-slate-900 p-8 rounded-xl text-white shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                  <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">verified_user</span>
                 </div>
                 <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 04</span>
                 <h3 className="font-headline text-xl font-bold mb-3 text-white">Make the Decision with Confidence</h3>
@@ -130,7 +130,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
               {/* Consultant 1 */}
-              <div className="consultant-card group cursor-pointer">
+              <div className="consultant-card group cursor-pointer bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div className="relative overflow-hidden rounded-xl mb-6 aspect-[4/5] bg-slate-100">
                   <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="Professional female executive Sarah Chen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKmkV3e9nKo1J_wj7ErY6Jo6PA56ImpTbrbrf2JYmVGx5aBDub1zWrwrFnA5uF233QPgq6gde2uCEcMIQZ9qCI1iglD-skyrmtrLJKersPCe1Rvg8FNt_I1fpLuwsjQYgiu78gm-f7n_kPd-ghenwl5I_6wu21JAv54emIIUm2Q3Xhlsz6Pp9Pexoj5l_nceGikMwWkdDliA8XZlFE6xp5Tnxxwywkz1oD_R7uKfinJU1t1MFuopE34HN1MxJzjZljD1I13-6uyhk" />
                   <div className="absolute bottom-4 left-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
@@ -145,7 +145,7 @@ export default function Home() {
                 <p className="text-sm text-on-surface-variant leading-relaxed">Specializes in multi-modal infrastructure optimization and supply chain resilience.</p>
               </div>
               {/* Consultant 2 */}
-              <div className="consultant-card group cursor-pointer">
+              <div className="consultant-card group cursor-pointer bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div className="relative overflow-hidden rounded-xl mb-6 aspect-[4/5] bg-slate-100">
                   <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="Senior male consultant Marcus Thorne" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXjKQlFsexu8ZM3ElWg6wQMIVQV-Qe30MQDGhEcj6zoD8IJPVJ3HC9paxqHLneNw_yE8mxaQay6PAsWJ1xtRKYLBiBYc33Zbn8b-3rxQDp0Z4RMstc5B0jnpPYr8WW0bmLTowuj7C31WHCHJ5EIshKQDQxgUjpt-ZR5kjMbsSOKTZpbn78XKBjOKP0lEt9qYIpHw7TPvoA6FaHM38_UG69PNRs_YWCKxq6TX_tybB2TfPgls6GEUJ_DuCO17OFEQcoitR68UR9w_s" />
                   <div className="absolute bottom-4 left-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
@@ -160,9 +160,9 @@ export default function Home() {
                 <p className="text-sm text-on-surface-variant leading-relaxed">Expertise in emerging market regulatory frameworks and digital asset integration.</p>
               </div>
               {/* Consultant 3 */}
-              <div className="consultant-card group cursor-pointer">
+              <div className="consultant-card group cursor-pointer bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div className="relative overflow-hidden rounded-xl mb-6 aspect-[4/5] bg-slate-100">
-                  <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="Female tech professional Dr. Elena Rodriguez" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ3aMjQwalbGojpGOM_DdB8d_djwk7zRuCEDSghyuCODxyYdKjlIwj-MQUT5lzdnlEVGUs2iH01ev4EfH_oAHtjLEzD-FMA1kr6FtU8T_TttS63-HqFKvCX4-EElt8nN8FUaOar-Oakv_oPGycld3k8KqfGrBwwlPGt4sDTQDNVRyHecirsPUYsDcglER67BUm7w-Rdup1eUAIiXBI75_K0FODJy_Q_gU2g60z681RhTSRIFsMYWdJo0cgKa6Pd1RI1mKa2XeDk3A" />
+                  <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="Female tech professional Dr. Elena Rodriguez" src="/elena_portrait.png" />
                   <div className="absolute bottom-4 left-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
                     <Link className="w-full py-3 bg-white/90 backdrop-blur text-slate-900 font-bold text-xs uppercase tracking-widest rounded-lg text-center block" to="/experts">Consult With Elena</Link>
                   </div>
