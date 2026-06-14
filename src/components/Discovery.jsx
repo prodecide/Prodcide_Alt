@@ -29,6 +29,14 @@ export default function Discovery() {
   const [authStep, setAuthStep] = useState('email'); // 'email' or 'otp'
   const [authError, setAuthError] = useState('');
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  // Onboarding fields state
+  const [onboardingName, setOnboardingName] = useState('');
+  const [onboardingAge, setOnboardingAge] = useState('');
+  const [onboardingClass, setOnboardingClass] = useState('');
+  const [onboardingSubject, setOnboardingSubject] = useState('');
+  const [onboardingJob, setOnboardingJob] = useState('');
+  const [onboardingEducation, setOnboardingEducation] = useState('');
   
   // Context Engine states (extracted dynamically from Gemini)
   const [criticalGaps, setCriticalGaps] = useState([]);
@@ -45,65 +53,118 @@ export default function Discovery() {
       userHistory.push(userMsgText);
     }
 
+    // Check if onboarding form details are already filled
+    const hasName = !!onboardingName;
+    const hasAge = !!onboardingAge;
+    const hasClass = selectedDomain === 'Career Path Selection' ? !!onboardingClass : false;
+    const hasSubject = selectedDomain === 'Career Path Selection' ? !!onboardingSubject : false;
+    const hasJob = selectedDomain === 'Strategic Job Transitioning' ? !!onboardingJob : false;
+    const hasEducation = selectedDomain === 'Strategic Job Transitioning' ? !!onboardingEducation : false;
+
+    // Check if they are student or professional based on domain selection
+    const isStudentFlow = selectedDomain === 'Career Path Selection';
+    const isProfessionalFlow = selectedDomain === 'Strategic Job Transitioning';
+
     let text = "Welcome! Let's map your strategy transition. Could you tell me if you are currently a student or a working professional?";
     let options = ["Student", "Working Professional"];
     let ready = false;
 
-    const hasStudent = userHistory.some(t => t.toLowerCase().includes('student'));
-    const hasProfessional = userHistory.some(t => t.toLowerCase().includes('professional') || t.toLowerCase().includes('working'));
+    // If we have onboarding details, skip demographic collection entirely!
+    if (isStudentFlow && hasClass && hasSubject) {
+      const goalOptions = ["Pivoting to Tech", "Management Consulting", "Higher Studies Abroad", "Starting a Startup"];
+      const hasGoal = userHistory.some(t => goalOptions.map(g => g.toLowerCase()).includes(t.toLowerCase()));
 
-    if (hasStudent) {
-      const classOptions = ["10th", "12th", "Grad", "Post Grad"];
-      const hasClass = userHistory.some(t => classOptions.map(c => c.toLowerCase()).includes(t.toLowerCase()));
-
-      if (!hasClass) {
-        text = "Got it. What class or educational level are you currently in?";
-        options = classOptions;
+      if (!hasGoal) {
+        text = `Hello ${onboardingName || 'there'}! I see you are in ${onboardingClass} studying ${onboardingSubject}. What is your primary career goal after this academic phase?`;
+        options = goalOptions;
       } else {
-        const goalOptions = ["Pivoting to Tech", "Management Consulting", "Higher Studies Abroad", "Starting a Startup"];
-        const hasGoal = userHistory.some(t => goalOptions.map(g => g.toLowerCase()).includes(t.toLowerCase()));
-
-        if (!hasGoal) {
-          text = "Great! What is your primary career goal after this academic phase?";
-          options = goalOptions;
-        } else {
-          text = "Perfect! I have synthesized your profile. I suggest starting a discovery mapping to AI, consulting, or quantitative finance. Let's look at your roadmap.";
-          options = [];
-          ready = true;
-          
-          setCriticalGaps(["System Architecture", "Professional Mentorship", "Data Structures"]);
-          setCurrentSkills(["Logical Analysis", "Self-motivation", "Creative Thinking"]);
-          setSuggestedPaths([
-            { title: "AI & Software Systems", icon: "psychology" },
-            { title: "Management Consulting", icon: "trending_up" }
-          ]);
-        }
+        text = "Perfect! I have synthesized your profile. I suggest starting a discovery mapping to AI, consulting, or quantitative finance. Let's look at your roadmap.";
+        options = [];
+        ready = true;
+        
+        setCriticalGaps(["System Architecture", "Professional Mentorship", "Data Structures"]);
+        setCurrentSkills(["Logical Analysis", "Self-motivation", "Creative Thinking"]);
+        setSuggestedPaths([
+          { title: "AI & Software Systems", icon: "psychology" },
+          { title: "Management Consulting", icon: "trending_up" }
+        ]);
       }
-    } else if (hasProfessional) {
-      const roleOptions = ["Tech / Engineering", "Finance & Banking", "Business Strategy", "Operations / PM"];
-      const hasRole = userHistory.some(t => roleOptions.map(r => r.toLowerCase()).includes(t.toLowerCase()));
+    } else if (isProfessionalFlow && hasJob && hasEducation) {
+      const goalOptions = ["Pivoting to a new field", "Upskilling in current field", "Starting a business", "Not Sure"];
+      const hasGoal = userHistory.some(t => goalOptions.map(g => g.toLowerCase()).includes(t.toLowerCase()));
 
-      if (!hasRole) {
-        text = "Great. What is your current functional focus or job role?";
-        options = roleOptions;
+      if (!hasGoal) {
+        text = `Hello ${onboardingName || 'there'}! I see you are working as a ${onboardingJob} with a background in ${onboardingEducation}. What is your primary goal for this career transition?`;
+        options = goalOptions;
       } else {
-        const goalOptions = ["Pivoting to a new field", "Upskilling in current field", "Starting a business", "Not Sure"];
-        const hasGoal = userHistory.some(t => goalOptions.map(g => g.toLowerCase()).includes(t.toLowerCase()));
+        text = "Perfect! I have mapped your transition metrics. Here are the target paths and expert options.";
+        options = [];
+        ready = true;
 
-        if (!hasGoal) {
-          text = "Understood. What is your primary goal for this career transition?";
-          options = goalOptions;
+        setCriticalGaps(["System Design", "Cloud Infrastructure", "Quantitative Finance"]);
+        setCurrentSkills(["Problem Solving", "Logical Reasoning", "Analytical Thinking"]);
+        setSuggestedPaths([
+          { title: "AI & Software Systems", icon: "psychology" },
+          { title: "Financial Risk & Strategy", icon: "account_balance" }
+        ]);
+      }
+    } else {
+      const hasStudent = userHistory.some(t => t.toLowerCase().includes('student')) || isStudentFlow;
+      const hasProfessional = userHistory.some(t => t.toLowerCase().includes('professional') || t.toLowerCase().includes('working')) || isProfessionalFlow;
+
+      if (hasStudent) {
+        const classOptions = ["10th", "12th", "Grad", "Post Grad"];
+        const hasClassChoice = userHistory.some(t => classOptions.map(c => c.toLowerCase()).includes(t.toLowerCase()));
+
+        if (!hasClassChoice) {
+          text = "Got it. What class or educational level are you currently in?";
+          options = classOptions;
         } else {
-          text = "Perfect! I have mapped your transition metrics. Here are the target paths and expert options.";
-          options = [];
-          ready = true;
+          const goalOptions = ["Pivoting to Tech", "Management Consulting", "Higher Studies Abroad", "Starting a Startup"];
+          const hasGoal = userHistory.some(t => goalOptions.map(g => g.toLowerCase()).includes(t.toLowerCase()));
 
-          setCriticalGaps(["System Design", "Cloud Infrastructure", "Quantitative Finance"]);
-          setCurrentSkills(["Problem Solving", "Logical Reasoning", "Analytical Thinking"]);
-          setSuggestedPaths([
-            { title: "AI & Software Systems", icon: "psychology" },
-            { title: "Financial Risk & Strategy", icon: "account_balance" }
-          ]);
+          if (!hasGoal) {
+            text = "Great! What is your primary career goal after this academic phase?";
+            options = goalOptions;
+          } else {
+            text = "Perfect! I have synthesized your profile. I suggest starting a discovery mapping to AI, consulting, or quantitative finance. Let's look at your roadmap.";
+            options = [];
+            ready = true;
+            
+            setCriticalGaps(["System Architecture", "Professional Mentorship", "Data Structures"]);
+            setCurrentSkills(["Logical Analysis", "Self-motivation", "Creative Thinking"]);
+            setSuggestedPaths([
+              { title: "AI & Software Systems", icon: "psychology" },
+              { title: "Management Consulting", icon: "trending_up" }
+            ]);
+          }
+        }
+      } else if (hasProfessional) {
+        const roleOptions = ["Tech / Engineering", "Finance & Banking", "Business Strategy", "Operations / PM"];
+        const hasRoleChoice = userHistory.some(t => roleOptions.map(r => r.toLowerCase()).includes(t.toLowerCase()));
+
+        if (!hasRoleChoice) {
+          text = "Great. What is your current functional focus or job role?";
+          options = roleOptions;
+        } else {
+          const goalOptions = ["Pivoting to a new field", "Upskilling in current field", "Starting a business", "Not Sure"];
+          const hasGoal = userHistory.some(t => goalOptions.map(g => g.toLowerCase()).includes(t.toLowerCase()));
+
+          if (!hasGoal) {
+            text = "Understood. What is your primary goal for this career transition?";
+            options = goalOptions;
+          } else {
+            text = "Perfect! I have mapped your transition metrics. Here are the target paths and expert options.";
+            options = [];
+            ready = true;
+
+            setCriticalGaps(["System Design", "Cloud Infrastructure", "Quantitative Finance"]);
+            setCurrentSkills(["Problem Solving", "Logical Reasoning", "Analytical Thinking"]);
+            setSuggestedPaths([
+              { title: "AI & Software Systems", icon: "psychology" },
+              { title: "Financial Risk & Strategy", icon: "account_balance" }
+            ]);
+          }
         }
       }
     }
@@ -232,7 +293,15 @@ export default function Discovery() {
           },
           body: JSON.stringify({
             messages: [initialUserMsg],
-            selectedDomain: selectedDomain
+            selectedDomain: selectedDomain,
+            onboardingContext: {
+              name: onboardingName,
+              age: onboardingAge,
+              class: onboardingClass,
+              subject: onboardingSubject,
+              job: onboardingJob,
+              education: onboardingEducation
+            }
           })
         });
 
@@ -286,8 +355,9 @@ export default function Discovery() {
     setInputValue('');
     setIsAITyping(true);
 
+    const updatedMessages = [...messages, userMsg];
+
     try {
-      const updatedMessages = [...messages, userMsg];
       const response = await fetch('/api/discovery-chat', {
         method: 'POST',
         headers: {
@@ -298,7 +368,15 @@ export default function Discovery() {
           selectedDomain: selectedDomain,
           criticalGaps,
           currentSkills,
-          suggestedPaths
+          suggestedPaths,
+          onboardingContext: {
+            name: onboardingName,
+            age: onboardingAge,
+            class: onboardingClass,
+            subject: onboardingSubject,
+            job: onboardingJob,
+            education: onboardingEducation
+          }
         })
       });
 
@@ -358,15 +436,15 @@ export default function Discovery() {
     
     setIsAITyping(true);
 
+    const updatedMessages = [...messages.map(m => {
+      if (m.options) {
+        const { options, ...rest } = m;
+        return rest;
+      }
+      return m;
+    }), userMsg];
+
     try {
-      const updatedMessages = [...messages.map(m => {
-        if (m.options) {
-          const { options, ...rest } = m;
-          return rest;
-        }
-        return m;
-      }), userMsg];
-      
       const response = await fetch('/api/discovery-chat', {
         method: 'POST',
         headers: {
@@ -377,7 +455,15 @@ export default function Discovery() {
           selectedDomain: selectedDomain,
           criticalGaps,
           currentSkills,
-          suggestedPaths
+          suggestedPaths,
+          onboardingContext: {
+            name: onboardingName,
+            age: onboardingAge,
+            class: onboardingClass,
+            subject: onboardingSubject,
+            job: onboardingJob,
+            education: onboardingEducation
+          }
         })
       });
 
@@ -513,19 +599,125 @@ export default function Discovery() {
                     </button>
                     {isDomainOpen && (
                       <div className="absolute top-full left-0 w-full mt-1 bg-white rounded-lg shadow-lg border border-slate-100 py-1 z-20">
-                        {['Career Path Selection', 'Strategic Job Transition', 'Enterprise Solution Design', 'Personal Problem Resolution'].map(domainOpt => (
+                        {[
+                          { value: 'Career Path Selection', label: 'Career Path Selection', disabled: false },
+                          { value: 'Strategic Job Transitioning', label: 'Strategic Job Transitioning', disabled: false },
+                          { value: 'Enterprise Solution Design', label: 'Enterprise Solution Design', disabled: true },
+                          { value: 'Personal Problem Resolution', label: 'Personal Problem Resolution', disabled: true }
+                        ].map(opt => (
                           <button
-                            key={domainOpt}
-                            onClick={() => { setSelectedDomain(domainOpt); setIsDomainOpen(false); }}
-                            className="w-full px-4 py-2.5 text-left text-sm font-manrope text-slate-700 hover:bg-slate-50 transition-colors font-medium"
+                            key={opt.value}
+                            disabled={opt.disabled}
+                            onClick={() => { if(!opt.disabled) { setSelectedDomain(opt.value); setIsDomainOpen(false); } }}
+                            className={`w-full px-4 py-2.5 text-left text-xs font-manrope transition-colors font-medium flex items-center justify-between ${
+                              opt.disabled 
+                                ? 'text-slate-400 bg-slate-50/50 cursor-not-allowed' 
+                                : 'text-slate-700 hover:bg-slate-50 cursor-pointer'
+                            }`}
                           >
-                            {domainOpt}
+                            <span>{opt.label}</span>
+                            {opt.disabled && <span className="text-[8px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider scale-90">Coming Soon</span>}
                           </button>
                         ))}
                       </div>
                     )}
                   </div>
                 </div>
+
+                {/* Dynamic Onboarding Fields based on selected domain */}
+                {selectedDomain === 'Career Path Selection' && (
+                  <div className="space-y-4 pt-4 border-t border-slate-200/60 animate-fade-in">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Name</label>
+                      <input 
+                        type="text" 
+                        value={onboardingName} 
+                        onChange={(e) => setOnboardingName(e.target.value)}
+                        placeholder="Enter name"
+                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Age</label>
+                      <input 
+                        type="number" 
+                        value={onboardingAge} 
+                        onChange={(e) => onboardingAge >= 0 ? setOnboardingAge(e.target.value) : null}
+                        placeholder="Enter age"
+                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Class</label>
+                      <select 
+                        value={onboardingClass} 
+                        onChange={(e) => setOnboardingClass(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
+                      >
+                        <option value="">Select Class</option>
+                        <option value="10th">10th</option>
+                        <option value="12th">12th</option>
+                        <option value="Grad">Graduation</option>
+                        <option value="Post Grad">Post Graduation</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Subject / Major</label>
+                      <input 
+                        type="text" 
+                        value={onboardingSubject} 
+                        onChange={(e) => setOnboardingSubject(e.target.value)}
+                        placeholder="e.g. Science, Commerce, CS"
+                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {selectedDomain === 'Strategic Job Transitioning' && (
+                  <div className="space-y-4 pt-4 border-t border-slate-200/60 animate-fade-in">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Name</label>
+                      <input 
+                        type="text" 
+                        value={onboardingName} 
+                        onChange={(e) => setOnboardingName(e.target.value)}
+                        placeholder="Enter name"
+                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Age</label>
+                      <input 
+                        type="number" 
+                        value={onboardingAge} 
+                        onChange={(e) => onboardingAge >= 0 ? setOnboardingAge(e.target.value) : null}
+                        placeholder="Enter age"
+                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Job / Role</label>
+                      <input 
+                        type="text" 
+                        value={onboardingJob} 
+                        onChange={(e) => setOnboardingJob(e.target.value)}
+                        placeholder="e.g. Software Engineer, Analyst"
+                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Education Qualification</label>
+                      <input 
+                        type="text" 
+                        value={onboardingEducation} 
+                        onChange={(e) => setOnboardingEducation(e.target.value)}
+                        placeholder="e.g. B.Tech CS, MBA Finance"
+                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="mt-12 p-4 bg-[#e6e8ea] rounded-lg">

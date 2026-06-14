@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { messages, selectedDomain } = req.body;
+  const { messages, selectedDomain, onboardingContext } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'messages array is required' });
   }
@@ -47,12 +47,28 @@ You must respond with a JSON object matching this schema:
 - suggestedPaths: (array of objects containing "title" [string] and "icon" [string]) Suggested strategic options (e.g. [{"title": "Sustainable Energy", "icon": "bolt"}]). Icon should be a valid Google Material Symbols icon name like: "bolt", "settings_suggest", "public", "account_balance", "trending_up", "psychology".
 - readyToSuggest: (boolean) Set to true when you have sufficient information to confidently recommend suggested paths and transition them to the next phase.`;
 
+    let contextInstructions = '';
+    if (onboardingContext) {
+      const { name, age, class: userClass, subject, job, education } = onboardingContext;
+      contextInstructions = `\n\n[USER PROFILE INFO PROVIDED VIA ONBOARDING FORM]:
+- Name: ${name || 'Not provided'}
+- Age: ${age || 'Not provided'}
+${selectedDomain === 'Career Path Selection' ? `
+- Current Class/Academic Level: ${userClass || 'Not provided'}
+- Major Subject of Study: ${subject || 'Not provided'}
+` : selectedDomain === 'Strategic Job Transitioning' ? `
+- Current Job / Professional Role: ${job || 'Not provided'}
+- Educational Qualification: ${education || 'Not provided'}
+` : ''}
+Do NOT ask the user for their name, age, class, subject, current job, or educational qualifications in the chat, since they have already provided this information. Acknowledge these details naturally in your opening response (e.g. "Hello ${name || 'there'}!") and skip directly to deeper discovery questions about their specific goals, challenges, or transition preferences.`;
+    }
+
     const requestBody = {
       contents: [
         {
           parts: [
             {
-              text: `${systemPrompt}\n\nHere is the conversation history so far:\n${conversationHistory}\nProvide the JSON response.`
+              text: `${systemPrompt}${contextInstructions}\n\nHere is the conversation history so far:\n${conversationHistory}\nProvide the JSON response.`
             }
           ]
         }
