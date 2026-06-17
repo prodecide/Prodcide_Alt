@@ -176,3 +176,16 @@ h1, h2, h3, h4, h5, h6 {
         grid-template-columns: 1fr;
     }
 }
+
+/* User Dashboard Mockup Helpers */
+.glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+.surface-stack-1 { background-color: #f7f9fb; }
+.surface-stack-2 { background-color: #f2f4f6; }
+.surface-stack-3 { background-color: #ffffff; }
+.no-border {
+    border: none !important;
+}

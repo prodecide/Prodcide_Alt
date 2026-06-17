@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -6,7 +6,7 @@ export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTabParam = searchParams.get('tab') || 'profile';
 
-  // Navigation tabs: 'profile' or 'insights'
+  // Navigation tab: 'profile' or 'insights'
   const [activeTab, setActiveTab] = useState(activeTabParam);
 
   // Authentication State
@@ -14,16 +14,39 @@ export default function Dashboard() {
     !!localStorage.getItem('discovery_verified_email')
   );
 
-  // Profile Form States
-  const [profileName, setProfileName] = useState('');
-  const [profileAge, setProfileAge] = useState('');
-  const [profileEmail, setProfileEmail] = useState('');
-  const [class10, setClass10] = useState('');
-  const [class12, setClass12] = useState('');
-  const [undergrad, setUndergrad] = useState('');
-  const [postgrad, setPostgrad] = useState('');
-  const [interests, setInterests] = useState(['AI integration', 'Logistics']);
+  // Profile Form States & Defaults matching Mockup
+  const [profileName, setProfileName] = useState('Bobby');
+  const [profileAge, setProfileAge] = useState('25');
+  const [profileEmail, setProfileEmail] = useState('bobby@gmail.com');
+  const [profileCollege, setProfileCollege] = useState('KMCT');
+  const [profileMajor, setProfileMajor] = useState('engineering');
+  const [class10, setClass10] = useState('94.2%');
+  const [class12, setClass12] = useState('91.8%');
+  const [undergrad, setUndergrad] = useState('B.Tech in Systems Engineering, IIT Madras - 8.9 CGPA');
+  const [postgrad, setPostgrad] = useState('MBA in Strategic Management, INSEAD - Distinction');
+  
+  // Interests (Tags) State
+  const [interests, setInterests] = useState(['Logistics', 'AI integration']);
   const [newInterest, setNewInterest] = useState('');
+
+  // Extra Custom Interests (Activities) State
+  const [customInterests, setCustomInterests] = useState([
+    'Strategic Chess', 
+    'High-Performance Sailing', 
+    'Urban Architecture Photography'
+  ]);
+  const [newCustomInterest, setNewCustomInterest] = useState('');
+
+  // Gaps State
+  const [gaps, setGaps] = useState(['Culture', 'Retention']);
+  const [newGap, setNewGap] = useState('');
+  const [gapCategory, setGapCategory] = useState('Human Capital Strategy');
+  const [gapDescription, setGapDescription] = useState('Bridging the gap between corporate culture and rapid digital expansion.');
+
+  // Modal / Editing State
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   // OTP Verification States
   const [otpStep, setOtpStep] = useState('none'); // 'none', 'otp-sent', 'verified'
@@ -38,10 +61,9 @@ export default function Dashboard() {
 
   // Load profile data and AI results on mount
   useEffect(() => {
-    // Synchronize state with tab URL parameter
     setActiveTab(activeTabParam);
 
-    // 1. Pre-fill from existing verified profile
+    // Load user email and name if authenticated
     const storedEmail = localStorage.getItem('discovery_verified_email') || '';
     const storedName = localStorage.getItem('discovery_verified_name') || '';
     if (storedEmail) setProfileEmail(storedEmail);
@@ -53,11 +75,17 @@ export default function Dashboard() {
         const profile = JSON.parse(savedProfileStr);
         if (profile.name) setProfileName(profile.name);
         if (profile.age) setProfileAge(profile.age);
+        if (profile.college) setProfileCollege(profile.college);
+        if (profile.major) setProfileMajor(profile.major);
         if (profile.class10) setClass10(profile.class10);
         if (profile.class12) setClass12(profile.class12);
         if (profile.undergrad) setUndergrad(profile.undergrad);
         if (profile.postgrad) setPostgrad(profile.postgrad);
         if (profile.interests) setInterests(profile.interests);
+        if (profile.customInterests) setCustomInterests(profile.customInterests);
+        if (profile.gaps) setGaps(profile.gaps);
+        if (profile.gapCategory) setGapCategory(profile.gapCategory);
+        if (profile.gapDescription) setGapDescription(profile.gapDescription);
       } catch (e) {
         console.error("Failed to parse saved profile", e);
       }
@@ -69,24 +97,42 @@ export default function Dashboard() {
           const onboarding = JSON.parse(onboardingContextStr);
           if (onboarding.name) setProfileName(onboarding.name);
           if (onboarding.age) setProfileAge(onboarding.age);
+          if (onboarding.education || onboarding.class) {
+            setUndergrad(onboarding.education || onboarding.class);
+          }
+          if (onboarding.subject || onboarding.job) {
+            setProfileMajor(onboarding.subject || onboarding.job);
+          }
         } catch (e) {
           console.error("Failed to parse onboarding context", e);
         }
       }
     }
 
-    // 2. Load AI Results
+    // Load AI Results from Discovery Chat
     const savedResultsStr = localStorage.getItem('discovery_results');
     if (savedResultsStr) {
       try {
         const results = JSON.parse(savedResultsStr);
         setSuggestedPaths(results.suggestedPaths || []);
-        setCriticalGaps(results.criticalGaps || []);
+        if (results.criticalGaps && results.criticalGaps.length > 0) {
+          setGaps(results.criticalGaps);
+          setCriticalGaps(results.criticalGaps);
+        }
         setCurrentSkills(results.currentSkills || []);
       } catch (e) {
         console.error("Failed to parse AI results", e);
       }
     }
+
+    // Handle click outside dropdown
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [activeTabParam]);
 
   // Tab switching handler
@@ -95,58 +141,37 @@ export default function Dashboard() {
     setSearchParams({ tab: tabName });
   };
 
-  // Interests Tag Handlers
-  const handleAddInterest = () => {
-    if (newInterest.trim() && !interests.includes(newInterest.trim())) {
-      setInterests([...interests, newInterest.trim()]);
-      setNewInterest('');
-      saveProfileLocally([...interests, newInterest.trim()]);
-    }
-  };
-
-  const handleRemoveInterest = (tagToRemove) => {
-    const updated = interests.filter(tag => tag !== tagToRemove);
-    setInterests(updated);
-    saveProfileLocally(updated);
-  };
-
-  const saveProfileLocally = (updatedInterests = interests) => {
+  // Profile Save
+  const saveProfileLocally = (updatedFields = {}) => {
     const profileData = {
-      name: profileName,
-      age: profileAge,
-      class10,
-      class12,
-      undergrad,
-      postgrad,
-      interests: updatedInterests
+      name: updatedFields.name !== undefined ? updatedFields.name : profileName,
+      age: updatedFields.age !== undefined ? updatedFields.age : profileAge,
+      college: updatedFields.college !== undefined ? updatedFields.college : profileCollege,
+      major: updatedFields.major !== undefined ? updatedFields.major : profileMajor,
+      class10: updatedFields.class10 !== undefined ? updatedFields.class10 : class10,
+      class12: updatedFields.class12 !== undefined ? updatedFields.class12 : class12,
+      undergrad: updatedFields.undergrad !== undefined ? updatedFields.undergrad : undergrad,
+      postgrad: updatedFields.postgrad !== undefined ? updatedFields.postgrad : postgrad,
+      interests: updatedFields.interests !== undefined ? updatedFields.interests : interests,
+      customInterests: updatedFields.customInterests !== undefined ? updatedFields.customInterests : customInterests,
+      gaps: updatedFields.gaps !== undefined ? updatedFields.gaps : gaps,
+      gapCategory: updatedFields.gapCategory !== undefined ? updatedFields.gapCategory : gapCategory,
+      gapDescription: updatedFields.gapDescription !== undefined ? updatedFields.gapDescription : gapDescription
     };
     localStorage.setItem('discovery_user_profile', JSON.stringify(profileData));
   };
 
-  // Submit Profile & Send OTP
+  // Form Submissions for Registration & OTP
   const handleSubmitProfile = async (e) => {
     e.preventDefault();
     setAuthError('');
 
-    // Validations
     if (!profileName.trim()) {
       setAuthError('Name is required.');
       return;
     }
     if (!profileEmail.trim() || !profileEmail.includes('@')) {
       setAuthError('A valid email is required.');
-      return;
-    }
-    if (!class10.trim()) {
-      setAuthError('10th Standard academic score is mandatory.');
-      return;
-    }
-    if (!class12.trim()) {
-      setAuthError('12th Standard academic score is mandatory.');
-      return;
-    }
-    if (!undergrad.trim()) {
-      setAuthError('Undergraduate academic score is mandatory.');
       return;
     }
 
@@ -169,7 +194,7 @@ export default function Dashboard() {
     }
   };
 
-  // Verify OTP
+  // Verify OTP Code
   const handleVerifyOtp = async () => {
     if (!otpCode.trim() || otpCode.length < 6) {
       setAuthError('Please enter a valid 6-digit OTP code.');
@@ -192,7 +217,6 @@ export default function Dashboard() {
       setIsAuthenticated(true);
       setOtpStep('verified');
 
-      // Save profile locally again to bind name
       saveProfileLocally();
 
       // Trigger navbar state refresh
@@ -213,44 +237,177 @@ export default function Dashboard() {
     setOtpStep('none');
     setProfileEmail('');
     setProfileName('');
-    setClass10('');
-    setClass12('');
-    setUndergrad('');
-    setPostgrad('');
     window.dispatchEvent(new Event('storage'));
     navigate('/discovery');
   };
 
+  // Dynamic Interest Handlers
+  const handleAddInterest = () => {
+    if (newInterest.trim()) {
+      const val = newInterest.trim();
+      if (!interests.includes(val)) {
+        const updated = [...interests, val];
+        setInterests(updated);
+        saveProfileLocally({ interests: updated });
+      }
+      setNewInterest('');
+    }
+  };
+
+  const handleRemoveInterest = (tag) => {
+    const updated = interests.filter(item => item !== tag);
+    setInterests(updated);
+    saveProfileLocally({ interests: updated });
+  };
+
+  // Custom Interest (Activities) Handlers
+  const handleAddCustomInterest = () => {
+    if (newCustomInterest.trim()) {
+      const val = newCustomInterest.trim();
+      if (!customInterests.includes(val)) {
+        const updated = [...customInterests, val];
+        setCustomInterests(updated);
+        saveProfileLocally({ customInterests: updated });
+      }
+      setNewCustomInterest('');
+    }
+  };
+
+  const handleRemoveCustomInterest = (item) => {
+    const updated = customInterests.filter(c => c !== item);
+    setCustomInterests(updated);
+    saveProfileLocally({ customInterests: updated });
+  };
+
+  // Gap Handlers
+  const handleAddGap = () => {
+    if (newGap.trim()) {
+      const val = newGap.trim();
+      if (!gaps.includes(val)) {
+        const updated = [...gaps, val];
+        setGaps(updated);
+        saveProfileLocally({ gaps: updated });
+      }
+      setNewGap('');
+    }
+  };
+
+  const handleRemoveGap = (tag) => {
+    const updated = gaps.filter(item => item !== tag);
+    setGaps(updated);
+    saveProfileLocally({ gaps: updated });
+  };
+
+  // Edit Profile Form Submit handler (inside modal)
+  const handleSaveProfileChanges = (e) => {
+    e.preventDefault();
+    saveProfileLocally();
+    setIsEditingProfile(false);
+  };
+
+  // Render specific material icon helper for custom activities
+  const getActivityIcon = (activity) => {
+    const lower = activity.toLowerCase();
+    if (lower.includes('chess')) return 'extension';
+    if (lower.includes('sailing') || lower.includes('boat') || lower.includes('yacht')) return 'sailing';
+    if (lower.includes('photo') || lower.includes('camera')) return 'photo_camera';
+    if (lower.includes('code') || lower.includes('programming') || lower.includes('software')) return 'terminal';
+    if (lower.includes('sport') || lower.includes('run') || lower.includes('gym')) return 'sports_soccer';
+    if (lower.includes('music') || lower.includes('guitar') || lower.includes('piano')) return 'music_note';
+    return 'star';
+  };
+
   return (
-    <div className="bg-[#f7f9fb] font-body text-[#191c1e] min-h-screen">
-      {/* TopAppBar header layout matching user request */}
-      <header className="bg-[#f2f4f6]/80 dark:bg-slate-800/80 backdrop-blur-md fixed top-0 z-50 w-full px-8 py-4 flex justify-between items-center border-b border-slate-200/40">
-        <Link to="/" className="text-2xl font-black tracking-tighter text-[#0052FF] headline-anchor">ProDecide</Link>
+    <div className="surface-stack-1 min-h-screen text-on-surface font-body antialiased relative">
+      
+      {/* ─── TopAppBar Header (Visual Match) ─── */}
+      <header className="bg-[#f7f9fb]/80 dark:bg-slate-900/80 backdrop-blur-md fixed top-0 z-50 w-full px-8 py-4 flex justify-between items-center no-border bg-[#f2f4f6] dark:bg-slate-800">
+        <Link to="/" className="text-2xl font-black tracking-tighter text-[#0052FF] dark:text-[#3375ff] headline-anchor">ProDecide</Link>
         <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-3">
-            <span className="material-symbols-outlined text-slate-600 cursor-pointer p-2 hover:bg-slate-200/50 rounded-full transition-colors">notifications</span>
-            <span className="material-symbols-outlined text-slate-600 cursor-pointer p-2 hover:bg-slate-200/50 rounded-full transition-colors">settings</span>
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
+          <div className="flex items-center space-x-3 relative" ref={dropdownRef}>
+            <span className="material-symbols-outlined text-slate-600 cursor-pointer p-2 hover:bg-slate-100/50 rounded-full transition-colors">notifications</span>
+            <span className="material-symbols-outlined text-slate-600 cursor-pointer p-2 hover:bg-slate-100/50 rounded-full transition-colors">settings</span>
+            
+            {/* Interactive User profile dropdown */}
+            <div 
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+            >
               <img 
                 alt="User profile" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1WWd7xQb6qdiUpiz5_oeOKw6xBWoVTMA7y4B479iG0DNrsikApleJo_94iD7x7lXra5v3L-xEuo8nhZxjU3QVEbeE37W25W6CGvSMcdB_DLuwwnoSOIoB3CVh6JSjL9hccqHETGcOcpe6eyLL8fXvJvixm2noSb30CNwfOsAXMo9-OKkEAp2P4SCWiFwiasiFEoX1BQDj5rQqnvIs3dcUSXIotMhvzQ3USuJPcgk2tSNsmFsGnh-oeBHuV_KHodkV5nU1zzgUops"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSCXL-0gLE1O170SZDAK5qcjkjlHzgDWgCAed04sK9q5lTVyLBY5AWHjBCkQG09u1tnbtWlcRM0g6JSdaKJxbGO_Ig7DNFIgrr3wnP8o3iBTqM-FH8pMQ2W2phyiWzQ4LEi8Qq9bSx4ea516zTUD77k5J4B10TBSWdD-v6XS6LE3L1Ewmt4tMDoP-O6Q_vtIO4y5jG3wGk6o5W_AUTZY-IW8fyX7HzV12RBpB1k27CjcNZsnWZ7rlXHolceeZK8drvj47Vj_efGnA"
                 className="w-full h-full object-cover"
               />
             </div>
+
+            {dropdownOpen && (
+              <div className="absolute right-0 top-12 mt-2 w-56 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700 shadow-xl py-2 z-50 transform origin-top-right transition-all">
+                <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-700">
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{profileName}</p>
+                  <p className="text-[10px] text-slate-400 truncate">{profileEmail}</p>
+                </div>
+                <div className="px-4 py-1.5 border-b border-slate-100 dark:border-slate-700">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Switch Portal</p>
+                </div>
+                <div className="p-1.5 space-y-1">
+                  <Link 
+                    to="/admin" 
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-xs font-semibold"
+                  >
+                    <span className="material-symbols-outlined text-sm text-slate-400">admin_panel_settings</span>
+                    Admin Dashboard
+                  </Link>
+                  <Link 
+                    to="/dashboard" 
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-xs font-semibold"
+                  >
+                    <span className="material-symbols-outlined text-sm text-slate-400">dashboard</span>
+                    User Dashboard
+                  </Link>
+                  <Link 
+                    to="/discovery" 
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-xs font-semibold"
+                  >
+                    <span className="material-symbols-outlined text-sm text-slate-400">explore</span>
+                    User Portal
+                  </Link>
+                  <Link 
+                    to="/consultant-dashboard" 
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-xs font-semibold"
+                  >
+                    <span className="material-symbols-outlined text-sm text-slate-400">badge</span>
+                    Consultant Portal
+                  </Link>
+                  {isAuthenticated && (
+                    <button 
+                      onClick={() => { setDropdownOpen(false); handleSignOut(); }}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 transition-all text-xs font-semibold text-left"
+                    >
+                      <span className="material-symbols-outlined text-sm">logout</span>
+                      Sign Out
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* SideNavBar Desktop layout */}
-      <aside className="hidden lg:flex flex-col h-screen w-64 fixed left-0 top-0 pt-24 pb-8 bg-[#f2f4f6] z-40 bg-gradient-to-r from-[#f2f4f6] to-[#f7f9fb]">
+      {/* ─── SideNavBar (Desktop Only) ─── */}
+      <aside className="hidden lg:flex flex-col h-screen w-64 fixed left-0 top-0 pt-24 pb-8 bg-[#f2f4f6] dark:bg-slate-900 bg-gradient-to-r from-[#f2f4f6] to-[#f7f9fb] z-40">
         <nav className="flex-grow">
           <div className="space-y-1">
             <button 
               onClick={() => handleTabChange('profile')}
-              className={`w-full flex items-center pl-6 py-3 transition-all font-medium text-sm border-r-4 ${
+              className={`w-[calc(100%-8px)] flex items-center rounded-l-xl pl-6 py-3 transition-all font-manrope text-sm font-medium ${
                 activeTab === 'profile' 
-                  ? 'bg-white text-[#0052FF] font-semibold border-[#0052FF] shadow-sm shadow-[#0052FF]/5' 
-                  : 'text-slate-500 hover:text-[#0052FF] hover:bg-slate-100/30 border-transparent'
+                  ? 'bg-white dark:bg-slate-800 text-[#0052FF] dark:text-white font-semibold translate-x-1 shadow-sm' 
+                  : 'text-slate-500 dark:text-slate-400 hover:text-[#0052FF]'
               }`}
             >
               <span className="material-symbols-outlined mr-3">verified_user</span>
@@ -258,10 +415,10 @@ export default function Dashboard() {
             </button>
             <button 
               onClick={() => handleTabChange('insights')}
-              className={`w-full flex items-center pl-6 py-3 transition-all font-medium text-sm border-r-4 ${
+              className={`w-[calc(100%-8px)] flex items-center rounded-l-xl pl-6 py-3 transition-all font-manrope text-sm font-medium ${
                 activeTab === 'insights' 
-                  ? 'bg-white text-[#0052FF] font-semibold border-[#0052FF] shadow-sm shadow-[#0052FF]/5' 
-                  : 'text-slate-500 hover:text-[#0052FF] hover:bg-slate-100/30 border-transparent'
+                  ? 'bg-white dark:bg-slate-800 text-[#0052FF] dark:text-white font-semibold translate-x-1 shadow-sm' 
+                  : 'text-slate-500 dark:text-slate-400 hover:text-[#0052FF]'
               }`}
             >
               <span className="material-symbols-outlined mr-3">insights</span>
@@ -271,327 +428,256 @@ export default function Dashboard() {
         </nav>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="lg:ml-64 pt-24 pb-20 px-6 md:px-12 max-w-7xl mx-auto">
+      {/* ─── Main Content Canvas ─── */}
+      <main className="lg:ml-64 pt-24 pb-20 px-6 md:px-12 max-w-7xl mx-auto min-h-screen">
         
-        {/* ─── TAB 1: MY PROFILE ─── */}
-        {activeTab === 'profile' && (
-          <section className="animate-fade-in">
-            <div className="mb-8">
-              <h1 className="text-4xl font-extrabold headline-anchor tracking-tight mb-2">My User Profile</h1>
-              <p className="text-slate-500 text-sm font-medium">
-                {isAuthenticated 
-                  ? "Your academic profile is verified. You can review or update details below." 
-                  : "Please complete your mandatory academic details and authenticate to initiate your AI consulting session."}
-              </p>
+        {/* ─── CASE A: USER IS NOT AUTHENTICATED ─── */}
+        {!isAuthenticated && (
+          <section className="animate-fade-in max-w-2xl mx-auto py-12">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-extrabold headline-anchor tracking-tight mb-2">Complete Verification</h1>
+              <p className="text-slate-500 text-sm font-medium">Please verify your academic details and authenticate to access your dashboard.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-              <div className="md:col-span-8 bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
-                
-                {otpStep === 'verified' && (
-                  <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl flex items-start gap-3">
-                    <span className="material-symbols-outlined text-emerald-600">verified</span>
-                    <div>
-                      <p className="font-bold text-sm">Authentication Successful!</p>
-                      <p className="text-xs mt-0.5">Your email has been authenticated and academic profile is complete. Click below to continue your career analysis.</p>
-                      <button 
-                        onClick={() => navigate('/discovery')}
-                        className="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors"
-                      >
-                        Proceed to AI Discovery Chat
-                      </button>
-                    </div>
+            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm surface-stack-3">
+              {authError && (
+                <div className="mb-6 p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-xl flex items-center gap-3 text-sm font-semibold">
+                  <span className="material-symbols-outlined">error</span>
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              {otpStep === 'otp-sent' ? (
+                <div className="space-y-6 max-w-md mx-auto py-4">
+                  <div className="text-center">
+                    <span className="material-symbols-outlined text-4xl text-primary animate-bounce mb-2">mail_lock</span>
+                    <h3 className="font-bold text-lg text-slate-800">Enter OTP</h3>
+                    <p className="text-xs text-slate-500 mt-1">We sent a 6-digit code to <span className="font-semibold">{profileEmail}</span>. Use the master code <code className="bg-slate-100 px-1 py-0.5 rounded text-primary font-bold">123456</code> to verify.</p>
                   </div>
-                )}
-
-                {authError && (
-                  <div className="mb-6 p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-xl flex items-center gap-3 text-sm font-semibold">
-                    <span className="material-symbols-outlined">error</span>
-                    <span>{authError}</span>
-                  </div>
-                )}
-
-                {otpStep === 'otp-sent' ? (
-                  <div className="space-y-6 max-w-md py-4">
-                    <div className="text-center md:text-left">
-                      <span className="material-symbols-outlined text-4xl text-primary animate-bounce mb-2">mail_lock</span>
-                      <h3 className="font-bold text-lg text-slate-800">Verify OTP</h3>
-                      <p className="text-xs text-slate-500 mt-1">We sent a 6-digit verification code to <span className="font-semibold">{profileEmail}</span>. Enter it below to complete authentication.</p>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Verification Code</label>
-                      <input 
-                        type="text" 
-                        maxLength={6}
-                        placeholder="Enter 6-digit code"
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-center tracking-widest font-bold focus:ring-2 focus:ring-primary outline-none"
-                      />
-                    </div>
-                    <div className="flex gap-3">
-                      <button 
-                        onClick={handleVerifyOtp}
-                        disabled={isAuthLoading}
-                        className="flex-1 bg-primary text-white p-3 rounded-lg text-xs font-bold hover:bg-[#003ec7] transition-all flex items-center justify-center gap-2"
-                      >
-                        {isAuthLoading ? 'Verifying...' : 'Verify OTP Code'}
-                      </button>
-                      <button 
-                        onClick={() => setOtpStep('none')}
-                        className="bg-slate-100 text-slate-700 p-3 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
-                      >
-                        Back
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmitProfile} className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Full Name</label>
-                        <input 
-                          type="text" 
-                          required
-                          value={profileName}
-                          onChange={(e) => setProfileName(e.target.value)}
-                          placeholder="e.g. Alex"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Age</label>
-                        <input 
-                          type="number" 
-                          required
-                          value={profileAge}
-                          onChange={(e) => setProfileAge(e.target.value)}
-                          placeholder="e.g. 22"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Email Address</label>
-                      <input 
-                        type="email" 
-                        required
-                        disabled={isAuthenticated}
-                        value={profileEmail}
-                        onChange={(e) => setProfileEmail(e.target.value)}
-                        placeholder="e.g. alex@gmail.com"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium disabled:opacity-60"
-                      />
-                    </div>
-
-                    <div className="border-t border-slate-100 pt-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="material-symbols-outlined text-sm text-primary font-bold">school</span>
-                        <h3 className="font-bold text-xs uppercase tracking-widest text-slate-600">Academic History (Mandatory)</h3>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">10th Standard % / GPA</label>
-                          <input 
-                            type="text" 
-                            required
-                            value={class10}
-                            onChange={(e) => setClass10(e.target.value)}
-                            placeholder="e.g. 94.2%"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">12th Standard % / GPA</label>
-                          <input 
-                            type="text" 
-                            required
-                            value={class12}
-                            onChange={(e) => setClass12(e.target.value)}
-                            placeholder="e.g. 91.8%"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Undergraduate CGPA / Score</label>
-                          <input 
-                            type="text" 
-                            required
-                            value={undergrad}
-                            onChange={(e) => setUndergrad(e.target.value)}
-                            placeholder="e.g. 8.9 CGPA"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mt-4">
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Postgraduate Degree / CGPA (Optional)</label>
-                        <input 
-                          type="text" 
-                          value={postgrad}
-                          onChange={(e) => setPostgrad(e.target.value)}
-                          placeholder="e.g. Distinction, MBA INSEAD"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                        />
-                      </div>
-                    </div>
-
-                    {!isAuthenticated ? (
-                      <button 
-                        type="submit" 
-                        disabled={isAuthLoading}
-                        className="w-full bg-primary hover:bg-[#003ec7] text-white p-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-lg shadow-primary/10 flex items-center justify-center gap-2"
-                      >
-                        {isAuthLoading ? 'Processing...' : 'Submit Profile & Generate OTP'}
-                      </button>
-                    ) : (
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
-                        <span className="text-xs text-emerald-600 font-bold flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-sm">check_circle</span> Verified & Authenticated Profile
-                        </span>
-                        <div className="flex gap-2">
-                          <button 
-                            type="button"
-                            onClick={() => { saveProfileLocally(); alert("Profile updated locally."); }}
-                            className="bg-primary hover:bg-[#003ec7] text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase transition-colors"
-                          >
-                            Update Profile Data
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={handleSignOut}
-                            className="bg-rose-50 text-rose-600 hover:bg-rose-100 px-5 py-2.5 rounded-lg text-xs font-bold uppercase transition-colors"
-                          >
-                            Sign Out
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </form>
-                )}
-              </div>
-
-              {/* Interests Side Panel in Profile */}
-              <div className="md:col-span-4 space-y-6">
-                <div className="bg-slate-100/50 rounded-[2rem] p-8 border border-slate-200/40">
-                  <h4 className="font-headline font-bold text-xl text-[#191c1e] mb-1">Interests and Hobbies</h4>
-                  <p className="text-xs text-slate-500 mb-4 font-medium">Add subjects or sectors you are passionate about.</p>
-
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {interests.map((tag) => (
-                      <span 
-                        key={tag} 
-                        className="bg-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase border border-slate-200/60 flex items-center gap-1 shadow-sm text-slate-700"
-                      >
-                        {tag}
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveInterest(tag)}
-                          className="text-slate-400 hover:text-red-500 font-bold"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center gap-2">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Verification Code</label>
                     <input 
                       type="text" 
-                      placeholder="Add interest..."
-                      value={newInterest}
-                      onChange={(e) => setNewInterest(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' ? (e.preventDefault(), handleAddInterest()) : null}
-                      className="flex-grow bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-primary font-medium"
+                      maxLength={6}
+                      placeholder="Enter 6-digit code"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-center tracking-widest font-bold focus:ring-2 focus:ring-primary outline-none"
                     />
+                  </div>
+                  <div className="flex gap-3">
                     <button 
-                      type="button"
-                      onClick={handleAddInterest}
-                      className="bg-primary hover:bg-[#003ec7] text-white px-3 py-2 rounded-lg text-xs font-bold transition-all"
+                      onClick={handleVerifyOtp}
+                      disabled={isAuthLoading}
+                      className="flex-1 bg-primary text-white p-3 rounded-lg text-xs font-bold hover:bg-[#003ec7] transition-all flex items-center justify-center gap-2"
                     >
-                      Add
+                      {isAuthLoading ? 'Verifying...' : 'Verify OTP Code'}
+                    </button>
+                    <button 
+                      onClick={() => setOtpStep('none')}
+                      className="bg-slate-100 text-slate-700 p-3 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+                    >
+                      Back
                     </button>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <form onSubmit={handleSubmitProfile} className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Full Name</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        placeholder="e.g. Bobby"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Age</label>
+                      <input 
+                        type="number" 
+                        required
+                        value={profileAge}
+                        onChange={(e) => setProfileAge(e.target.value)}
+                        placeholder="e.g. 25"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Email Address</label>
+                    <input 
+                      type="email" 
+                      required
+                      value={profileEmail}
+                      onChange={(e) => setProfileEmail(e.target.value)}
+                      placeholder="e.g. bobby@gmail.com"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                    />
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="material-symbols-outlined text-sm text-primary font-bold">school</span>
+                      <h3 className="font-bold text-xs uppercase tracking-widest text-slate-600">Educational History</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current College/Institution</label>
+                        <input 
+                          type="text" 
+                          value={profileCollege}
+                          onChange={(e) => setProfileCollege(e.target.value)}
+                          placeholder="e.g. KMCT"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Field of Study / Major</label>
+                        <input 
+                          type="text" 
+                          value={profileMajor}
+                          onChange={(e) => setProfileMajor(e.target.value)}
+                          placeholder="e.g. engineering"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">10th Standard % / GPA</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={class10}
+                          onChange={(e) => setClass10(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">12th Standard % / GPA</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={class12}
+                          onChange={(e) => setClass12(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Undergrad CGPA / Degree</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={undergrad}
+                          onChange={(e) => setUndergrad(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Postgrad Degree / GPA (Optional)</label>
+                      <input 
+                        type="text" 
+                        value={postgrad}
+                        onChange={(e) => setPostgrad(e.target.value)}
+                        placeholder="e.g. MBA INSEAD"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    disabled={isAuthLoading}
+                    className="w-full bg-primary hover:bg-[#003ec7] text-white p-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                  >
+                    {isAuthLoading ? 'Processing...' : 'Submit Profile & Generate OTP'}
+                  </button>
+                </form>
+              )}
             </div>
           </section>
         )}
 
-        {/* ─── TAB 2: STRATEGIC INSIGHTS ─── */}
-        {activeTab === 'insights' && (
-          <section className="animate-fade-in">
-            {suggestedPaths.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
-                <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">insights</span>
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">No Strategic Insights Found</h3>
-                <p className="text-secondary text-sm mb-6 max-w-md mx-auto">
-                  You haven't initiated a career path analysis yet. Complete the AI discovery dialogue to map your roadmap.
-                </p>
-                <Link to="/discovery" className="bg-primary hover:bg-[#003ec7] text-white px-8 py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition-transform inline-block">
-                  Initiate AI Discovery
-                </Link>
-              </div>
-            ) : (
-              <>
-                <section className="mb-12">
-                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="max-w-2xl">
-                      <h1 className="text-4xl font-extrabold headline-anchor tracking-tight mb-2">Strategic Alignment Phase</h1>
-                      <p className="text-slate-500 text-sm font-medium">Your profile has been verified. We've identified career paths after deep analysis; please complete your profile for the consulting experience.</p>
-                      <span className="text-primary font-bold tracking-widest text-[10px] uppercase mt-4 mb-4 block bg-[#0052ff]/10 px-3 py-1 rounded-full w-fit">Curated Network</span>
-                      
-                      {/* Timeline steps */}
-                      <div className="mt-8 flex items-center w-full max-w-4xl">
-                        <div className="flex items-center flex-1">
-                          <div className="flex flex-col items-center">
-                            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                              <span className="material-symbols-outlined text-sm">check</span>
-                            </div>
-                            <span className="text-[10px] font-bold uppercase tracking-tighter mt-2 text-primary bg-primary-container/10 px-3 py-1 rounded-full w-fit">Journey Initiated</span>
-                          </div>
-                          <div className="h-[2px] flex-1 bg-primary mx-2 mb-4"></div>
-                        </div>
-                        <div className="flex items-center flex-1">
-                          <div className="flex flex-col items-center">
-                            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                              <span className="material-symbols-outlined text-sm">check</span>
-                            </div>
-                            <span className="text-[10px] font-bold uppercase tracking-tighter mt-2 text-primary bg-primary-container/10 px-3 py-1 rounded-full w-fit">AI Screening</span>
-                          </div>
-                          <div className="h-[2px] flex-1 bg-primary mx-2 mb-4"></div>
-                        </div>
-                        <div className="flex items-center flex-1">
-                          <div className="flex flex-col items-center">
-                            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                              <span className="material-symbols-outlined text-sm">check</span>
-                            </div>
-                            <span className="text-[10px] font-bold uppercase tracking-tighter mt-2 text-primary bg-primary-container/10 px-3 py-1 rounded-full w-fit">Career Path Suggested</span>
-                          </div>
-                          <div className="h-[2px] flex-1 bg-slate-200 mx-2 mb-4"></div>
-                        </div>
+        {/* ─── CASE B: USER IS AUTHENTICATED ─── */}
+        {isAuthenticated && (
+          <div className="animate-fade-in">
+
+            {/* ─── TAB 1: MY PROFILE (MOCKUP MATCH) ─── */}
+            {activeTab === 'profile' && (
+              <section className="space-y-12">
+                
+                {/* Editorial Headline & Onboarding Timeline */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                  <div className="max-w-2xl">
+                    <h1 className="text-4xl font-extrabold headline-anchor tracking-tight mb-2">My Profile & Matches</h1>
+                    <p className="text-slate-500 text-sm font-medium">Verify your strategic assessment journey and consultant matches.</p>
+
+                    <div className="mt-8 flex items-center w-full max-w-4xl">
+                      <div className="flex items-center flex-1">
                         <div className="flex flex-col items-center">
-                          <div className="w-8 h-8 rounded-full border-2 border-primary bg-white text-primary flex items-center justify-center animate-pulse">
-                            <span className="material-symbols-outlined text-sm">person_search</span>
+                          <div className="w-8 h-8 rounded-full bg-[#003ec7] text-white flex items-center justify-center shadow-lg shadow-[#003ec7]/20">
+                            <span className="material-symbols-outlined text-sm">check</span>
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-tighter mt-2 text-on-surface">Expert Consultation</span>
+                          <span className="text-[10px] font-bold uppercase tracking-tighter mt-2 text-[#003ec7] bg-primary-container/10 px-3 py-1 rounded-full w-fit">Journey Initiated</span>
                         </div>
+                        <div className="h-[2px] flex-1 bg-[#003ec7] mx-2 mb-4"></div>
+                      </div>
+                      <div className="flex items-center flex-1">
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-8 rounded-full bg-[#003ec7] text-white flex items-center justify-center shadow-lg shadow-[#003ec7]/20">
+                            <span className="material-symbols-outlined text-sm">check</span>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-tighter mt-2 text-[#003ec7] bg-primary-container/10 px-3 py-1 rounded-full w-fit">AI Screening</span>
+                        </div>
+                        <div className="h-[2px] flex-1 bg-[#003ec7] mx-2 mb-4"></div>
+                      </div>
+                      <div className="flex items-center flex-1">
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-8 rounded-full bg-[#003ec7] text-white flex items-center justify-center shadow-lg shadow-[#003ec7]/20">
+                            <span className="material-symbols-outlined text-sm">check</span>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-tighter mt-2 text-[#003ec7] bg-primary-container/10 px-3 py-1 rounded-full w-fit">Career Path Suggested</span>
+                        </div>
+                        <div className="h-[2px] flex-1 bg-slate-200 mx-2 mb-4"></div>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <div className="w-8 h-8 rounded-full border-2 border-[#003ec7] bg-white text-[#003ec7] flex items-center justify-center animate-pulse">
+                          <span className="material-symbols-outlined text-sm">person_search</span>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter mt-2 text-on-surface">Expert Consultation</span>
                       </div>
                     </div>
                   </div>
-                </section>
 
-                <section className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-24">
-                  {/* Featured Match (Elena Richardson or dynamic match) */}
+                  <button 
+                    onClick={() => setIsEditingProfile(true)}
+                    className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200/80 text-slate-700 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider border border-slate-200 transition-all shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-sm">edit</span>
+                    Edit Profile Details
+                  </button>
+                </div>
+
+                {/* Expert Grid (Asymmetric Layout) */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                  
+                  {/* Featured Match Card (Left Column - Large) */}
                   <div className="md:col-span-8 group">
-                    <div className="bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm h-full flex flex-col md:flex-row relative">
+                    <div className="bg-white rounded-[2rem] overflow-hidden transition-all border border-slate-100 shadow-sm h-full flex flex-col md:flex-row relative surface-stack-3">
+                      
+                      {/* Photo Column */}
                       <div className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden relative bg-slate-50 flex items-center justify-center">
                         <img 
-                          alt="Consultant Elena Richardson" 
+                          alt="Consultant Elena Richardson portrait" 
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                           src="https://lh3.googleusercontent.com/aida-public/AB6AXuCO1SgPqlUhkSfnxTOJiyV_DkiZgv7CALESNQh5Ir0iPtmcRNzE9LVKjMUGGV0yxYcqYHYtCedF7b3deb07BG4jA1MtIF7W4vEZY9yI7wInhxDDXhoKfYpCcXu2rk1lyrN7wUdZ7NiEwvTlelQkFXjPJAwsplrTqB_6Wv7S3BAPQp3OZNmosCDkzIgIpytB4x86KvwGXx9ZOeL4RaUkWlqHsInb9qXI7u6ZdYy6g_dlb24h-Y19-kD4Talwp9HYosBXpjYyHEMdfKc"
                         />
@@ -599,117 +685,520 @@ export default function Dashboard() {
                           <span className="material-symbols-outlined">add_a_photo</span>
                         </button>
                       </div>
-                      <div className="w-full md:w-3/5 p-8 flex flex-col justify-between">
+
+                      {/* Details Column */}
+                      <div className="w-full md:w-3/5 p-10 flex flex-col justify-between">
                         <div>
-                          <span className="text-primary font-bold text-xs tracking-widest uppercase mb-1 block">Top Tier Strategy Match</span>
-                          <h3 className="headline-anchor text-2xl font-extrabold text-[#191c1e] mb-1">Elena Richardson</h3>
-                          <p className="text-slate-500 text-xs font-semibold mb-6">Recommended Advisor for Transition Goals</p>
+                          <span className="text-[#003ec7] font-bold text-xs tracking-widest uppercase mb-2 block">Top Tier Strategy Match</span>
+                          <h3 className="headline-anchor text-3xl font-extrabold text-on-surface mb-2">Elena Richardson</h3>
+                          
+                          {/* Subtitle dynamic based on user profile college/major */}
+                          <p className="text-slate-500 text-sm font-semibold mb-6">
+                            Pursuing {profileMajor || 'engineering'} at {profileCollege || 'KMCT'}
+                          </p>
+
                           <div className="space-y-4 mb-8">
-                            <p className="text-slate-600 leading-relaxed text-xs">
+                            <p className="text-[#434656] leading-relaxed text-sm">
                               Specializing in high-growth ecosystems and structural reorganizations. Elena led the EMEA scaling project for two Fortune 500 tech transitions.
                             </p>
-                            
-                            {/* Suggested AI Career Paths */}
-                            <div className="mt-4">
-                              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Suggested Pathways</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {suggestedPaths.map((path, idx) => (
-                                  <span key={idx} className="bg-primary/5 text-primary border border-primary/10 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-tight flex items-center gap-1">
+
+                            {/* Dynamic AI Suggested Pathway Tags */}
+                            <div className="flex flex-wrap gap-2">
+                              {suggestedPaths.length > 0 ? (
+                                suggestedPaths.map((path, idx) => (
+                                  <span key={idx} className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface flex items-center gap-1">
                                     <span className="material-symbols-outlined text-xs">{path.icon || 'bolt'}</span>
                                     {path.title}
                                   </span>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Acquired Skills */}
-                            <div className="mt-4">
-                              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Identified Core Skills</h4>
-                              <div className="flex flex-wrap gap-1.5">
-                                {currentSkills.map((skill, i) => (
-                                  <span key={i} className="bg-slate-100 text-slate-600 px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-tight">{skill}</span>
-                                ))}
-                              </div>
+                                ))
+                              ) : (
+                                <>
+                                  <span className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface">M&A Strategy</span>
+                                  <span className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface">Cloud Transition</span>
+                                  <span className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface">Series C+</span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
 
-                        {/* User Profile Dynamic Educational History */}
-                        <div className="mt-2 border-t border-slate-100 pt-4">
-                          <h4 className="headline-anchor text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Your Educational History</h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+                        {/* Educational History Grid */}
+                        <div className="mt-6 border-t border-slate-100 pt-6">
+                          <div className="flex justify-between items-center mb-4">
+                            <h4 className="headline-anchor text-xs font-bold text-on-surface uppercase tracking-widest">Educational History</h4>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center py-2 border-b border-slate-100">
                               <div>
-                                <p className="text-[10px] font-bold text-slate-800">10th Standard</p>
+                                <p className="text-[11px] font-bold text-on-surface">10th Standard</p>
                                 <p className="text-[9px] text-slate-400">Secondary Education</p>
                               </div>
-                              <span className="text-[10px] font-semibold text-primary bg-[#0052ff]/10 px-2 py-0.5 rounded">{class10 || '94.2%'}</span>
+                              <span className="text-xs font-semibold text-[#003ec7] bg-blue-50 px-2 py-0.5 rounded">{class10 || '94.2%'}</span>
                             </div>
-                            <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+
+                            <div className="flex justify-between items-center py-2 border-b border-slate-100">
                               <div>
-                                <p className="text-[10px] font-bold text-slate-800">12th Standard</p>
+                                <p className="text-[11px] font-bold text-on-surface">12th Standard</p>
                                 <p className="text-[9px] text-slate-400">Higher Secondary Education</p>
                               </div>
-                              <span className="text-[10px] font-semibold text-primary bg-[#0052ff]/10 px-2 py-0.5 rounded">{class12 || '91.8%'}</span>
+                              <span className="text-xs font-semibold text-[#003ec7] bg-blue-50 px-2 py-0.5 rounded">{class12 || '91.8%'}</span>
                             </div>
-                            <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+
+                            <div className="flex justify-between items-center py-2 border-b border-slate-100">
                               <div>
-                                <p className="text-[10px] font-bold text-slate-800">Undergraduate</p>
-                                <p className="text-[9px] text-slate-400">Bachelor Program</p>
+                                <p className="text-[11px] font-bold text-on-surface">Undergraduate</p>
+                                <p className="text-[9px] text-slate-400">Bachelor's Degree</p>
                               </div>
-                              <span className="text-[10px] font-semibold text-primary bg-[#0052ff]/10 px-2 py-0.5 rounded">{undergrad || '8.9 CGPA'}</span>
+                              <span className="text-xs font-semibold text-[#003ec7] bg-blue-50 px-2 py-0.5 rounded truncate max-w-[150px]" title={undergrad}>
+                                {undergrad || 'B.Tech - 8.9 CGPA'}
+                              </span>
                             </div>
+
                             {postgrad && (
-                              <div className="flex justify-between items-center py-1.5">
+                              <div className="flex justify-between items-center py-2">
                                 <div>
-                                  <p className="text-[10px] font-bold text-slate-800">Postgraduate</p>
-                                  <p className="text-[9px] text-slate-400">Advanced Program</p>
+                                  <p className="text-[11px] font-bold text-on-surface">Postgraduate</p>
+                                  <p className="text-[9px] text-slate-400">Master's / Advanced Degree</p>
                                 </div>
-                                <span className="text-[10px] font-semibold text-primary bg-[#0052ff]/10 px-2 py-0.5 rounded">{postgrad}</span>
+                                <span className="text-xs font-semibold text-[#003ec7] bg-blue-50 px-2 py-0.5 rounded truncate max-w-[150px]" title={postgrad}>
+                                  {postgrad}
+                                </span>
                               </div>
                             )}
                           </div>
                         </div>
+
                       </div>
                     </div>
                   </div>
 
-                  {/* Sidebar stats/details */}
+                  {/* Side Cards (Right Column - Stacked) */}
                   <div className="md:col-span-4 space-y-8">
-                    {/* Interests and Hobbies view */}
-                    <div className="bg-slate-100/50 rounded-[2rem] p-8 border border-slate-200/40">
-                      <h4 className="font-headline font-bold text-xl text-[#191c1e] mb-1">Interests and Hobbies</h4>
-                      <div className="flex flex-wrap gap-1.5 mt-4">
-                        {interests.map((interest, index) => (
-                          <span key={index} className="bg-white px-2 py-1 rounded text-[9px] font-bold uppercase border border-slate-200/60 text-slate-600">{interest}</span>
+                    
+                    {/* Match Card 2: Interests and Hobbies */}
+                    <div className="bg-[#f2f4f6] rounded-[2rem] p-8 hover:bg-white hover:shadow-xl transition-all duration-300 group surface-stack-2">
+                      <h4 className="headline-anchor font-bold text-xl text-on-surface mb-2">Interests & Hobbies</h4>
+                      
+                      {/* Dynamic Interests Tags */}
+                      <div className="flex flex-wrap gap-1.5 mb-6">
+                        {interests.map((tag) => (
+                          <span 
+                            key={tag} 
+                            className="bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase text-slate-700 flex items-center gap-1 shadow-sm"
+                          >
+                            {tag}
+                            <button 
+                              type="button" 
+                              onClick={() => handleRemoveInterest(tag)}
+                              className="text-slate-400 hover:text-red-500 font-bold ml-1 text-xs"
+                            >
+                              ×
+                            </button>
+                          </span>
                         ))}
+                      </div>
+
+                      {/* Custom Activities Stack */}
+                      <div className="mt-6 mb-8 pt-4 border-t border-slate-200/50">
+                        <div className="flex flex-wrap gap-3">
+                          {customInterests.map((item) => (
+                            <span key={item} className="text-xs text-[#434656] flex items-center bg-white/40 px-2.5 py-1.5 rounded-lg">
+                              <span className="material-symbols-outlined text-sm mr-1.5 text-[#003ec7]">
+                                {getActivityIcon(item)}
+                              </span> 
+                              {item}
+                              <button 
+                                type="button" 
+                                onClick={() => handleRemoveCustomInterest(item)}
+                                className="text-slate-400 hover:text-red-500 font-bold ml-1.5 text-xs"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Add interest inputs */}
+                        <div className="mt-6 flex gap-2">
+                          <input 
+                            type="text"
+                            placeholder="Add interest..."
+                            value={newInterest}
+                            onChange={(e) => setNewInterest(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' ? (e.preventDefault(), handleAddInterest()) : null}
+                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-primary transition-colors font-body"
+                          />
+                          <button 
+                            onClick={handleAddInterest}
+                            className="bg-[#003ec7] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#003ec7]/90 transition-colors flex items-center gap-1"
+                          >
+                            <span className="material-symbols-outlined text-sm">add</span> Add
+                          </button>
+                        </div>
+
+                        <div className="mt-2 flex gap-2">
+                          <input 
+                            type="text"
+                            placeholder="Add activity (Chess, Sailing...)"
+                            value={newCustomInterest}
+                            onChange={(e) => setNewCustomInterest(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' ? (e.preventDefault(), handleAddCustomInterest()) : null}
+                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-primary transition-colors font-body"
+                          />
+                          <button 
+                            onClick={handleAddCustomInterest}
+                            className="bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-1"
+                          >
+                            <span className="material-symbols-outlined text-sm">add</span> Activity
+                          </button>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Identified Gaps list from AI */}
-                    <div className="bg-slate-100/50 rounded-[2rem] p-8 border border-slate-200/40">
-                      <h4 className="font-headline font-bold text-xl text-[#191c1e] mb-1">Identified Gaps</h4>
-                      <p className="text-slate-500 text-xs mb-4">Gaps to bridge for recommended transition</p>
+                    {/* Match Card 3: Identified Gaps */}
+                    <div className="bg-[#f2f4f6] rounded-[2rem] p-8 hover:bg-white hover:shadow-xl transition-all duration-300 group surface-stack-2">
+                      <h4 className="headline-anchor font-bold text-xl text-on-surface mb-1">Identified Gaps</h4>
                       
-                      <div className="space-y-2.5 mt-4">
-                        {criticalGaps.map((gap, i) => (
-                          <div key={i} className="bg-white p-3 rounded-xl border border-slate-200/50 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-rose-500 text-sm">warning</span>
-                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-tight">{gap}</span>
-                          </div>
+                      <div className="mb-4">
+                        <input 
+                          type="text"
+                          value={gapCategory}
+                          onChange={(e) => { setGapCategory(e.target.value); saveProfileLocally({ gapCategory: e.target.value }); }}
+                          placeholder="Gap Category Title..."
+                          className="font-headline font-semibold text-slate-700 border-none bg-transparent hover:bg-white focus:bg-white rounded px-1.5 py-0.5 text-xs w-full focus:outline-none"
+                        />
+                        <textarea 
+                          value={gapDescription}
+                          onChange={(e) => { setGapDescription(e.target.value); saveProfileLocally({ gapDescription: e.target.value }); }}
+                          placeholder="Gap explanation..."
+                          rows={2}
+                          className="text-[#434656] text-xs leading-relaxed border-none bg-transparent hover:bg-white focus:bg-white rounded px-1.5 py-0.5 w-full focus:outline-none resize-none"
+                        />
+                      </div>
+
+                      {/* Gaps tags */}
+                      <div className="flex flex-wrap gap-1.5 mb-8">
+                        {gaps.map((tag) => (
+                          <span 
+                            key={tag} 
+                            className="bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase text-slate-700 flex items-center gap-1 shadow-sm"
+                          >
+                            {tag}
+                            <button 
+                              type="button" 
+                              onClick={() => handleRemoveGap(tag)}
+                              className="text-slate-400 hover:text-red-500 font-bold ml-1 text-xs"
+                            >
+                              ×
+                            </button>
+                          </span>
                         ))}
                       </div>
+
+                      {/* Add gap input */}
+                      <div className="flex gap-2">
+                        <input 
+                          type="text"
+                          placeholder="Search or add gap..."
+                          value={newGap}
+                          onChange={(e) => setNewGap(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' ? (e.preventDefault(), handleAddGap()) : null}
+                          className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-primary transition-colors font-body"
+                        />
+                        <button 
+                          onClick={handleAddGap}
+                          className="bg-[#003ec7] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#003ec7]/90 transition-colors flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-sm">add</span> Add
+                        </button>
+                      </div>
                     </div>
+
                   </div>
-                </section>
-              </>
+
+                </div>
+              </section>
             )}
-          </section>
+
+            {/* ─── TAB 2: STRATEGIC INSIGHTS ─── */}
+            {activeTab === 'insights' && (
+              <section className="animate-fade-in">
+                {suggestedPaths.length === 0 ? (
+                  <div className="text-center py-20 bg-white rounded-[2rem] border border-slate-100 shadow-sm surface-stack-3">
+                    <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">insights</span>
+                    <h3 className="text-2xl font-bold text-slate-800 mb-2">No Strategic Insights Found</h3>
+                    <p className="text-slate-500 text-sm mb-6 max-w-md mx-auto leading-relaxed">
+                      You haven't initiated a career path analysis yet. Complete the AI discovery dialogue to map your custom roadmap.
+                    </p>
+                    <Link to="/discovery" className="bg-[#003ec7] hover:bg-[#003ec7]/90 text-white px-8 py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition-transform inline-block">
+                      Initiate AI Discovery
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-12">
+                    
+                    {/* Insights Header */}
+                    <div className="max-w-2xl mb-8">
+                      <h1 className="text-4xl font-extrabold headline-anchor tracking-tight mb-2">Strategic Career Assessment</h1>
+                      <p className="text-slate-500 text-sm font-medium">Deep analysis mapping your profile strengths, skill markers, and transition phases.</p>
+                    </div>
+
+                    {/* AI Career Path Suggestions (Path Cards) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {suggestedPaths.map((path, idx) => (
+                        <div key={idx} className="bg-white border border-slate-100 rounded-[2rem] p-8 shadow-sm flex flex-col justify-between hover:shadow-lg transition-shadow surface-stack-3">
+                          <div>
+                            <div className="w-12 h-12 rounded-xl bg-blue-50 text-primary flex items-center justify-center mb-6">
+                              <span className="material-symbols-outlined text-2xl text-[#003ec7]">
+                                {path.icon || 'psychology'}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-bold text-[#003ec7] tracking-[0.2em] uppercase block mb-3">Pathway 0{idx + 1}</span>
+                            <h3 className="font-headline text-xl font-bold mb-3 text-slate-900">{path.title}</h3>
+                            <p className="text-slate-600 text-xs leading-relaxed mb-6">
+                              A career transition target utilizing your analytical capabilities. We recommend this path for optimized market growth.
+                            </p>
+                          </div>
+                          <Link to="/experts" className="text-[#003ec7] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 hover:text-primary-container">
+                            Consult matched advisors <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Skill Analysis Progress Bars */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      
+                      {/* Current Skills Meters */}
+                      <div className="bg-[#f2f4f6] rounded-[2rem] p-8 surface-stack-2">
+                        <h3 className="font-headline font-bold text-xl text-slate-900 mb-2">Strengths & Core Skills</h3>
+                        <p className="text-xs text-slate-500 mb-6">Your identified skill clusters compared against industry benchmarks.</p>
+                        
+                        <div className="space-y-4">
+                          {currentSkills.map((skill, index) => {
+                            // Give them slightly different random percentages for visual flair
+                            const score = 80 - (index * 8);
+                            return (
+                              <div key={skill} className="space-y-1">
+                                <div className="flex justify-between text-xs font-bold text-slate-700">
+                                  <span>{skill}</span>
+                                  <span>{score}% Strength</span>
+                                </div>
+                                <div className="h-2 w-full bg-white rounded-full overflow-hidden">
+                                  <div className="h-full bg-[#003ec7] rounded-full" style={{ width: `${score}%` }}></div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {currentSkills.length === 0 && (
+                            <p className="text-xs text-slate-500 italic">No skill tags loaded. Run Discovery to generate skills.</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Gaps progress and mitigations */}
+                      <div className="bg-[#f2f4f6] rounded-[2rem] p-8 surface-stack-2">
+                        <h3 className="font-headline font-bold text-xl text-slate-900 mb-2">Skill Gaps to Bridge</h3>
+                        <p className="text-xs text-slate-500 mb-6">Critical capability gaps mapped relative to recommended transition paths.</p>
+                        
+                        <div className="space-y-4">
+                          {gaps.map((gap, index) => {
+                            const completion = 20 + (index * 15);
+                            return (
+                              <div key={gap} className="space-y-1">
+                                <div className="flex justify-between text-xs font-bold text-slate-700">
+                                  <span className="flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-rose-500 text-xs">warning</span>
+                                    {gap}
+                                  </span>
+                                  <span>{completion}% Actioned</span>
+                                </div>
+                                <div className="h-2 w-full bg-white rounded-full overflow-hidden">
+                                  <div className="h-full bg-rose-500/80 rounded-full" style={{ width: `${completion}%` }}></div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {gaps.length === 0 && (
+                            <p className="text-xs text-slate-500 italic">No gap tags loaded.</p>
+                          )}
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Action Roadmap */}
+                    <div className="bg-white border border-slate-100 rounded-[2rem] p-8 shadow-sm surface-stack-3">
+                      <h3 className="font-headline font-bold text-xl text-slate-900 mb-2">Strategic Alignment Roadmap</h3>
+                      <p className="text-xs text-slate-500 mb-8">Follow this transition roadmap to prepare for direct consultation sessions.</p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+                        <div className="flex flex-col">
+                          <span className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold mb-4 shadow-md">01</span>
+                          <h4 className="font-bold text-sm text-slate-800 mb-1">Assessment Completion</h4>
+                          <p className="text-xs text-slate-500 leading-relaxed">Submit academic records and verify profile variables.</p>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="w-8 h-8 rounded-full bg-[#003ec7] text-white flex items-center justify-center text-xs font-bold mb-4 shadow-md">02</span>
+                          <h4 className="font-bold text-sm text-slate-800 mb-1">Discovery Analysis</h4>
+                          <p className="text-xs text-slate-500 leading-relaxed">Engage in dialogue to map alignment and isolate skill gaps.</p>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-xs font-bold mb-4 border border-slate-200">03</span>
+                          <h4 className="font-bold text-sm text-slate-800 mb-1">Gap Mitigation</h4>
+                          <p className="text-xs text-slate-500 leading-relaxed">Engage in upskilling and self-study courses to bridge requirements.</p>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-xs font-bold mb-4 border border-slate-200">04</span>
+                          <h4 className="font-bold text-sm text-slate-800 mb-1">Expert Session</h4>
+                          <p className="text-xs text-slate-500 leading-relaxed">Direct 1-on-1 strategy validation with Elena Richardson.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                )}
+              </section>
+            )}
+
+          </div>
         )}
       </main>
 
-      {/* Mobile BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-4 pt-2 md:hidden bg-white/80 backdrop-blur-xl border-t border-slate-100 shadow-2xl rounded-t-3xl">
+      {/* ─── EDIT PROFILE MODAL (AUTHENTICATED ONLY) ─── */}
+      {isEditingProfile && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-2xl overflow-hidden shadow-2xl surface-stack-3 border border-slate-100 animate-scale-up">
+            
+            <div className="px-8 py-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="font-headline font-bold text-xl text-slate-900">Edit Profile & Academic Records</h3>
+              <button 
+                onClick={() => setIsEditingProfile(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer p-1 rounded-full hover:bg-slate-200/50 flex"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfileChanges} className="p-8 space-y-6">
+              
+              {/* Basic Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Full Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Age</label>
+                  <input 
+                    type="number" 
+                    required
+                    value={profileAge}
+                    onChange={(e) => setProfileAge(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Status fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current College / School</label>
+                  <input 
+                    type="text" 
+                    value={profileCollege}
+                    onChange={(e) => setProfileCollege(e.target.value)}
+                    placeholder="e.g. KMCT"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Major / Degree</label>
+                  <input 
+                    type="text" 
+                    value={profileMajor}
+                    onChange={(e) => setProfileMajor(e.target.value)}
+                    placeholder="e.g. engineering"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Grades fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">10th GPA / %</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={class10}
+                    onChange={(e) => setClass10(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">12th GPA / %</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={class12}
+                    onChange={(e) => setClass12(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Undergrad GPA / Degree</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={undergrad}
+                    onChange={(e) => setUndergrad(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Postgraduate Degree (Optional)</label>
+                <input 
+                  type="text" 
+                  value={postgrad}
+                  onChange={(e) => setPostgrad(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button 
+                  type="button" 
+                  onClick={() => setIsEditingProfile(false)}
+                  className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-5 py-2.5 rounded-xl text-xs font-bold uppercase"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="bg-[#003ec7] text-white hover:bg-[#003ec7]/90 px-6 py-2.5 rounded-xl text-xs font-bold uppercase"
+                >
+                  Save Changes
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* ─── Mobile BottomNavBar ─── */}
+      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-4 pt-2 md:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl no-border shadow-2xl rounded-t-3xl">
         <button 
           onClick={() => handleTabChange('profile')}
           className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all ${
@@ -717,7 +1206,7 @@ export default function Dashboard() {
           }`}
         >
           <span className="material-symbols-outlined">account_circle</span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest mt-1">Profile</span>
+          <span className="text-[10px] font-semibold uppercase mt-1">Profile</span>
         </button>
         <button 
           onClick={() => handleTabChange('insights')}
@@ -726,9 +1215,10 @@ export default function Dashboard() {
           }`}
         >
           <span className="material-symbols-outlined">insights</span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest mt-1">Insights</span>
+          <span className="text-[10px] font-semibold uppercase mt-1">Insights</span>
         </button>
       </nav>
+
     </div>
   );
 }

@@ -161,6 +161,14 @@ export default function Navbar() {
                     Admin Dashboard
                   </Link>
                   <Link 
+                    to="/dashboard" 
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
+                  >
+                    <span className="material-symbols-outlined text-lg text-slate-400">dashboard</span>
+                    User Dashboard
+                  </Link>
+                  <Link 
                     to="/discovery" 
                     onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
