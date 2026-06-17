@@ -308,10 +308,14 @@ export default function Admin() {
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm border-t border-outline/5 pt-4">
-                                                <p><span className="text-outline font-medium">Email: </span> <a href={`mailto:${item.email}`} className="text-primary hover:underline">{item.email}</a></p>
+                                                <p><span className="text-outline font-medium">Email: </span> <a href={`mailto:${item.email}`} className="text-[#0052FF] hover:underline">{item.email}</a></p>
                                                 <p><span className="text-outline font-medium">Phone: </span> {item.phone || 'Not provided'}</p>
+                                                <p><span className="text-outline font-medium">Location: </span> {item.location || 'Remote'}</p>
+                                                <p><span className="text-outline font-medium">LinkedIn: </span> {item.linkedin ? <a href={item.linkedin} target="_blank" rel="noopener noreferrer" className="text-[#0052FF] hover:underline inline-flex items-center gap-1 font-semibold"><span className="material-symbols-outlined text-sm">link</span>{item.linkedin}</a> : <span className="text-slate-400 italic">Not provided</span>}</p>
                                                 <p><span className="text-outline font-medium">Experience: </span> {item.experience || 0} years</p>
                                                 <p><span className="text-outline font-medium">Desired Price: </span> ₹{item.price || 'Standard'}</p>
+                                                <p><span className="text-outline font-medium">Current Role: </span> {item.role || 'Not provided'}</p>
+                                                <p><span className="text-outline font-medium">Organization: </span> {item.organization || 'Independent'}</p>
                                             </div>
 
                                             <div className="border-t border-outline/5 pt-4">
