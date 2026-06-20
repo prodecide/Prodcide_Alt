@@ -135,6 +135,8 @@ export default function Dashboard() {
   const [profileLocation, setProfileLocation] = useState('');
   const [profileBio, setProfileBio] = useState('');
   const [profileLinkedIn, setProfileLinkedIn] = useState('');
+  const [profileAvatar, setProfileAvatar] = useState('https://lh3.googleusercontent.com/aida-public/AB6AXuCO1SgPqlUhkSfnxTOJiyV_DkiZgv7CALESNQh5Ir0iPtmcRNzE9LVKjMUGGV0yxYcqYHYtCedF7b3deb07BG4jA1MtIF7W4vEZY9yI7wInhxDDXhoKfYpCcXu2rk1lyrN7wUdZ7NiEwvTlelQkFXjPJAwsplrTqB_6Wv7S3BAPQp3OZNmosCDkzIgIpytB4x86KvwGXx9ZOeL4RaUkWlqHsInb9qXI7u6ZdYy6g_dlb24h-Y19-kD4Talwp9HYosBXpjYyHEMdfKc');
+  const fileInputRef = useRef(null);
 
   // Inline Edit State
   const [editingField, setEditingField] = useState(null);
@@ -185,6 +187,7 @@ export default function Dashboard() {
         location: profileLocation,
         bio: profileBio,
         linkedIn: profileLinkedIn,
+        avatar: profileAvatar,
         class10,
         class12,
         undergrad,
@@ -216,7 +219,7 @@ export default function Dashboard() {
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
-  }, [profileEmail, profileName, profileAge, profileCollege, profileMajor, profilePhone, profileLocation, profileBio, profileLinkedIn, class10, class12, undergrad, postgrad, interests, customInterests, gaps, gapCategory, gapDescription, suggestedPaths, currentSkills]);
+  }, [profileEmail, profileName, profileAge, profileCollege, profileMajor, profilePhone, profileLocation, profileBio, profileLinkedIn, profileAvatar, class10, class12, undergrad, postgrad, interests, customInterests, gaps, gapCategory, gapDescription, suggestedPaths, currentSkills]);
 
   const fetchAndSyncProfile = async (email) => {
     try {
@@ -264,6 +267,7 @@ export default function Dashboard() {
         if (data.location) setProfileLocation(data.location);
         if (data.bio) setProfileBio(data.bio);
         if (data.linkedIn) setProfileLinkedIn(data.linkedIn);
+        if (data.avatar) setProfileAvatar(data.avatar);
 
         localStorage.setItem('discovery_user_profile', JSON.stringify({
           name: data.name,
@@ -274,6 +278,7 @@ export default function Dashboard() {
           location: data.location,
           bio: data.bio,
           linkedIn: data.linkedIn,
+          avatar: data.avatar || profileAvatar,
           class10: data.class10,
           class12: data.class12,
           undergrad: data.undergrad,
@@ -440,6 +445,7 @@ export default function Dashboard() {
     const locationVal = updatedFields.location !== undefined ? updatedFields.location : profileLocation;
     const bioVal = updatedFields.bio !== undefined ? updatedFields.bio : profileBio;
     const linkedInVal = updatedFields.linkedIn !== undefined ? updatedFields.linkedIn : profileLinkedIn;
+    const avatarVal = updatedFields.avatar !== undefined ? updatedFields.avatar : profileAvatar;
 
     const profileData = {
       name,
@@ -450,6 +456,7 @@ export default function Dashboard() {
       location: locationVal,
       bio: bioVal,
       linkedIn: linkedInVal,
+      avatar: avatarVal,
       class10: class10Val,
       class12: class12Val,
       undergrad: undergradVal,
@@ -478,6 +485,50 @@ export default function Dashboard() {
 
   // InlineField shared props for all instances
   const inlineProps = { editingField, setEditingField, debouncedSaveField, saveProfileLocally, setIsDirty };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Data = reader.result.split(',')[1];
+      const mimeType = file.type;
+      
+      setSaveStatus('saving');
+      try {
+        const res = await fetch('/api/process-avatar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: profileEmail, image: base64Data, mimeType })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.avatarUrl) {
+            setProfileAvatar(data.avatarUrl);
+            saveProfileLocally({ avatar: data.avatarUrl });
+            setSaveStatus('saved');
+            setTimeout(() => setSaveStatus('idle'), 2000);
+          } else {
+            setSaveStatus('error');
+            setTimeout(() => setSaveStatus('idle'), 3000);
+          }
+        } else {
+          setSaveStatus('error');
+          setTimeout(() => setSaveStatus('idle'), 3000);
+        }
+      } catch (error) {
+        console.error("Avatar upload failed:", error);
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Form Submissions for Registration & OTP
   const handleSubmitProfile = async (e) => {
@@ -996,15 +1047,32 @@ export default function Dashboard() {
                     <div className="bg-white rounded-[2rem] overflow-hidden transition-all border border-slate-100 shadow-sm h-full flex flex-col md:flex-row relative surface-stack-3">
                       
                       {/* Photo Column */}
-                      <div className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden relative bg-slate-50 flex items-center justify-center">
+                      <div className="w-full md:w-2/5 h-64 md:h-auto overflow-hidden relative bg-slate-50 flex items-center justify-center group/avatar">
                         <img 
-                          alt="Consultant Elena Richardson portrait" 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCO1SgPqlUhkSfnxTOJiyV_DkiZgv7CALESNQh5Ir0iPtmcRNzE9LVKjMUGGV0yxYcqYHYtCedF7b3deb07BG4jA1MtIF7W4vEZY9yI7wInhxDDXhoKfYpCcXu2rk1lyrN7wUdZ7NiEwvTlelQkFXjPJAwsplrTqB_6Wv7S3BAPQp3OZNmosCDkzIgIpytB4x86KvwGXx9ZOeL4RaUkWlqHsInb9qXI7u6ZdYy6g_dlb24h-Y19-kD4Talwp9HYosBXpjYyHEMdfKc"
+                          alt="User profile avatar" 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-105" 
+                          src={profileAvatar}
                         />
-                        <button className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-md text-primary p-3 rounded-full shadow-lg hover:bg-white hover:scale-110 transition-all flex items-center justify-center border border-white/20" title="Upload Image">
+                        {saveStatus === 'saving' && (
+                          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center text-white text-center p-4">
+                            <span className="material-symbols-outlined animate-spin text-3xl mb-2">sync</span>
+                            <p className="text-[10px] font-bold uppercase tracking-wider">Styling with Gemini...</p>
+                          </div>
+                        )}
+                        <button 
+                          onClick={handleAvatarClick}
+                          className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-md text-primary p-3 rounded-full shadow-lg hover:bg-white hover:scale-110 transition-all flex items-center justify-center border border-white/20" 
+                          title="Upload Image"
+                        >
                           <span className="material-symbols-outlined">add_a_photo</span>
                         </button>
+                        <input 
+                          type="file" 
+                          ref={fileInputRef} 
+                          onChange={handleAvatarChange} 
+                          accept="image/*" 
+                          className="hidden" 
+                        />
                       </div>
 
                       {/* Details Column — Inline Editable */}

@@ -11,6 +11,7 @@ const { default: discoveryChatHandler } = await import('./api/discovery-chat.js'
 const { default: usersHandler } = await import('./api/users.js');
 const { default: reviewsHandler } = await import('./api/reviews.js');
 const { default: userProfilesHandler } = await import('./api/user-profiles.js');
+const { default: processAvatarHandler } = await import('./api/process-avatar.js');
 
 const app = express();
 const port = 3001;
@@ -37,6 +38,7 @@ app.all('/api/discovery-chat', vercelToExpress(discoveryChatHandler));
 app.all('/api/users', vercelToExpress(usersHandler));
 app.all('/api/reviews', vercelToExpress(reviewsHandler));
 app.all('/api/user-profiles', vercelToExpress(userProfilesHandler));
+app.all('/api/process-avatar', vercelToExpress(processAvatarHandler));
 
 app.listen(port, () => {
     console.log(`Local API server running at http://localhost:${port}`);

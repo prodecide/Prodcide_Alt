@@ -30,6 +30,7 @@ export default async function handler(req, res) {
                         location: '',
                         bio: '',
                         linkedIn: '',
+                        avatar: legacyUser.avatar || '',
                         class10: legacyUser.class10 || '',
                         class12: legacyUser.class12 || '',
                         undergrad: legacyUser.undergrad || '',
@@ -71,6 +72,7 @@ export default async function handler(req, res) {
                 location: data.location || '',
                 bio: data.bio || '',
                 linkedIn: data.linkedIn || '',
+                avatar: data.avatar || '',
                 class10: data.class10 || '',
                 class12: data.class12 || '',
                 undergrad: data.undergrad || '',
@@ -113,7 +115,7 @@ export default async function handler(req, res) {
             const updateFields = { updatedAt: new Date() };
             const allowedFields = [
                 'name', 'age', 'college', 'major', 'phone', 'location',
-                'bio', 'linkedIn', 'class10', 'class12', 'undergrad', 'postgrad',
+                'bio', 'linkedIn', 'avatar', 'class10', 'class12', 'undergrad', 'postgrad',
                 'interests', 'customInterests', 'gaps', 'gapCategory', 'gapDescription',
                 'suggestedPaths', 'currentSkills'
             ];
