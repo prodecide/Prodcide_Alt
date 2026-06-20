@@ -98,6 +98,7 @@ export default function ConsultantProfile() {
 
   const experiences = Array.isArray(consultant.experienceDetails) ? consultant.experienceDetails : [];
   const education = Array.isArray(consultant.educationDetails) ? consultant.educationDetails : [];
+  const taglineQuote = consultant.title || consultant.role || 'Expert Advisor';
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
