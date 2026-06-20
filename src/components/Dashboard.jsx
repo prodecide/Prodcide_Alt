@@ -1,6 +1,79 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 
+// Extracted outside Dashboard to prevent remount on every parent render
+function InlineField({ fieldName, value, setValue, label, placeholder, type = 'text', multiline = false, className = '', displayClassName = '', inputClassName = '', editingField, setEditingField, debouncedSaveField, saveProfileLocally, setIsDirty }) {
+  const isEditing = editingField === fieldName;
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
+
+  const handleBlur = () => {
+    setEditingField(null);
+    debouncedSaveField(fieldName, value);
+    saveProfileLocally({ [fieldName]: value });
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !multiline) {
+      e.preventDefault();
+      e.target.blur();
+    }
+    if (e.key === 'Escape') {
+      setEditingField(null);
+    }
+  };
+
+  if (isEditing) {
+    const sharedClasses = `w-full bg-white border-2 border-[#003ec7]/40 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-[#003ec7]/30 outline-none font-medium transition-all shadow-sm ${inputClassName}`;
+    if (multiline) {
+      return (
+        <textarea
+          ref={inputRef}
+          value={value}
+          onChange={(e) => { setValue(e.target.value); setIsDirty(true); }}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder || label}
+          rows={3}
+          className={`${sharedClasses} resize-none ${className}`}
+        />
+      );
+    }
+    return (
+      <input
+        ref={inputRef}
+        type={type}
+        value={value}
+        onChange={(e) => { setValue(e.target.value); setIsDirty(true); }}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder || label}
+        className={`${sharedClasses} ${className}`}
+      />
+    );
+  }
+
+  return (
+    <div
+      onClick={() => setEditingField(fieldName)}
+      className={`group/edit cursor-pointer relative inline-flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 -mx-1.5 transition-all hover:bg-[#003ec7]/5 ${displayClassName}`}
+      title={`Click to edit ${label || fieldName}`}
+    >
+      <span className={className}>
+        {value || <span className="text-slate-400 italic">{placeholder || `Add ${label || fieldName}...`}</span>}
+      </span>
+      <span className="material-symbols-outlined text-[11px] text-slate-400 opacity-0 group-hover/edit:opacity-100 transition-opacity">
+        edit
+      </span>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -144,80 +217,6 @@ export default function Dashboard() {
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
   }, [profileEmail, profileName, profileAge, profileCollege, profileMajor, profilePhone, profileLocation, profileBio, profileLinkedIn, class10, class12, undergrad, postgrad, interests, customInterests, gaps, gapCategory, gapDescription, suggestedPaths, currentSkills]);
-
-  // Reusable Inline Editable Field component
-  const InlineField = ({ fieldName, value, setValue, label, placeholder, type = 'text', multiline = false, className = '', displayClassName = '', inputClassName = '' }) => {
-    const isEditing = editingField === fieldName;
-    const inputRef = useRef(null);
-
-    useEffect(() => {
-      if (isEditing && inputRef.current) {
-        inputRef.current.focus();
-        if (inputRef.current.select) inputRef.current.select();
-      }
-    }, [isEditing]);
-
-    const handleBlur = () => {
-      setEditingField(null);
-      debouncedSaveField(fieldName, value);
-      saveProfileLocally({ [fieldName]: value });
-    };
-
-    const handleKeyDown = (e) => {
-      if (e.key === 'Enter' && !multiline) {
-        e.preventDefault();
-        e.target.blur();
-      }
-      if (e.key === 'Escape') {
-        setEditingField(null);
-      }
-    };
-
-    if (isEditing) {
-      const sharedClasses = `w-full bg-white border-2 border-[#003ec7]/40 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-[#003ec7]/30 outline-none font-medium transition-all shadow-sm ${inputClassName}`;
-      if (multiline) {
-        return (
-          <textarea
-            ref={inputRef}
-            value={value}
-            onChange={(e) => { setValue(e.target.value); setIsDirty(true); }}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder || label}
-            rows={3}
-            className={`${sharedClasses} resize-none ${className}`}
-          />
-        );
-      }
-      return (
-        <input
-          ref={inputRef}
-          type={type}
-          value={value}
-          onChange={(e) => { setValue(e.target.value); setIsDirty(true); }}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder || label}
-          className={`${sharedClasses} ${className}`}
-        />
-      );
-    }
-
-    return (
-      <div
-        onClick={() => setEditingField(fieldName)}
-        className={`group/edit cursor-pointer relative inline-flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 -mx-1.5 transition-all hover:bg-[#003ec7]/5 ${displayClassName}`}
-        title={`Click to edit ${label || fieldName}`}
-      >
-        <span className={className}>
-          {value || <span className="text-slate-400 italic">{placeholder || `Add ${label || fieldName}...`}</span>}
-        </span>
-        <span className="material-symbols-outlined text-[11px] text-slate-400 opacity-0 group-hover/edit:opacity-100 transition-opacity">
-          edit
-        </span>
-      </div>
-    );
-  };
 
   const fetchAndSyncProfile = async (email) => {
     try {
@@ -476,6 +475,9 @@ export default function Dashboard() {
       }).catch(e => console.error("Cloud save failed:", e));
     }
   };
+
+  // InlineField shared props for all instances
+  const inlineProps = { editingField, setEditingField, debouncedSaveField, saveProfileLocally, setIsDirty };
 
   // Form Submissions for Registration & OTP
   const handleSubmitProfile = async (e) => {
@@ -1012,6 +1014,7 @@ export default function Dashboard() {
                           
                           {/* Editable Name */}
                           <InlineField 
+                            {...inlineProps}
                             fieldName="name" value={profileName} setValue={setProfileName}
                             label="Full Name" placeholder="Enter your name"
                             className="headline-anchor text-3xl font-extrabold text-on-surface"
@@ -1021,12 +1024,14 @@ export default function Dashboard() {
                           <div className="flex items-center gap-1 text-slate-500 text-sm font-semibold mb-4 mt-1">
                             <span>Pursuing</span>
                             <InlineField 
+                              {...inlineProps}
                               fieldName="major" value={profileMajor} setValue={setProfileMajor}
                               label="Major" placeholder="your major"
                               className="text-sm font-semibold text-slate-700"
                             />
                             <span>at</span>
                             <InlineField 
+                              {...inlineProps}
                               fieldName="college" value={profileCollege} setValue={setProfileCollege}
                               label="College" placeholder="your college"
                               className="text-sm font-semibold text-slate-700"
@@ -1036,6 +1041,7 @@ export default function Dashboard() {
                           {/* Editable Bio */}
                           <div className="mb-4">
                             <InlineField 
+                              {...inlineProps}
                               fieldName="bio" value={profileBio} setValue={setProfileBio}
                               label="Bio" placeholder="Write a short bio about yourself..."
                               multiline={true}
@@ -1052,6 +1058,7 @@ export default function Dashboard() {
                             <div className="flex items-center gap-1.5">
                               <span className="material-symbols-outlined text-sm text-slate-400">call</span>
                               <InlineField 
+                                {...inlineProps}
                                 fieldName="phone" value={profilePhone} setValue={setProfilePhone}
                                 label="Phone" placeholder="Add phone number"
                                 className="text-xs text-slate-600 font-medium"
@@ -1060,6 +1067,7 @@ export default function Dashboard() {
                             <div className="flex items-center gap-1.5">
                               <span className="material-symbols-outlined text-sm text-slate-400">location_on</span>
                               <InlineField 
+                                {...inlineProps}
                                 fieldName="location" value={profileLocation} setValue={setProfileLocation}
                                 label="Location" placeholder="Add location"
                                 className="text-xs text-slate-600 font-medium"
@@ -1068,6 +1076,7 @@ export default function Dashboard() {
                             <div className="flex items-center gap-1.5">
                               <span className="material-symbols-outlined text-sm text-slate-400">link</span>
                               <InlineField 
+                                {...inlineProps}
                                 fieldName="linkedIn" value={profileLinkedIn} setValue={setProfileLinkedIn}
                                 label="LinkedIn" placeholder="Add LinkedIn URL"
                                 className="text-xs text-[#003ec7] font-medium"
@@ -1079,6 +1088,7 @@ export default function Dashboard() {
                           <div className="flex items-center gap-3 mb-6">
                             <span className="text-[10px] font-bold text-slate-500 uppercase">Age:</span>
                             <InlineField 
+                              {...inlineProps}
                               fieldName="age" value={profileAge} setValue={setProfileAge}
                               label="Age" placeholder="25" type="text"
                               className="text-xs font-semibold text-slate-700"
@@ -1118,6 +1128,7 @@ export default function Dashboard() {
                                 <p className="text-[9px] text-slate-400">Secondary Education</p>
                               </div>
                               <InlineField 
+                                {...inlineProps}
                                 fieldName="class10" value={class10} setValue={setClass10}
                                 label="10th Score" placeholder="94.2%"
                                 className="text-xs font-semibold text-[#003ec7]"
@@ -1131,6 +1142,7 @@ export default function Dashboard() {
                                 <p className="text-[9px] text-slate-400">Higher Secondary Education</p>
                               </div>
                               <InlineField 
+                                {...inlineProps}
                                 fieldName="class12" value={class12} setValue={setClass12}
                                 label="12th Score" placeholder="91.8%"
                                 className="text-xs font-semibold text-[#003ec7]"
@@ -1144,6 +1156,7 @@ export default function Dashboard() {
                                 <p className="text-[9px] text-slate-400">Bachelor's Degree</p>
                               </div>
                               <InlineField 
+                                {...inlineProps}
                                 fieldName="undergrad" value={undergrad} setValue={setUndergrad}
                                 label="Undergrad" placeholder="B.Tech - 8.9 CGPA"
                                 className="text-xs font-semibold text-[#003ec7]"
@@ -1157,6 +1170,7 @@ export default function Dashboard() {
                                 <p className="text-[9px] text-slate-400">Master's / Advanced Degree</p>
                               </div>
                               <InlineField 
+                                {...inlineProps}
                                 fieldName="postgrad" value={postgrad} setValue={setPostgrad}
                                 label="Postgrad" placeholder="Add postgrad degree..."
                                 className="text-xs font-semibold text-[#003ec7]"

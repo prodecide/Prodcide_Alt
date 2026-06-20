@@ -189,7 +189,7 @@ export default function Discovery() {
     }
   }, [messages, isAITyping]);
 
-  // Sync AI Career Path results to local storage for the dashboard
+  // Sync AI Career Path results to local storage and database
   useEffect(() => {
     if (suggestedPaths.length > 0 || criticalGaps.length > 0 || currentSkills.length > 0) {
       localStorage.setItem('discovery_results', JSON.stringify({
@@ -197,6 +197,34 @@ export default function Discovery() {
         criticalGaps,
         currentSkills
       }));
+
+      // Push to database if authenticated
+      const email = localStorage.getItem('discovery_verified_email');
+      const name = localStorage.getItem('discovery_verified_name');
+      const storedProfile = localStorage.getItem('discovery_user_profile');
+      let baseProfile = {};
+      if (storedProfile) {
+        try {
+          baseProfile = JSON.parse(storedProfile);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      if (email) {
+        fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            name: name || baseProfile.name || '',
+            ...baseProfile,
+            suggestedPaths,
+            gaps: criticalGaps,
+            currentSkills
+          })
+        }).catch(err => console.error("Failed to push AI results to database:", err));
+      }
     }
   }, [suggestedPaths, criticalGaps, currentSkills]);
 

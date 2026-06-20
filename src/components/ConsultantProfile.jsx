@@ -9,6 +9,15 @@ export default function ConsultantProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState('5.0');
+  const [newReviewName, setNewReviewName] = useState(localStorage.getItem('discovery_verified_name') || '');
+  const [newReviewEmail, setNewReviewEmail] = useState(localStorage.getItem('discovery_verified_email') || '');
+  const [newReviewRating, setNewReviewRating] = useState(5);
+  const [newReviewComment, setNewReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewError, setReviewError] = useState('');
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -19,6 +28,7 @@ export default function ConsultantProfile() {
         }
         const data = await res.json();
         setConsultant(data);
+        setAverageRating(data.rating || '5.0');
       } catch (err) {
         setError(err.message);
       } finally {
@@ -27,6 +37,26 @@ export default function ConsultantProfile() {
     };
     fetchProfile();
   }, [id]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch(`/api/reviews?consultantId=${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setReviews(data.reviews || []);
+          if (data.averageRating) {
+            setAverageRating(data.averageRating);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load reviews:", err);
+      }
+    };
+    if (consultant) {
+      fetchReviews();
+    }
+  }, [id, consultant]);
 
   if (loading) {
     return (
@@ -69,8 +99,50 @@ export default function ConsultantProfile() {
   const experiences = Array.isArray(consultant.experienceDetails) ? consultant.experienceDetails : [];
   const education = Array.isArray(consultant.educationDetails) ? consultant.educationDetails : [];
 
-  // Quote or mission generated from name/role if not present
-  const taglineQuote = `My mission is to transform complex challenges into structured roadmaps for legacy-level growth.`;
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    setReviewError('');
+    if (!newReviewName.trim()) {
+      setReviewError('Name is required');
+      return;
+    }
+    if (newReviewRating < 1 || newReviewRating > 5) {
+      setReviewError('Rating must be between 1 and 5');
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          consultantId: id,
+          userName: newReviewName,
+          userEmail: newReviewEmail,
+          rating: newReviewRating,
+          comment: newReviewComment
+        })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to submit review');
+      }
+
+      const data = await res.json();
+      
+      // Update state
+      setReviews(prev => [data.review, ...prev]);
+      setAverageRating(data.newAverageRating);
+      setNewReviewComment('');
+      alert('Review successfully submitted!');
+    } catch (err) {
+      setReviewError(err.message);
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen pb-20 selection:bg-primary/10">
@@ -150,7 +222,7 @@ export default function ConsultantProfile() {
                 </div>
                 <div className="absolute -bottom-4 -right-4 bg-surface-container-lowest p-3 rounded-xl shadow-lg flex items-center gap-2 border border-outline-variant/5">
                   <span className="material-symbols-outlined text-amber-500 fill-icon text-lg">star</span>
-                  <span className="font-headline font-bold text-on-surface text-sm">{consultant.rating || '5.0'}</span>
+                  <span className="font-headline font-bold text-on-surface text-sm">{averageRating}</span>
                 </div>
               </div>
               <div className="flex-1 pb-4 text-left">
@@ -306,6 +378,124 @@ export default function ConsultantProfile() {
                   )}
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Reviews Section */}
+          <section className="mt-16 text-left mb-16" id="reviews">
+            <div className="flex items-center justify-between mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-on-surface">Client Reviews & Feedback</h2>
+              <div className="h-[1px] flex-1 mx-8 bg-outline-variant/30"></div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              {/* Review List Column */}
+              <div className="lg:col-span-7 space-y-6">
+                {reviews.length === 0 ? (
+                  <div className="bg-surface-container-low border border-outline-variant/5 rounded-2xl p-8 text-center text-secondary">
+                    <span className="material-symbols-outlined text-4xl mb-2 text-slate-300">chat_bubble_outline</span>
+                    <p className="text-sm font-semibold">No reviews yet</p>
+                    <p className="text-xs mt-1">Be the first to share your experience with {consultant.fullName || consultant.name}.</p>
+                  </div>
+                ) : (
+                  reviews.map((r, index) => (
+                    <div key={index} className="bg-surface-container-low border border-outline-variant/5 rounded-2xl p-6 shadow-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <p className="font-bold text-slate-800 text-sm">{r.userName}</p>
+                          <p className="text-[10px] text-slate-400 font-medium">
+                            {r.createdAt ? new Date(r.createdAt).toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' }) : 'Just now'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-0.5 text-amber-500 text-sm font-bold">
+                          <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                          <span>{parseFloat(r.rating).toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-600 leading-relaxed font-body italic">
+                        "{r.comment || 'No comment left.'}"
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Write Review Column */}
+              <div className="lg:col-span-5 bg-white border border-slate-100 rounded-2xl p-6 md:p-8 shadow-sm">
+                <h3 className="font-headline font-bold text-lg text-slate-900 mb-2">Write a Review</h3>
+                <p className="text-xs text-secondary mb-6">Share your feedback from sessions with this advisor.</p>
+                
+                {reviewError && (
+                  <div className="mb-4 p-3 bg-rose-50 border border-rose-100 text-rose-600 text-xs rounded-lg font-semibold">
+                    {reviewError}
+                  </div>
+                )}
+
+                <form onSubmit={handleReviewSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-secondary uppercase mb-1">Your Name</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="Enter name"
+                      value={newReviewName}
+                      onChange={(e) => setNewReviewName(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:ring-1 focus:ring-primary font-medium text-slate-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-secondary uppercase mb-1">Your Email (Optional)</label>
+                    <input 
+                      type="email" 
+                      placeholder="Enter email"
+                      value={newReviewEmail}
+                      onChange={(e) => setNewReviewEmail(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:ring-1 focus:ring-primary font-medium text-slate-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-secondary uppercase mb-1.5">Rating</label>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setNewReviewRating(star)}
+                          className="focus:outline-none transition-transform active:scale-90"
+                        >
+                          <span className={`material-symbols-outlined text-2xl ${newReviewRating >= star ? 'text-amber-500' : 'text-slate-300'}`} style={newReviewRating >= star ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                            star
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-secondary uppercase mb-1">Comment</label>
+                    <textarea 
+                      required
+                      rows={3}
+                      placeholder="Describe your session experience..."
+                      value={newReviewComment}
+                      onChange={(e) => setNewReviewComment(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:ring-1 focus:ring-primary font-medium text-slate-800 resize-none h-20"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReview}
+                    className="w-full py-3 bg-[#003ec7] hover:bg-[#003ec7]/90 text-white text-xs font-bold uppercase rounded-xl transition shadow-md hover:shadow-primary/10 flex items-center justify-center gap-2"
+                  >
+                    {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
+                  </button>
+                </form>
+              </div>
+
             </div>
           </section>
 
