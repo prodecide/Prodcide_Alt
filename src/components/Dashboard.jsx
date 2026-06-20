@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -43,8 +43,6 @@ export default function Dashboard() {
   const [gapCategory, setGapCategory] = useState('Human Capital Strategy');
   const [gapDescription, setGapDescription] = useState('Bridging the gap between corporate culture and rapid digital expansion.');
 
-  // Modal / Editing State
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -59,6 +57,282 @@ export default function Dashboard() {
   const [criticalGaps, setCriticalGaps] = useState([]);
   const [currentSkills, setCurrentSkills] = useState([]);
 
+  // New Profile Fields
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileLocation, setProfileLocation] = useState('');
+  const [profileBio, setProfileBio] = useState('');
+  const [profileLinkedIn, setProfileLinkedIn] = useState('');
+
+  // Inline Edit State
+  const [editingField, setEditingField] = useState(null);
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
+  const [isDirty, setIsDirty] = useState(false);
+  const saveTimerRef = useRef(null);
+
+  // Debounced auto-save to /api/user-profiles (PUT partial update)
+  const debouncedSaveField = useCallback((fieldName, fieldValue) => {
+    if (!profileEmail) return;
+    setIsDirty(true);
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      setSaveStatus('saving');
+      try {
+        const res = await fetch('/api/user-profiles', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: profileEmail, [fieldName]: fieldValue })
+        });
+        if (res.ok) {
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus('idle'), 2000);
+        } else {
+          setSaveStatus('error');
+          setTimeout(() => setSaveStatus('idle'), 3000);
+        }
+      } catch {
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      }
+      setIsDirty(false);
+    }, 600);
+  }, [profileEmail]);
+
+  // Full profile save to /api/user-profiles (POST full upsert)
+  const saveFullProfile = useCallback(async () => {
+    if (!profileEmail) return;
+    setSaveStatus('saving');
+    try {
+      const profileData = {
+        email: profileEmail,
+        name: profileName,
+        age: profileAge,
+        college: profileCollege,
+        major: profileMajor,
+        phone: profilePhone,
+        location: profileLocation,
+        bio: profileBio,
+        linkedIn: profileLinkedIn,
+        class10,
+        class12,
+        undergrad,
+        postgrad,
+        interests,
+        customInterests,
+        gaps,
+        gapCategory,
+        gapDescription,
+        suggestedPaths,
+        currentSkills
+      };
+      const res = await fetch('/api/user-profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData)
+      });
+      if (res.ok) {
+        setSaveStatus('saved');
+        setIsDirty(false);
+        // Also keep localStorage in sync
+        localStorage.setItem('discovery_user_profile', JSON.stringify(profileData));
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } else {
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      }
+    } catch {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  }, [profileEmail, profileName, profileAge, profileCollege, profileMajor, profilePhone, profileLocation, profileBio, profileLinkedIn, class10, class12, undergrad, postgrad, interests, customInterests, gaps, gapCategory, gapDescription, suggestedPaths, currentSkills]);
+
+  // Reusable Inline Editable Field component
+  const InlineField = ({ fieldName, value, setValue, label, placeholder, type = 'text', multiline = false, className = '', displayClassName = '', inputClassName = '' }) => {
+    const isEditing = editingField === fieldName;
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+      if (isEditing && inputRef.current) {
+        inputRef.current.focus();
+        if (inputRef.current.select) inputRef.current.select();
+      }
+    }, [isEditing]);
+
+    const handleBlur = () => {
+      setEditingField(null);
+      debouncedSaveField(fieldName, value);
+      saveProfileLocally({ [fieldName]: value });
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter' && !multiline) {
+        e.preventDefault();
+        e.target.blur();
+      }
+      if (e.key === 'Escape') {
+        setEditingField(null);
+      }
+    };
+
+    if (isEditing) {
+      const sharedClasses = `w-full bg-white border-2 border-[#003ec7]/40 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-[#003ec7]/30 outline-none font-medium transition-all shadow-sm ${inputClassName}`;
+      if (multiline) {
+        return (
+          <textarea
+            ref={inputRef}
+            value={value}
+            onChange={(e) => { setValue(e.target.value); setIsDirty(true); }}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder || label}
+            rows={3}
+            className={`${sharedClasses} resize-none ${className}`}
+          />
+        );
+      }
+      return (
+        <input
+          ref={inputRef}
+          type={type}
+          value={value}
+          onChange={(e) => { setValue(e.target.value); setIsDirty(true); }}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder || label}
+          className={`${sharedClasses} ${className}`}
+        />
+      );
+    }
+
+    return (
+      <div
+        onClick={() => setEditingField(fieldName)}
+        className={`group/edit cursor-pointer relative inline-flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 -mx-1.5 transition-all hover:bg-[#003ec7]/5 ${displayClassName}`}
+        title={`Click to edit ${label || fieldName}`}
+      >
+        <span className={className}>
+          {value || <span className="text-slate-400 italic">{placeholder || `Add ${label || fieldName}...`}</span>}
+        </span>
+        <span className="material-symbols-outlined text-[11px] text-slate-400 opacity-0 group-hover/edit:opacity-100 transition-opacity">
+          edit
+        </span>
+      </div>
+    );
+  };
+
+  const fetchAndSyncProfile = async (email) => {
+    try {
+      // Try the new user_profiles collection first
+      let res = await fetch(`/api/user-profiles?email=${encodeURIComponent(email)}`);
+      let data;
+
+      if (res.ok) {
+        data = await res.json();
+      } else {
+        // Fallback: try the legacy users collection
+        res = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
+        if (res.ok) {
+          data = await res.json();
+          // Migrate to new collection
+          await fetch('/api/user-profiles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...data, email })
+          });
+        } else if (res.status === 404) {
+          pushProfileToDatabase(email);
+          return;
+        }
+      }
+
+      if (data) {
+        if (data.name) setProfileName(data.name);
+        if (data.age) setProfileAge(data.age);
+        if (data.college) setProfileCollege(data.college);
+        if (data.major) setProfileMajor(data.major);
+        if (data.class10) setClass10(data.class10);
+        if (data.class12) setClass12(data.class12);
+        if (data.undergrad) setUndergrad(data.undergrad);
+        if (data.postgrad) setPostgrad(data.postgrad);
+        if (data.interests) setInterests(data.interests);
+        if (data.customInterests) setCustomInterests(data.customInterests);
+        if (data.gaps) setGaps(data.gaps);
+        if (data.gapCategory) setGapCategory(data.gapCategory);
+        if (data.gapDescription) setGapDescription(data.gapDescription);
+        if (data.suggestedPaths) setSuggestedPaths(data.suggestedPaths);
+        if (data.currentSkills) setCurrentSkills(data.currentSkills);
+        // Load new fields
+        if (data.phone) setProfilePhone(data.phone);
+        if (data.location) setProfileLocation(data.location);
+        if (data.bio) setProfileBio(data.bio);
+        if (data.linkedIn) setProfileLinkedIn(data.linkedIn);
+
+        localStorage.setItem('discovery_user_profile', JSON.stringify({
+          name: data.name,
+          age: data.age,
+          college: data.college,
+          major: data.major,
+          phone: data.phone,
+          location: data.location,
+          bio: data.bio,
+          linkedIn: data.linkedIn,
+          class10: data.class10,
+          class12: data.class12,
+          undergrad: data.undergrad,
+          postgrad: data.postgrad,
+          interests: data.interests,
+          customInterests: data.customInterests,
+          gaps: data.gaps,
+          gapCategory: data.gapCategory,
+          gapDescription: data.gapDescription
+        }));
+        if (data.suggestedPaths || data.gaps || data.currentSkills) {
+          localStorage.setItem('discovery_results', JSON.stringify({
+            suggestedPaths: data.suggestedPaths,
+            criticalGaps: data.gaps,
+            currentSkills: data.currentSkills
+          }));
+        }
+      }
+    } catch (e) {
+      console.error("Failed to sync profile from db:", e);
+    }
+  };
+
+  const pushProfileToDatabase = async (email = profileEmail) => {
+    if (!email) return;
+    try {
+      const profileData = {
+        email,
+        name: profileName,
+        age: profileAge,
+        college: profileCollege,
+        major: profileMajor,
+        phone: profilePhone,
+        location: profileLocation,
+        bio: profileBio,
+        linkedIn: profileLinkedIn,
+        class10,
+        class12,
+        undergrad,
+        postgrad,
+        interests,
+        customInterests,
+        gaps,
+        gapCategory,
+        gapDescription,
+        suggestedPaths,
+        currentSkills
+      };
+      await fetch('/api/user-profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData)
+      });
+    } catch (e) {
+      console.error("Failed to save profile to database:", e);
+    }
+  };
+
   // Load profile data and AI results on mount
   useEffect(() => {
     setActiveTab(activeTabParam);
@@ -66,7 +340,10 @@ export default function Dashboard() {
     // Load user email and name if authenticated
     const storedEmail = localStorage.getItem('discovery_verified_email') || '';
     const storedName = localStorage.getItem('discovery_verified_name') || '';
-    if (storedEmail) setProfileEmail(storedEmail);
+    if (storedEmail) {
+      setProfileEmail(storedEmail);
+      fetchAndSyncProfile(storedEmail);
+    }
     if (storedName) setProfileName(storedName);
 
     const savedProfileStr = localStorage.getItem('discovery_user_profile');
@@ -86,6 +363,10 @@ export default function Dashboard() {
         if (profile.gaps) setGaps(profile.gaps);
         if (profile.gapCategory) setGapCategory(profile.gapCategory);
         if (profile.gapDescription) setGapDescription(profile.gapDescription);
+        if (profile.phone) setProfilePhone(profile.phone);
+        if (profile.location) setProfileLocation(profile.location);
+        if (profile.bio) setProfileBio(profile.bio);
+        if (profile.linkedIn) setProfileLinkedIn(profile.linkedIn);
       } catch (e) {
         console.error("Failed to parse saved profile", e);
       }
@@ -143,22 +424,57 @@ export default function Dashboard() {
 
   // Profile Save
   const saveProfileLocally = (updatedFields = {}) => {
+    const name = updatedFields.name !== undefined ? updatedFields.name : profileName;
+    const age = updatedFields.age !== undefined ? updatedFields.age : profileAge;
+    const college = updatedFields.college !== undefined ? updatedFields.college : profileCollege;
+    const major = updatedFields.major !== undefined ? updatedFields.major : profileMajor;
+    const class10Val = updatedFields.class10 !== undefined ? updatedFields.class10 : class10;
+    const class12Val = updatedFields.class12 !== undefined ? updatedFields.class12 : class12;
+    const undergradVal = updatedFields.undergrad !== undefined ? updatedFields.undergrad : undergrad;
+    const postgradVal = updatedFields.postgrad !== undefined ? updatedFields.postgrad : postgrad;
+    const interestsVal = updatedFields.interests !== undefined ? updatedFields.interests : interests;
+    const customInterestsVal = updatedFields.customInterests !== undefined ? updatedFields.customInterests : customInterests;
+    const gapsVal = updatedFields.gaps !== undefined ? updatedFields.gaps : gaps;
+    const gapCategoryVal = updatedFields.gapCategory !== undefined ? updatedFields.gapCategory : gapCategory;
+    const gapDescriptionVal = updatedFields.gapDescription !== undefined ? updatedFields.gapDescription : gapDescription;
+    const phoneVal = updatedFields.phone !== undefined ? updatedFields.phone : profilePhone;
+    const locationVal = updatedFields.location !== undefined ? updatedFields.location : profileLocation;
+    const bioVal = updatedFields.bio !== undefined ? updatedFields.bio : profileBio;
+    const linkedInVal = updatedFields.linkedIn !== undefined ? updatedFields.linkedIn : profileLinkedIn;
+
     const profileData = {
-      name: updatedFields.name !== undefined ? updatedFields.name : profileName,
-      age: updatedFields.age !== undefined ? updatedFields.age : profileAge,
-      college: updatedFields.college !== undefined ? updatedFields.college : profileCollege,
-      major: updatedFields.major !== undefined ? updatedFields.major : profileMajor,
-      class10: updatedFields.class10 !== undefined ? updatedFields.class10 : class10,
-      class12: updatedFields.class12 !== undefined ? updatedFields.class12 : class12,
-      undergrad: updatedFields.undergrad !== undefined ? updatedFields.undergrad : undergrad,
-      postgrad: updatedFields.postgrad !== undefined ? updatedFields.postgrad : postgrad,
-      interests: updatedFields.interests !== undefined ? updatedFields.interests : interests,
-      customInterests: updatedFields.customInterests !== undefined ? updatedFields.customInterests : customInterests,
-      gaps: updatedFields.gaps !== undefined ? updatedFields.gaps : gaps,
-      gapCategory: updatedFields.gapCategory !== undefined ? updatedFields.gapCategory : gapCategory,
-      gapDescription: updatedFields.gapDescription !== undefined ? updatedFields.gapDescription : gapDescription
+      name,
+      age,
+      college,
+      major,
+      phone: phoneVal,
+      location: locationVal,
+      bio: bioVal,
+      linkedIn: linkedInVal,
+      class10: class10Val,
+      class12: class12Val,
+      undergrad: undergradVal,
+      postgrad: postgradVal,
+      interests: interestsVal,
+      customInterests: customInterestsVal,
+      gaps: gapsVal,
+      gapCategory: gapCategoryVal,
+      gapDescription: gapDescriptionVal
     };
     localStorage.setItem('discovery_user_profile', JSON.stringify(profileData));
+
+    if (profileEmail) {
+      fetch('/api/user-profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: profileEmail,
+          ...profileData,
+          suggestedPaths,
+          currentSkills
+        })
+      }).catch(e => console.error("Cloud save failed:", e));
+    }
   };
 
   // Form Submissions for Registration & OTP
@@ -298,12 +614,6 @@ export default function Dashboard() {
     saveProfileLocally({ gaps: updated });
   };
 
-  // Edit Profile Form Submit handler (inside modal)
-  const handleSaveProfileChanges = (e) => {
-    e.preventDefault();
-    saveProfileLocally();
-    setIsEditingProfile(false);
-  };
 
   // Render specific material icon helper for custom activities
   const getActivityIcon = (activity) => {
@@ -659,11 +969,20 @@ export default function Dashboard() {
                   </div>
 
                   <button 
-                    onClick={() => setIsEditingProfile(true)}
-                    className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200/80 text-slate-700 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider border border-slate-200 transition-all shadow-sm"
+                    onClick={saveFullProfile}
+                    disabled={saveStatus === 'saving'}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all shadow-sm ${
+                      saveStatus === 'saved' 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                        : saveStatus === 'saving'
+                        ? 'bg-blue-50 text-blue-600 border-blue-200 animate-pulse'
+                        : 'bg-slate-100 hover:bg-slate-200/80 text-slate-700 border-slate-200'
+                    }`}
                   >
-                    <span className="material-symbols-outlined text-sm">edit</span>
-                    Edit Profile Details
+                    <span className="material-symbols-outlined text-sm">
+                      {saveStatus === 'saved' ? 'check_circle' : saveStatus === 'saving' ? 'sync' : 'save'}
+                    </span>
+                    {saveStatus === 'saved' ? 'Saved!' : saveStatus === 'saving' ? 'Saving...' : 'Save All Changes'}
                   </button>
                 </div>
 
@@ -686,46 +1005,110 @@ export default function Dashboard() {
                         </button>
                       </div>
 
-                      {/* Details Column */}
+                      {/* Details Column — Inline Editable */}
                       <div className="w-full md:w-3/5 p-10 flex flex-col justify-between">
                         <div>
-                          <span className="text-[#003ec7] font-bold text-xs tracking-widest uppercase mb-2 block">Top Tier Strategy Match</span>
-                          <h3 className="headline-anchor text-3xl font-extrabold text-on-surface mb-2">Elena Richardson</h3>
+                          <span className="text-[#003ec7] font-bold text-xs tracking-widest uppercase mb-2 block">Your Profile</span>
                           
-                          {/* Subtitle dynamic based on user profile college/major */}
-                          <p className="text-slate-500 text-sm font-semibold mb-6">
-                            Pursuing {profileMajor || 'engineering'} at {profileCollege || 'KMCT'}
-                          </p>
+                          {/* Editable Name */}
+                          <InlineField 
+                            fieldName="name" value={profileName} setValue={setProfileName}
+                            label="Full Name" placeholder="Enter your name"
+                            className="headline-anchor text-3xl font-extrabold text-on-surface"
+                          />
+                          
+                          {/* Editable College & Major subtitle */}
+                          <div className="flex items-center gap-1 text-slate-500 text-sm font-semibold mb-4 mt-1">
+                            <span>Pursuing</span>
+                            <InlineField 
+                              fieldName="major" value={profileMajor} setValue={setProfileMajor}
+                              label="Major" placeholder="your major"
+                              className="text-sm font-semibold text-slate-700"
+                            />
+                            <span>at</span>
+                            <InlineField 
+                              fieldName="college" value={profileCollege} setValue={setProfileCollege}
+                              label="College" placeholder="your college"
+                              className="text-sm font-semibold text-slate-700"
+                            />
+                          </div>
 
-                          <div className="space-y-4 mb-8">
-                            <p className="text-[#434656] leading-relaxed text-sm">
-                              Specializing in high-growth ecosystems and structural reorganizations. Elena led the EMEA scaling project for two Fortune 500 tech transitions.
-                            </p>
+                          {/* Editable Bio */}
+                          <div className="mb-4">
+                            <InlineField 
+                              fieldName="bio" value={profileBio} setValue={setProfileBio}
+                              label="Bio" placeholder="Write a short bio about yourself..."
+                              multiline={true}
+                              className="text-[#434656] leading-relaxed text-sm"
+                            />
+                          </div>
 
-                            {/* Dynamic AI Suggested Pathway Tags */}
-                            <div className="flex flex-wrap gap-2">
-                              {suggestedPaths.length > 0 ? (
-                                suggestedPaths.map((path, idx) => (
-                                  <span key={idx} className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-xs">{path.icon || 'bolt'}</span>
-                                    {path.title}
-                                  </span>
-                                ))
-                              ) : (
-                                <>
-                                  <span className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface">M&A Strategy</span>
-                                  <span className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface">Cloud Transition</span>
-                                  <span className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface">Series C+</span>
-                                </>
-                              )}
+                          {/* Contact Info Row */}
+                          <div className="flex flex-wrap gap-4 mb-6">
+                            <div className="flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-sm text-slate-400">mail</span>
+                              <span className="text-xs text-slate-600 font-medium">{profileEmail}</span>
                             </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-sm text-slate-400">call</span>
+                              <InlineField 
+                                fieldName="phone" value={profilePhone} setValue={setProfilePhone}
+                                label="Phone" placeholder="Add phone number"
+                                className="text-xs text-slate-600 font-medium"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-sm text-slate-400">location_on</span>
+                              <InlineField 
+                                fieldName="location" value={profileLocation} setValue={setProfileLocation}
+                                label="Location" placeholder="Add location"
+                                className="text-xs text-slate-600 font-medium"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-sm text-slate-400">link</span>
+                              <InlineField 
+                                fieldName="linkedIn" value={profileLinkedIn} setValue={setProfileLinkedIn}
+                                label="LinkedIn" placeholder="Add LinkedIn URL"
+                                className="text-xs text-[#003ec7] font-medium"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Age */}
+                          <div className="flex items-center gap-3 mb-6">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">Age:</span>
+                            <InlineField 
+                              fieldName="age" value={profileAge} setValue={setProfileAge}
+                              label="Age" placeholder="25" type="text"
+                              className="text-xs font-semibold text-slate-700"
+                            />
+                          </div>
+
+                          {/* Dynamic AI Suggested Pathway Tags */}
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {suggestedPaths.length > 0 ? (
+                              suggestedPaths.map((path, idx) => (
+                                <span key={idx} className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface flex items-center gap-1">
+                                  <span className="material-symbols-outlined text-xs">{path.icon || 'bolt'}</span>
+                                  {path.title}
+                                </span>
+                              ))
+                            ) : (
+                              <>
+                                <span className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface">M&A Strategy</span>
+                                <span className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface">Cloud Transition</span>
+                                <span className="bg-[#f2f4f6] px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tight text-on-surface">Series C+</span>
+                              </>
+                            )}
                           </div>
                         </div>
 
-                        {/* Educational History Grid */}
+                        {/* Educational History Grid — Inline Editable */}
                         <div className="mt-6 border-t border-slate-100 pt-6">
                           <div className="flex justify-between items-center mb-4">
                             <h4 className="headline-anchor text-xs font-bold text-on-surface uppercase tracking-widest">Educational History</h4>
+                            <span className="text-[9px] text-slate-400 italic">Click any value to edit</span>
                           </div>
                           
                           <div className="space-y-3">
@@ -734,7 +1117,12 @@ export default function Dashboard() {
                                 <p className="text-[11px] font-bold text-on-surface">10th Standard</p>
                                 <p className="text-[9px] text-slate-400">Secondary Education</p>
                               </div>
-                              <span className="text-xs font-semibold text-[#003ec7] bg-blue-50 px-2 py-0.5 rounded">{class10 || '94.2%'}</span>
+                              <InlineField 
+                                fieldName="class10" value={class10} setValue={setClass10}
+                                label="10th Score" placeholder="94.2%"
+                                className="text-xs font-semibold text-[#003ec7]"
+                                displayClassName="bg-blue-50 px-2 py-0.5 rounded"
+                              />
                             </div>
 
                             <div className="flex justify-between items-center py-2 border-b border-slate-100">
@@ -742,7 +1130,12 @@ export default function Dashboard() {
                                 <p className="text-[11px] font-bold text-on-surface">12th Standard</p>
                                 <p className="text-[9px] text-slate-400">Higher Secondary Education</p>
                               </div>
-                              <span className="text-xs font-semibold text-[#003ec7] bg-blue-50 px-2 py-0.5 rounded">{class12 || '91.8%'}</span>
+                              <InlineField 
+                                fieldName="class12" value={class12} setValue={setClass12}
+                                label="12th Score" placeholder="91.8%"
+                                className="text-xs font-semibold text-[#003ec7]"
+                                displayClassName="bg-blue-50 px-2 py-0.5 rounded"
+                              />
                             </div>
 
                             <div className="flex justify-between items-center py-2 border-b border-slate-100">
@@ -750,22 +1143,26 @@ export default function Dashboard() {
                                 <p className="text-[11px] font-bold text-on-surface">Undergraduate</p>
                                 <p className="text-[9px] text-slate-400">Bachelor's Degree</p>
                               </div>
-                              <span className="text-xs font-semibold text-[#003ec7] bg-blue-50 px-2 py-0.5 rounded truncate max-w-[150px]" title={undergrad}>
-                                {undergrad || 'B.Tech - 8.9 CGPA'}
-                              </span>
+                              <InlineField 
+                                fieldName="undergrad" value={undergrad} setValue={setUndergrad}
+                                label="Undergrad" placeholder="B.Tech - 8.9 CGPA"
+                                className="text-xs font-semibold text-[#003ec7]"
+                                displayClassName="bg-blue-50 px-2 py-0.5 rounded max-w-[200px]"
+                              />
                             </div>
 
-                            {postgrad && (
-                              <div className="flex justify-between items-center py-2">
-                                <div>
-                                  <p className="text-[11px] font-bold text-on-surface">Postgraduate</p>
-                                  <p className="text-[9px] text-slate-400">Master's / Advanced Degree</p>
-                                </div>
-                                <span className="text-xs font-semibold text-[#003ec7] bg-blue-50 px-2 py-0.5 rounded truncate max-w-[150px]" title={postgrad}>
-                                  {postgrad}
-                                </span>
+                            <div className="flex justify-between items-center py-2">
+                              <div>
+                                <p className="text-[11px] font-bold text-on-surface">Postgraduate</p>
+                                <p className="text-[9px] text-slate-400">Master's / Advanced Degree</p>
                               </div>
-                            )}
+                              <InlineField 
+                                fieldName="postgrad" value={postgrad} setValue={setPostgrad}
+                                label="Postgrad" placeholder="Add postgrad degree..."
+                                className="text-xs font-semibold text-[#003ec7]"
+                                displayClassName="bg-blue-50 px-2 py-0.5 rounded max-w-[200px]"
+                              />
+                            </div>
                           </div>
                         </div>
 
@@ -1066,134 +1463,21 @@ export default function Dashboard() {
         )}
       </main>
 
-      {/* ─── EDIT PROFILE MODAL (AUTHENTICATED ONLY) ─── */}
-      {isEditingProfile && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2rem] w-full max-w-2xl overflow-hidden shadow-2xl surface-stack-3 border border-slate-100 animate-scale-up">
-            
-            <div className="px-8 py-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="font-headline font-bold text-xl text-slate-900">Edit Profile & Academic Records</h3>
-              <button 
-                onClick={() => setIsEditingProfile(false)}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer p-1 rounded-full hover:bg-slate-200/50 flex"
-              >
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveProfileChanges} className="p-8 space-y-6">
-              
-              {/* Basic Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Full Name</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={profileName}
-                    onChange={(e) => setProfileName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Age</label>
-                  <input 
-                    type="number" 
-                    required
-                    value={profileAge}
-                    onChange={(e) => setProfileAge(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                  />
-                </div>
-              </div>
-
-              {/* Status fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current College / School</label>
-                  <input 
-                    type="text" 
-                    value={profileCollege}
-                    onChange={(e) => setProfileCollege(e.target.value)}
-                    placeholder="e.g. KMCT"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Major / Degree</label>
-                  <input 
-                    type="text" 
-                    value={profileMajor}
-                    onChange={(e) => setProfileMajor(e.target.value)}
-                    placeholder="e.g. engineering"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                  />
-                </div>
-              </div>
-
-              {/* Grades fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">10th GPA / %</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={class10}
-                    onChange={(e) => setClass10(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">12th GPA / %</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={class12}
-                    onChange={(e) => setClass12(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Undergrad GPA / Degree</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={undergrad}
-                    onChange={(e) => setUndergrad(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Postgraduate Degree (Optional)</label>
-                <input 
-                  type="text" 
-                  value={postgrad}
-                  onChange={(e) => setPostgrad(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs focus:ring-2 focus:ring-primary outline-none font-medium"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                <button 
-                  type="button" 
-                  onClick={() => setIsEditingProfile(false)}
-                  className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-5 py-2.5 rounded-xl text-xs font-bold uppercase"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  className="bg-[#003ec7] text-white hover:bg-[#003ec7]/90 px-6 py-2.5 rounded-xl text-xs font-bold uppercase"
-                >
-                  Save Changes
-                </button>
-              </div>
-
-            </form>
-
-          </div>
+      {/* ─── Floating Save Status Toast ─── */}
+      {saveStatus !== 'idle' && (
+        <div className={`fixed bottom-24 md:bottom-8 right-8 z-50 flex items-center gap-2.5 px-5 py-3 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all animate-fade-in ${
+          saveStatus === 'saved' 
+            ? 'bg-emerald-50/95 border-emerald-200 text-emerald-700' 
+            : saveStatus === 'saving'
+            ? 'bg-blue-50/95 border-blue-200 text-blue-700'
+            : 'bg-rose-50/95 border-rose-200 text-rose-700'
+        }`}>
+          <span className={`material-symbols-outlined text-lg ${saveStatus === 'saving' ? 'animate-spin' : ''}`}>
+            {saveStatus === 'saved' ? 'check_circle' : saveStatus === 'saving' ? 'sync' : 'error'}
+          </span>
+          <span className="text-xs font-bold uppercase tracking-wider">
+            {saveStatus === 'saved' ? 'Changes Saved' : saveStatus === 'saving' ? 'Saving...' : 'Save Failed'}
+          </span>
         </div>
       )}
 

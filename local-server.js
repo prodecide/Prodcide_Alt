@@ -8,6 +8,9 @@ const { default: consultantsHandler } = await import('./api/consultants.js');
 const { default: authHandler } = await import('./api/auth.js');
 const { default: generateBioHandler } = await import('./api/generate-bio.js');
 const { default: discoveryChatHandler } = await import('./api/discovery-chat.js');
+const { default: usersHandler } = await import('./api/users.js');
+const { default: reviewsHandler } = await import('./api/reviews.js');
+const { default: userProfilesHandler } = await import('./api/user-profiles.js');
 
 const app = express();
 const port = 3001;
@@ -31,6 +34,9 @@ app.all('/api/consultants', vercelToExpress(consultantsHandler));
 app.all('/api/auth', vercelToExpress(authHandler));
 app.all('/api/generate-bio', vercelToExpress(generateBioHandler));
 app.all('/api/discovery-chat', vercelToExpress(discoveryChatHandler));
+app.all('/api/users', vercelToExpress(usersHandler));
+app.all('/api/reviews', vercelToExpress(reviewsHandler));
+app.all('/api/user-profiles', vercelToExpress(userProfilesHandler));
 
 app.listen(port, () => {
     console.log(`Local API server running at http://localhost:${port}`);
