@@ -31,6 +31,8 @@ export default async function handler(req, res) {
                         bio: '',
                         linkedIn: '',
                         avatar: legacyUser.avatar || '',
+                        originalAvatar: legacyUser.originalAvatar || '',
+                        aiAvatar: legacyUser.aiAvatar || '',
                         class10: legacyUser.class10 || '',
                         class12: legacyUser.class12 || '',
                         undergrad: legacyUser.undergrad || '',
@@ -73,6 +75,8 @@ export default async function handler(req, res) {
                 bio: data.bio || '',
                 linkedIn: data.linkedIn || '',
                 avatar: data.avatar || '',
+                originalAvatar: data.originalAvatar || '',
+                aiAvatar: data.aiAvatar || '',
                 class10: data.class10 || '',
                 class12: data.class12 || '',
                 undergrad: data.undergrad || '',
@@ -115,7 +119,7 @@ export default async function handler(req, res) {
             const updateFields = { updatedAt: new Date() };
             const allowedFields = [
                 'name', 'age', 'college', 'major', 'phone', 'location',
-                'bio', 'linkedIn', 'avatar', 'class10', 'class12', 'undergrad', 'postgrad',
+                'bio', 'linkedIn', 'avatar', 'originalAvatar', 'aiAvatar', 'class10', 'class12', 'undergrad', 'postgrad',
                 'interests', 'customInterests', 'gaps', 'gapCategory', 'gapDescription',
                 'suggestedPaths', 'currentSkills'
             ];

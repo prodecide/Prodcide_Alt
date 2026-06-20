@@ -89,11 +89,15 @@ Return a JSON object with:
     const userProfiles = database.collection('user_profiles');
     const normalizedEmail = email.toLowerCase().trim();
 
+    const originalAvatarUrl = `data:${mimeType};base64,${image}`;
+
     await userProfiles.updateOne(
       { email: normalizedEmail },
       { 
         $set: { 
           avatar: avatarUrl,
+          aiAvatar: avatarUrl,
+          originalAvatar: originalAvatarUrl,
           updatedAt: new Date()
         } 
       },
@@ -103,6 +107,7 @@ Return a JSON object with:
     return res.status(200).json({ 
       success: true, 
       avatarUrl, 
+      originalAvatarUrl,
       description: parsedData.description,
       headshotPrompt: parsedData.headshotPrompt
     });

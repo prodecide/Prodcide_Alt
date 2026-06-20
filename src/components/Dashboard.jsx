@@ -136,6 +136,8 @@ export default function Dashboard() {
   const [profileBio, setProfileBio] = useState('');
   const [profileLinkedIn, setProfileLinkedIn] = useState('');
   const [profileAvatar, setProfileAvatar] = useState('https://lh3.googleusercontent.com/aida-public/AB6AXuCO1SgPqlUhkSfnxTOJiyV_DkiZgv7CALESNQh5Ir0iPtmcRNzE9LVKjMUGGV0yxYcqYHYtCedF7b3deb07BG4jA1MtIF7W4vEZY9yI7wInhxDDXhoKfYpCcXu2rk1lyrN7wUdZ7NiEwvTlelQkFXjPJAwsplrTqB_6Wv7S3BAPQp3OZNmosCDkzIgIpytB4x86KvwGXx9ZOeL4RaUkWlqHsInb9qXI7u6ZdYy6g_dlb24h-Y19-kD4Talwp9HYosBXpjYyHEMdfKc');
+  const [originalAvatar, setOriginalAvatar] = useState('');
+  const [aiAvatar, setAiAvatar] = useState('');
   const fileInputRef = useRef(null);
 
   // Inline Edit State
@@ -188,6 +190,8 @@ export default function Dashboard() {
         bio: profileBio,
         linkedIn: profileLinkedIn,
         avatar: profileAvatar,
+        originalAvatar,
+        aiAvatar,
         class10,
         class12,
         undergrad,
@@ -219,7 +223,7 @@ export default function Dashboard() {
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
-  }, [profileEmail, profileName, profileAge, profileCollege, profileMajor, profilePhone, profileLocation, profileBio, profileLinkedIn, profileAvatar, class10, class12, undergrad, postgrad, interests, customInterests, gaps, gapCategory, gapDescription, suggestedPaths, currentSkills]);
+  }, [profileEmail, profileName, profileAge, profileCollege, profileMajor, profilePhone, profileLocation, profileBio, profileLinkedIn, profileAvatar, originalAvatar, aiAvatar, class10, class12, undergrad, postgrad, interests, customInterests, gaps, gapCategory, gapDescription, suggestedPaths, currentSkills]);
 
   const fetchAndSyncProfile = async (email) => {
     try {
@@ -268,6 +272,8 @@ export default function Dashboard() {
         if (data.bio) setProfileBio(data.bio);
         if (data.linkedIn) setProfileLinkedIn(data.linkedIn);
         if (data.avatar) setProfileAvatar(data.avatar);
+        if (data.originalAvatar) setOriginalAvatar(data.originalAvatar);
+        if (data.aiAvatar) setAiAvatar(data.aiAvatar);
 
         localStorage.setItem('discovery_user_profile', JSON.stringify({
           name: data.name,
@@ -279,6 +285,8 @@ export default function Dashboard() {
           bio: data.bio,
           linkedIn: data.linkedIn,
           avatar: data.avatar || profileAvatar,
+          originalAvatar: data.originalAvatar || originalAvatar,
+          aiAvatar: data.aiAvatar || aiAvatar,
           class10: data.class10,
           class12: data.class12,
           undergrad: data.undergrad,
@@ -446,6 +454,8 @@ export default function Dashboard() {
     const bioVal = updatedFields.bio !== undefined ? updatedFields.bio : profileBio;
     const linkedInVal = updatedFields.linkedIn !== undefined ? updatedFields.linkedIn : profileLinkedIn;
     const avatarVal = updatedFields.avatar !== undefined ? updatedFields.avatar : profileAvatar;
+    const originalAvatarVal = updatedFields.originalAvatar !== undefined ? updatedFields.originalAvatar : originalAvatar;
+    const aiAvatarVal = updatedFields.aiAvatar !== undefined ? updatedFields.aiAvatar : aiAvatar;
 
     const profileData = {
       name,
@@ -457,6 +467,8 @@ export default function Dashboard() {
       bio: bioVal,
       linkedIn: linkedInVal,
       avatar: avatarVal,
+      originalAvatar: originalAvatarVal,
+      aiAvatar: aiAvatarVal,
       class10: class10Val,
       class12: class12Val,
       undergrad: undergradVal,
@@ -510,7 +522,13 @@ export default function Dashboard() {
           const data = await res.json();
           if (data.avatarUrl) {
             setProfileAvatar(data.avatarUrl);
-            saveProfileLocally({ avatar: data.avatarUrl });
+            setOriginalAvatar(data.originalAvatarUrl);
+            setAiAvatar(data.avatarUrl);
+            saveProfileLocally({ 
+              avatar: data.avatarUrl,
+              originalAvatar: data.originalAvatarUrl,
+              aiAvatar: data.avatarUrl
+            });
             setSaveStatus('saved');
             setTimeout(() => setSaveStatus('idle'), 2000);
           } else {
@@ -1053,15 +1071,47 @@ export default function Dashboard() {
                           className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-105" 
                           src={profileAvatar}
                         />
+                        {originalAvatar && aiAvatar && (
+                          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md rounded-full p-1 flex gap-1 border border-white/10 z-10">
+                            <button
+                              onClick={() => {
+                                setProfileAvatar(aiAvatar);
+                                saveProfileLocally({ avatar: aiAvatar });
+                              }}
+                              className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-tight flex items-center gap-1 transition-all ${
+                                profileAvatar === aiAvatar 
+                                  ? 'bg-white text-slate-900 shadow-sm' 
+                                  : 'text-white hover:text-white/80'
+                              }`}
+                            >
+                              <span className="material-symbols-outlined text-[10px]">auto_awesome</span>
+                              AI
+                            </button>
+                            <button
+                              onClick={() => {
+                                setProfileAvatar(originalAvatar);
+                                saveProfileLocally({ avatar: originalAvatar });
+                              }}
+                              className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-tight flex items-center gap-1 transition-all ${
+                                profileAvatar === originalAvatar 
+                                  ? 'bg-white text-slate-900 shadow-sm' 
+                                  : 'text-white hover:text-white/80'
+                              }`}
+                            >
+                              <span className="material-symbols-outlined text-[10px]">photo_camera</span>
+                              Original
+                            </button>
+                          </div>
+                        )}
                         {saveStatus === 'saving' && (
-                          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center text-white text-center p-4">
+                          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center text-white text-center p-4 z-10">
                             <span className="material-symbols-outlined animate-spin text-3xl mb-2">sync</span>
                             <p className="text-[10px] font-bold uppercase tracking-wider">Styling with Gemini...</p>
                           </div>
                         )}
                         <button 
                           onClick={handleAvatarClick}
-                          className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-md text-primary p-3 rounded-full shadow-lg hover:bg-white hover:scale-110 transition-all flex items-center justify-center border border-white/20" 
+                          className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-md text-primary p-3 rounded-full shadow-lg hover:bg-white hover:scale-110 transition-all flex items-center justify-center border border-white/20 z-10" 
                           title="Upload Image"
                         >
                           <span className="material-symbols-outlined">add_a_photo</span>
