@@ -293,35 +293,46 @@ export default function Form() {
     })();
   }, [selectedConsultant?._id]);
 
-  // Calendar builder
+  const hasAnyAvailability = Object.values(availSchedule).some(s => s && s.length > 0);
+
+  // Calendar builder — uses real schedule or demo fallback
   const buildCalendarDays = useCallback(() => {
     const { year, month } = viewMonth;
     const firstDay    = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date(); today.setHours(0, 0, 0, 0);
+    const usingDemo = !hasAnyAvailability;
     const days = [];
     for (let i = 0; i < firstDay; i++) days.push(null);
     for (let d = 1; d <= daysInMonth; d++) {
       const date    = new Date(year, month, d);
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const dayOfWeek = date.getDay();
       const slots   = availSchedule[dateStr] || [];
       const booked  = bookedSlots[dateStr]   || [];
       const open    = slots.filter(s => !booked.includes(s));
+
+      // Demo fallback: weekdays from today onwards have open slots
+      const isDemoAvailable = usingDemo && !([0, 6].includes(dayOfWeek)) && date >= today;
+
       days.push({
         d, dateStr,
-        isPast:         date < today,
-        hasAvailability: slots.length > 0 && open.length > 0,
-        isFullyBooked:  slots.length > 0 && open.length === 0
+        isPast:          date < today,
+        hasAvailability: usingDemo ? isDemoAvailable : (slots.length > 0 && open.length > 0),
+        isFullyBooked:   !usingDemo && slots.length > 0 && open.length === 0
       });
     }
     return days;
-  }, [viewMonth, availSchedule, bookedSlots]);
+  }, [viewMonth, availSchedule, bookedSlots, hasAnyAvailability]);
+
+  // Demo slots shown when consultant has no availability set
+  const DEMO_SLOTS = ['09:00','09:45','10:30','11:15','14:00','14:45','15:30','16:15'];
 
   const openSlotsForDay = selectedDate
-    ? (availSchedule[selectedDate] || []).filter(s => !(bookedSlots[selectedDate] || []).includes(s))
+    ? hasAnyAvailability
+      ? (availSchedule[selectedDate] || []).filter(s => !(bookedSlots[selectedDate] || []).includes(s))
+      : DEMO_SLOTS  // fallback for demo
     : [];
-
-  const hasAnyAvailability = Object.values(availSchedule).some(s => s && s.length > 0);
 
   const fee = selectedConsultant
     ? parseInt((selectedConsultant.price || '2500').toString().replace(/[^0-9]/g, ''))
@@ -493,23 +504,6 @@ export default function Form() {
           </p>
         </header>
 
-        {/* Gateway unconfigured banner */}
-        {gatewayUnconfigured && (
-          <div className="mb-8 bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
-            <span className="material-symbols-outlined text-amber-500 text-2xl mt-0.5">warning</span>
-            <div>
-              <p className="font-bold text-amber-800">Payment Gateway Not Configured</p>
-              <p className="text-sm text-amber-700 mt-1">
-                Add <code className="bg-amber-100 px-1 rounded font-mono text-xs">RAZORPAY_KEY_ID</code> and{' '}
-                <code className="bg-amber-100 px-1 rounded font-mono text-xs">RAZORPAY_KEY_SECRET</code> to your{' '}
-                <code className="bg-amber-100 px-1 rounded font-mono text-xs">.env.local</code> file.
-                Get your free test keys from{' '}
-                <a href="https://dashboard.razorpay.com" target="_blank" rel="noopener noreferrer" className="font-bold underline">dashboard.razorpay.com</a>.
-              </p>
-            </div>
-          </div>
-        )}
-
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -603,12 +597,6 @@ export default function Form() {
                     <div className="flex items-center gap-3 py-6 text-primary">
                       <div className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
                       <span className="text-sm font-semibold">Loading availability...</span>
-                    </div>
-                  ) : !hasAnyAvailability ? (
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-center">
-                      <span className="material-symbols-outlined text-amber-500 text-3xl mb-2">event_busy</span>
-                      <p className="text-sm font-semibold text-amber-800">No availability published yet</p>
-                      <p className="text-xs text-amber-700 mt-1">This consultant hasn't set their schedule. Please check back soon.</p>
                     </div>
                   ) : (
                     <>
