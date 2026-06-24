@@ -12,140 +12,201 @@ function slotLabel(value) {
   return `${startH}:${mStr} ${ampm}`;
 }
 
-function loadRazorpayScript() {
-  return new Promise((resolve) => {
-    if (document.getElementById('razorpay-script')) return resolve(true);
-    const script = document.createElement('script');
-    script.id = 'razorpay-script';
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
+function formatCardNumber(val) {
+  return val.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})/g, '$1 ').trim();
 }
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-// ─── Payment Review Modal ─────────────────────────────────────────────────────
-function PaymentModal({ consultant, date, slot, clientName, clientEmail, context, onPay, onBack, paying }) {
+// ─── Demo Payment Modal ───────────────────────────────────────────────────────
+function PaymentModal({ consultant, date, slot, clientName, clientEmail, onPay, onBack, paying }) {
   const fee = parseInt((consultant?.price || '2500').toString().replace(/[^0-9]/g, ''));
   const platformFee = 250;
   const total = fee + platformFee;
+
+  const [cardNum, setCardNum]   = useState('4111 1111 1111 1111');
+  const [expiry, setExpiry]     = useState('12/28');
+  const [cvv, setCvv]           = useState('123');
+  const [cardName, setCardName] = useState(clientName || '');
+  const [step, setStep]         = useState('review'); // 'review' | 'card' | 'processing'
 
   const displayDate = date
     ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     : '';
 
+  const handleCardPay = (e) => {
+    e.preventDefault();
+    setStep('processing');
+    setTimeout(() => onPay(total), 2000);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
-        {/* Header */}
-        <div className="bg-gradient-to-br from-primary to-blue-600 px-8 pt-8 pb-6 text-white">
+
+        {/* Gradient header */}
+        <div className="bg-gradient-to-br from-[#0052FF] to-blue-700 px-8 pt-7 pb-5 text-white">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
               <span className="material-symbols-outlined text-xl">lock</span>
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/70">Secure Payment</p>
-              <h2 className="font-headline font-extrabold text-lg leading-tight">Review & Pay</h2>
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/60">Secure Checkout · Demo Mode</p>
+              <h2 className="font-headline font-extrabold text-lg">Complete Payment</h2>
             </div>
           </div>
-
-          {/* Consultant info */}
-          <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-3 backdrop-blur-sm">
-            <img
-              src={consultant?.profileImage || consultant?.imageUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'}
-              alt={consultant?.fullName}
-              className="w-12 h-12 rounded-xl object-cover ring-2 ring-white/30"
-            />
-            <div className="min-w-0">
-              <p className="font-extrabold text-sm truncate">{consultant?.fullName || consultant?.name}</p>
-              <p className="text-white/70 text-xs truncate">{consultant?.role || consultant?.profession}</p>
+          {/* Summary row */}
+          <div className="flex items-center justify-between bg-white/10 rounded-2xl px-4 py-3">
+            <div className="flex items-center gap-3">
+              <img
+                src={consultant?.profileImage || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'}
+                className="w-10 h-10 rounded-xl object-cover ring-2 ring-white/30" alt=""
+              />
+              <div>
+                <p className="font-bold text-sm leading-tight">{consultant?.fullName || consultant?.name}</p>
+                <p className="text-white/60 text-xs">{slotLabel(slot)} · 45 min · {displayDate.split(',')[0]}</p>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Session Details */}
-        <div className="px-8 py-5 border-b border-slate-100 space-y-2">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Session Details</p>
-          <div className="flex items-center gap-3 text-sm text-slate-700">
-            <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <span className="material-symbols-outlined text-primary text-base">calendar_month</span>
-            </span>
-            <span className="font-semibold">{displayDate}</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-slate-700">
-            <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <span className="material-symbols-outlined text-primary text-base">schedule</span>
-            </span>
-            <span className="font-semibold">{slotLabel(slot)} <span className="text-slate-400 font-normal">(45 min)</span></span>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-slate-700">
-            <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <span className="material-symbols-outlined text-primary text-base">person</span>
-            </span>
-            <span className="font-semibold">{clientName} <span className="text-slate-400 font-normal">· {clientEmail}</span></span>
-          </div>
-        </div>
-
-        {/* Pricing */}
-        <div className="px-8 py-5 border-b border-slate-100 space-y-2">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Fee Breakdown</p>
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-600">Consultation Session (45 min)</span>
-            <span className="font-semibold text-slate-800">₹{fee.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-600">Platform Fee</span>
-            <span className="font-semibold text-slate-800">₹{platformFee.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-base font-extrabold pt-3 border-t border-slate-100 mt-2">
-            <span className="text-slate-800">Total Amount</span>
-            <span className="text-primary">₹{total.toLocaleString()}</span>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="px-8 py-6 space-y-3">
-          <button
-            onClick={() => onPay(total)}
-            disabled={paying}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-blue-600 text-white font-extrabold text-base shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
-          >
-            {paying ? (
-              <><span className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" /> Processing...</>
-            ) : (
-              <><span className="material-symbols-outlined">payments</span> Pay ₹{total.toLocaleString()} with Razorpay</>
-            )}
-          </button>
-
-          <button
-            onClick={onBack}
-            disabled={paying}
-            className="w-full py-3 rounded-2xl border border-slate-200 text-slate-500 font-bold text-sm hover:bg-slate-50 transition-colors disabled:opacity-40"
-          >
-            ← Edit Details
-          </button>
-
-          {/* Trust signals */}
-          <div className="flex items-center justify-center gap-4 pt-2">
-            <div className="flex items-center gap-1.5 text-slate-400">
-              <span className="material-symbols-outlined text-sm">shield</span>
-              <span className="text-[10px] font-semibold">256-bit SSL</span>
-            </div>
-            <div className="w-px h-3 bg-slate-200" />
-            <div className="flex items-center gap-1.5 text-slate-400">
-              <span className="material-symbols-outlined text-sm">verified</span>
-              <span className="text-[10px] font-semibold">Razorpay Secured</span>
-            </div>
-            <div className="w-px h-3 bg-slate-200" />
-            <div className="flex items-center gap-1.5 text-slate-400">
-              <span className="material-symbols-outlined text-sm">account_balance</span>
-              <span className="text-[10px] font-semibold">PCI DSS</span>
+            <div className="text-right">
+              <p className="text-[10px] text-white/60 font-semibold">Total</p>
+              <p className="font-extrabold text-lg">₹{total.toLocaleString()}</p>
             </div>
           </div>
         </div>
+
+        {/* Demo badge */}
+        <div className="mx-8 mt-4 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+          <span className="material-symbols-outlined text-amber-500 text-sm">info</span>
+          <p className="text-[11px] font-semibold text-amber-700">Demo mode — no real payment will be charged</p>
+        </div>
+
+        {step === 'processing' ? (
+          /* Processing animation */
+          <div className="px-8 py-12 flex flex-col items-center gap-4">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
+              <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" />
+              <span className="absolute inset-0 flex items-center justify-center material-symbols-outlined text-primary text-2xl">payments</span>
+            </div>
+            <p className="font-extrabold text-slate-800 text-base">Processing Payment…</p>
+            <p className="text-xs text-slate-400">Verifying transaction with bank</p>
+            <div className="flex gap-1 mt-2">
+              {[0,1,2].map(i => (
+                <div key={i} className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+              ))}
+            </div>
+          </div>
+        ) : step === 'review' ? (
+          /* Fee review step */
+          <>
+            <div className="px-8 py-5 space-y-2">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Fee Breakdown</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Consultation Session (45 min)</span>
+                <span className="font-semibold">₹{fee.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Platform Fee</span>
+                <span className="font-semibold">₹{platformFee.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-extrabold text-base pt-3 border-t border-slate-100 mt-1">
+                <span>Total</span>
+                <span className="text-primary">₹{total.toLocaleString()}</span>
+              </div>
+            </div>
+            <div className="px-8 pb-7 space-y-3">
+              <button
+                onClick={() => setStep('card')}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-blue-600 text-white font-extrabold text-base shadow-lg shadow-primary/30 hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined">credit_card</span>
+                Pay ₹{total.toLocaleString()} via Card / UPI
+              </button>
+              <button onClick={onBack} className="w-full py-3 rounded-2xl border border-slate-200 text-slate-500 font-bold text-sm hover:bg-slate-50 transition-colors">
+                ← Edit Details
+              </button>
+              <div className="flex items-center justify-center gap-3 pt-1">
+                {['shield','verified','account_balance'].map((icon, i) => (
+                  <div key={i} className="flex items-center gap-1 text-slate-400">
+                    <span className="material-symbols-outlined text-sm">{icon}</span>
+                    <span className="text-[10px] font-semibold">{['256-bit SSL','Verified','PCI DSS'][i]}</span>
+                    {i < 2 && <div className="w-px h-3 bg-slate-200 ml-2" />}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Card entry form */
+          <form onSubmit={handleCardPay} className="px-8 py-6 space-y-4">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Card Details</p>
+
+            {/* Card number with visual card chip */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600">Card Number</label>
+              <div className="relative">
+                <input
+                  value={cardNum}
+                  onChange={e => setCardNum(formatCardNumber(e.target.value))}
+                  placeholder="1234 5678 9012 3456"
+                  className="w-full px-4 py-3 pl-12 rounded-xl bg-slate-50 border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm font-mono tracking-widest outline-none"
+                  maxLength={19}
+                />
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-xl">credit_card</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-600">Expiry Date</label>
+                <input
+                  value={expiry}
+                  onChange={e => {
+                    let v = e.target.value.replace(/\D/g,'').slice(0,4);
+                    if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+                    setExpiry(v);
+                  }}
+                  placeholder="MM/YY"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm font-mono outline-none"
+                  maxLength={5}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-600">CVV</label>
+                <input
+                  value={cvv}
+                  onChange={e => setCvv(e.target.value.replace(/\D/g,'').slice(0,3))}
+                  placeholder="123"
+                  type="password"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm font-mono outline-none"
+                  maxLength={3}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600">Name on Card</label>
+              <input
+                value={cardName}
+                onChange={e => setCardName(e.target.value)}
+                placeholder="John Doe"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-blue-600 text-white font-extrabold text-base shadow-lg shadow-primary/30 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 mt-2"
+            >
+              <span className="material-symbols-outlined">lock</span>
+              Pay ₹{total.toLocaleString()} Securely
+            </button>
+
+            <button type="button" onClick={() => setStep('review')} className="w-full py-2.5 text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">
+              ← Back to Review
+            </button>
+          </form>
+        )}
 
       </div>
     </div>
@@ -167,6 +228,7 @@ export default function Form() {
   const [availLoading, setAvailLoading]       = useState(false);
 
   // Booking selection
+
   const [selectedDate, setSelectedDate]       = useState('');
   const [selectedSlot, setSelectedSlot]       = useState('');
   const [viewMonth, setViewMonth]             = useState(() => {
@@ -184,7 +246,6 @@ export default function Form() {
   const [paying, setPaying]                   = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [bookingDetails, setBookingDetails]   = useState(null);
-  const [gatewayUnconfigured, setGatewayUnconfigured] = useState(false);
 
   // Fetch consultants if none passed
   useEffect(() => {
@@ -268,7 +329,7 @@ export default function Form() {
   const platformFee = 250;
   const totalAmount = fee + platformFee;
 
-  // ── Handle "Confirm & Schedule" button ───────────────────────────────────
+  // ── Handle "Proceed to Payment" button ───────────────────────────────────
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!selectedConsultant) return alert('Please select a consultant.');
@@ -277,110 +338,42 @@ export default function Form() {
     setShowPaymentModal(true);
   };
 
-  // ── Launch Razorpay checkout ──────────────────────────────────────────────
+  // ── Demo payment: save booking directly to DB (no real payment) ──────────
   const handlePay = async (total) => {
     setPaying(true);
-    setGatewayUnconfigured(false);
     try {
-      // 1. Create order on backend
-      const orderRes = await fetch('/api/payment?action=create-order', {
+      const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: total,
-          consultantId:   selectedConsultant._id,
-          consultantName: selectedConsultant.fullName || selectedConsultant.name,
-          date:           selectedDate,
-          slot:           selectedSlot,
-          clientEmail
+          consultantId:    selectedConsultant._id,
+          consultantEmail: selectedConsultant.email,
+          consultantName:  selectedConsultant.fullName || selectedConsultant.name,
+          date:            selectedDate,
+          slot:            selectedSlot,
+          clientName,
+          clientEmail,
+          context:         clientContext,
         })
       });
+      const booking = await res.json();
+      if (!res.ok) throw new Error(booking.error || 'Booking failed');
 
-      const orderData = await orderRes.json();
-
-      if (!orderRes.ok) {
-        if (orderData.unconfigured) {
-          setGatewayUnconfigured(true);
-          setShowPaymentModal(false);
-          setPaying(false);
-          return;
-        }
-        throw new Error(orderData.error || 'Could not initiate payment');
-      }
-
-      // 2. Load Razorpay script
-      const loaded = await loadRazorpayScript();
-      if (!loaded) throw new Error('Could not load Razorpay checkout. Check your internet connection.');
-
-      // 3. Open Razorpay modal
-      const rzp = new window.Razorpay({
-        key:          orderData.keyId,
-        amount:       orderData.amount,
-        currency:     orderData.currency,
-        order_id:     orderData.orderId,
-        name:         'ProDecide',
-        description:  `Consultation with ${selectedConsultant.fullName || selectedConsultant.name}`,
-        image:        '/logo.png',
-        prefill: {
-          name:  clientName,
-          email: clientEmail
-        },
-        theme: { color: '#0052FF' },
-
-        handler: async (response) => {
-          // 4. Verify payment + save booking
-          try {
-            const verifyRes = await fetch('/api/payment?action=verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id:   response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature:  response.razorpay_signature,
-                consultantId:   selectedConsultant._id,
-                consultantEmail: selectedConsultant.email,
-                consultantName: selectedConsultant.fullName || selectedConsultant.name,
-                date:    selectedDate,
-                slot:    selectedSlot,
-                clientName,
-                clientEmail,
-                context: clientContext,
-                amountPaid: total
-              })
-            });
-
-            const booking = await verifyRes.json();
-            if (!verifyRes.ok) throw new Error(booking.error || 'Payment verification failed');
-
-            setBookingDetails({
-              id:         booking.bookingId,
-              consultant: selectedConsultant,
-              date:       new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-              time:       `${slotLabel(selectedSlot)} (45 min)`,
-              clientName,
-              clientEmail,
-              meetLink:   booking.meetLink,
-              paymentId:  response.razorpay_payment_id
-            });
-            setShowPaymentModal(false);
-            setBookingConfirmed(true);
-          } catch (err) {
-            alert('Payment was received but booking save failed: ' + err.message);
-          } finally {
-            setPaying(false);
-          }
-        },
-
-        modal: {
-          ondismiss: () => {
-            setPaying(false);
-          }
-        }
+      setBookingDetails({
+        id:        booking.bookingId,
+        consultant: selectedConsultant,
+        date:      new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+        time:      `${slotLabel(selectedSlot)} (45 min)`,
+        clientName,
+        clientEmail,
+        meetLink:  booking.meetLink,
+        paymentId: `DEMO-${Date.now()}`
       });
-
-      rzp.open();
+      setShowPaymentModal(false);
+      setBookingConfirmed(true);
     } catch (err) {
       alert(err.message);
+    } finally {
       setPaying(false);
     }
   };
