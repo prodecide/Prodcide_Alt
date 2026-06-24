@@ -608,6 +608,10 @@ export default function Dashboard() {
 
       // Trigger navbar state refresh
       window.dispatchEvent(new Event('storage'));
+
+      if (localStorage.getItem('discovery_challenge_text')) {
+        navigate('/discovery');
+      }
     } catch (err) {
       setAuthError(err.message);
     } finally {
