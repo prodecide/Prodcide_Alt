@@ -837,7 +837,7 @@ export default function Dashboard() {
                   <div className="text-center">
                     <span className="material-symbols-outlined text-4xl text-primary animate-bounce mb-2">mail_lock</span>
                     <h3 className="font-bold text-lg text-slate-800">Enter OTP</h3>
-                    <p className="text-xs text-slate-500 mt-1">We sent a 6-digit code to <span className="font-semibold">{profileEmail}</span>. Use the master code <code className="bg-slate-100 px-1 py-0.5 rounded text-primary font-bold">123456</code> to verify.</p>
+                    <p className="text-xs text-slate-500 mt-1">We sent a 6-digit code to <span className="font-semibold">{profileEmail}</span>.</p>
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Verification Code</label>
