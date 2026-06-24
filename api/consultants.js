@@ -62,7 +62,22 @@ export default async function handler(req, res) {
         }
 
         if (req.method === 'PUT') {
-            const { id, status, bio, experienceDetails, educationDetails, expertise } = req.body;
+            const { 
+                id, 
+                status, 
+                fullName, 
+                name, 
+                role, 
+                profession, 
+                organization, 
+                location, 
+                profileImage, 
+                avatar, 
+                bio, 
+                experienceDetails, 
+                educationDetails, 
+                expertise 
+            } = req.body;
             if (!id) {
                 return res.status(400).json({ error: 'ID is required' });
             }
@@ -78,6 +93,14 @@ export default async function handler(req, res) {
 
             const updateFields = {};
             if (status) updateFields.status = status;
+            if (fullName !== undefined) updateFields.fullName = fullName;
+            if (name !== undefined) updateFields.name = name;
+            if (role !== undefined) updateFields.role = role;
+            if (profession !== undefined) updateFields.profession = profession;
+            if (organization !== undefined) updateFields.organization = organization;
+            if (location !== undefined) updateFields.location = location;
+            if (profileImage !== undefined) updateFields.profileImage = profileImage;
+            if (avatar !== undefined) updateFields.avatar = avatar;
             if (bio !== undefined) updateFields.bio = bio;
             if (experienceDetails !== undefined) updateFields.experienceDetails = experienceDetails;
             if (educationDetails !== undefined) updateFields.educationDetails = educationDetails;

@@ -9,6 +9,129 @@ export default function ConsultantProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Editing & Ownership states
+  const [isOwner, setIsOwner] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const [editedName, setEditedName] = useState('');
+  const [editedRole, setEditedRole] = useState('');
+  const [editedOrg, setEditedOrg] = useState('');
+  const [editedLoc, setEditedLoc] = useState('');
+  const [editedBio, setEditedBio] = useState('');
+  const [editedExpertise, setEditedExpertise] = useState('');
+  const [editedExperiences, setEditedExperiences] = useState([]);
+  const [editedEducation, setEditedEducation] = useState([]);
+
+  useEffect(() => {
+    if (consultant) {
+      const savedUser = localStorage.getItem('consultant_user');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        if (parsed.email === consultant.email || parsed._id === consultant._id) {
+          setIsOwner(true);
+        }
+      }
+    }
+  }, [consultant]);
+
+  const startEditing = () => {
+    setEditedName(consultant.fullName || consultant.name || '');
+    setEditedRole(consultant.role || consultant.profession || '');
+    setEditedOrg(consultant.organization || '');
+    setEditedLoc(consultant.location || '');
+    setEditedBio(consultant.bio || '');
+    setEditedExpertise(
+      Array.isArray(consultant.expertise) 
+        ? consultant.expertise.join(', ') 
+        : (consultant.expertise || '')
+    );
+    setEditedExperiences(
+      Array.isArray(consultant.experienceDetails) 
+        ? JSON.parse(JSON.stringify(consultant.experienceDetails)) 
+        : []
+    );
+    setEditedEducation(
+      Array.isArray(consultant.educationDetails) 
+        ? JSON.parse(JSON.stringify(consultant.educationDetails)) 
+        : []
+    );
+    setIsEditing(true);
+  };
+
+  const saveChanges = async () => {
+    try {
+      const expList = editedExpertise
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const payload = {
+        id: consultant._id,
+        fullName: editedName,
+        name: editedName,
+        role: editedRole,
+        profession: editedRole,
+        organization: editedOrg,
+        location: editedLoc,
+        bio: editedBio,
+        expertise: expList,
+        experienceDetails: editedExperiences,
+        educationDetails: editedEducation
+      };
+
+      const res = await fetch('/api/consultants', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to save profile changes');
+      }
+
+      setConsultant(prev => ({
+        ...prev,
+        fullName: editedName,
+        name: editedName,
+        role: editedRole,
+        profession: editedRole,
+        organization: editedOrg,
+        location: editedLoc,
+        bio: editedBio,
+        expertise: expList,
+        experienceDetails: editedExperiences,
+        educationDetails: editedEducation
+      }));
+
+      // Update localStorage consultant_user session data as well
+      const savedUser = localStorage.getItem('consultant_user');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        if (parsed.email === consultant.email || parsed._id === consultant._id) {
+          const updatedUser = {
+            ...parsed,
+            fullName: editedName,
+            name: editedName,
+            role: editedRole,
+            profession: editedRole,
+            organization: editedOrg,
+            location: editedLoc,
+            bio: editedBio,
+            expertise: expList,
+            experienceDetails: editedExperiences,
+            educationDetails: editedEducation
+          };
+          localStorage.setItem('consultant_user', JSON.stringify(updatedUser));
+        }
+      }
+
+      setIsEditing(false);
+      alert('Profile updated successfully!');
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState('5.0');
   const [newReviewName, setNewReviewName] = useState(localStorage.getItem('discovery_verified_name') || '');
@@ -149,6 +272,38 @@ export default function ConsultantProfile() {
     <div className="bg-surface font-body text-on-surface min-h-screen pb-20 selection:bg-primary/10">
       <Navbar />
 
+      {isOwner && (
+        <div className="bg-[#0052FF]/10 border-b border-[#0052FF]/20 py-3.5 px-6 flex justify-between items-center text-xs">
+          <div className="flex items-center gap-2 text-[#0052FF] font-bold">
+            <span className="material-symbols-outlined text-sm">admin_panel_settings</span>
+            <span>You are viewing your public advisor profile.</span>
+          </div>
+          {!isEditing ? (
+            <button 
+              onClick={startEditing}
+              className="bg-[#0052FF] text-white px-4 py-1.5 rounded-lg font-bold hover:bg-[#0052FF]/90 transition-colors shadow-sm"
+            >
+              Edit My Profile
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button 
+                onClick={saveChanges}
+                className="bg-green-600 text-white px-4 py-1.5 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm"
+              >
+                Save Changes
+              </button>
+              <button 
+                onClick={() => setIsEditing(false)}
+                className="bg-slate-200 text-slate-700 px-4 py-1.5 rounded-lg font-bold hover:bg-slate-300 transition-colors shadow-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex min-h-screen max-w-screen-2xl mx-auto relative">
         
         {/* SideNavBar */}
@@ -191,13 +346,44 @@ export default function ConsultantProfile() {
             </a>
           </nav>
           <div className="mt-auto pt-6 border-t border-outline-variant/15 flex flex-col gap-2">
-            <Link 
-              to="/form" 
-              state={{ consultant }}
-              className="bg-primary hover:bg-primary-container text-on-primary text-center w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-md shadow-primary/10"
-            >
-              Book Consultation
-            </Link>
+            {isOwner ? (
+              <div className="flex flex-col gap-2 w-full">
+                {!isEditing ? (
+                  <button 
+                    onClick={startEditing}
+                    className="bg-primary hover:bg-primary-container text-on-primary text-center w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-md shadow-primary/10 flex items-center justify-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-sm">edit</span>
+                    Edit Profile
+                  </button>
+                ) : (
+                  <>
+                    <button 
+                      onClick={saveChanges}
+                      className="bg-green-600 hover:bg-green-700 text-white text-center w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-md shadow-green-500/10 flex items-center justify-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-sm font-bold">save</span>
+                      Save Changes
+                    </button>
+                    <button 
+                      onClick={() => setIsEditing(false)}
+                      className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-center w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 flex items-center justify-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-sm">close</span>
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <Link 
+                to="/form" 
+                state={{ consultant }}
+                className="bg-primary hover:bg-primary-container text-on-primary text-center w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-md shadow-primary/10"
+              >
+                Book Consultation
+              </Link>
+            )}
             <button 
               onClick={() => navigate('/experts')}
               className="text-on-secondary-fixed-variant border border-outline-variant/20 hover:bg-surface-container-high/50 flex items-center justify-center gap-2 px-4 py-2.5 font-body text-xs font-semibold rounded-xl transition-all"
@@ -227,15 +413,62 @@ export default function ConsultantProfile() {
                 </div>
               </div>
               <div className="flex-1 pb-4 text-left">
-                <h1 className="text-4xl md:text-6xl font-extrabold text-on-surface leading-tight mb-2">
-                  {consultant.fullName || consultant.name}
-                </h1>
-                <p className="text-lg font-headline text-primary font-bold tracking-tight uppercase">
-                  {consultant.role || consultant.profession}
-                </p>
-                <p className="text-xs text-outline font-semibold mt-1">
-                  {consultant.organization || 'Independent'} • {consultant.location || 'Remote'}
-                </p>
+                {isEditing ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-[10px] font-bold text-primary uppercase block mb-1">Full Name</label>
+                      <input 
+                        type="text" 
+                        value={editedName} 
+                        onChange={(e) => setEditedName(e.target.value)}
+                        className="text-2xl font-extrabold text-on-surface bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-primary w-full max-w-md"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-primary uppercase block mb-1">Role / Title</label>
+                      <input 
+                        type="text" 
+                        value={editedRole} 
+                        onChange={(e) => setEditedRole(e.target.value)}
+                        className="text-sm font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-primary w-full max-w-md"
+                      />
+                    </div>
+                    <div className="flex gap-4">
+                      <div>
+                        <label className="text-[10px] font-bold text-primary uppercase block mb-1">Organization</label>
+                        <input 
+                          type="text" 
+                          placeholder="Organization"
+                          value={editedOrg} 
+                          onChange={(e) => setEditedOrg(e.target.value)}
+                          className="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-primary w-40"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-primary uppercase block mb-1">Location</label>
+                        <input 
+                          type="text" 
+                          placeholder="Location"
+                          value={editedLoc} 
+                          onChange={(e) => setEditedLoc(e.target.value)}
+                          className="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-primary w-40"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <h1 className="text-4xl md:text-6xl font-extrabold text-on-surface leading-tight mb-2">
+                      {consultant.fullName || consultant.name}
+                    </h1>
+                    <p className="text-lg font-headline text-primary font-bold tracking-tight uppercase">
+                      {consultant.role || consultant.profession}
+                    </p>
+                    <p className="text-xs text-outline font-semibold mt-1">
+                      {consultant.organization || 'Independent'} • {consultant.location || 'Remote'}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -244,9 +477,18 @@ export default function ConsultantProfile() {
               <div className="md:col-span-7 bg-surface-container-low p-8 md:p-10 rounded-2xl relative overflow-hidden border border-outline-variant/5">
                 <div className="relative z-10">
                   <h2 className="text-xl md:text-2xl font-bold mb-4 text-on-surface">Personal Profile</h2>
-                  <p className="text-sm md:text-base leading-relaxed text-on-surface-variant font-body">
-                    {consultant.bio || 'No biography details provided.'}
-                  </p>
+                  {isEditing ? (
+                    <textarea 
+                      value={editedBio} 
+                      onChange={(e) => setEditedBio(e.target.value)}
+                      rows={6}
+                      className="text-sm md:text-base leading-relaxed text-on-surface-variant font-body bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-primary w-full resize-none"
+                    />
+                  ) : (
+                    <p className="text-sm md:text-base leading-relaxed text-on-surface-variant font-body">
+                      {consultant.bio || 'No biography details provided.'}
+                    </p>
+                  )}
                 </div>
                 <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
               </div>
@@ -263,36 +505,113 @@ export default function ConsultantProfile() {
           </section>
 
           {/* Experience Timeline */}
-          {experiences.length > 0 && (
+          {(experiences.length > 0 || isEditing) && (
             <section className="mb-20 text-left" id="experience">
               <div className="flex items-center justify-between mb-10">
                 <h2 className="text-2xl md:text-3xl font-bold text-on-surface">Professional Experience</h2>
+                {isEditing && (
+                  <button 
+                    type="button"
+                    onClick={() => setEditedExperiences(prev => [...prev, { duration: '2026 - Present', role: 'New Role', company: 'New Company', description: '' }])}
+                    className="bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-sm font-bold">add</span> Add Experience
+                  </button>
+                )}
                 <div className="h-[1px] flex-1 mx-8 bg-outline-variant/30"></div>
               </div>
               <div className="space-y-4">
-                {experiences.map((exp, idx) => (
-                  <div 
-                    key={idx} 
-                    className={`group grid grid-cols-1 md:grid-cols-12 p-6 md:p-8 rounded-xl transition-all duration-300 ${
-                      idx % 2 === 0 ? 'bg-surface-container-lowest' : 'bg-surface hover:bg-surface-container-low'
-                    } hover:bg-surface-container-low border border-outline-variant/5`}
-                  >
-                    <div className="md:col-span-3 pb-4 md:pb-0">
-                      <span className="text-primary font-bold font-headline text-base md:text-lg italic">
-                        {exp.duration}
-                      </span>
+                {isEditing ? (
+                  editedExperiences.map((exp, idx) => (
+                    <div key={idx} className="p-6 bg-slate-50 border border-slate-200/50 rounded-2xl relative space-y-3 text-left">
+                      <button 
+                        type="button"
+                        onClick={() => setEditedExperiences(prev => prev.filter((_, i) => i !== idx))}
+                        className="absolute top-4 right-4 p-1.5 rounded-full text-rose-500 hover:bg-rose-50 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-base">delete</span>
+                      </button>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">Duration</label>
+                          <input 
+                            type="text" 
+                            value={exp.duration} 
+                            onChange={(e) => {
+                              const updated = [...editedExperiences];
+                              updated[idx].duration = e.target.value;
+                              setEditedExperiences(updated);
+                            }}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-primary outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">Role</label>
+                          <input 
+                            type="text" 
+                            value={exp.role} 
+                            onChange={(e) => {
+                              const updated = [...editedExperiences];
+                              updated[idx].role = e.target.value;
+                              setEditedExperiences(updated);
+                            }}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-primary outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-400 uppercase">Company</label>
+                          <input 
+                            type="text" 
+                            value={exp.company} 
+                            onChange={(e) => {
+                              const updated = [...editedExperiences];
+                              updated[idx].company = e.target.value;
+                              setEditedExperiences(updated);
+                            }}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-primary outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Description</label>
+                        <textarea 
+                          value={exp.description || ''} 
+                          onChange={(e) => {
+                            const updated = [...editedExperiences];
+                            updated[idx].description = e.target.value;
+                            setEditedExperiences(updated);
+                          }}
+                          rows={2}
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-primary outline-none resize-none"
+                        />
+                      </div>
                     </div>
-                    <div className="md:col-span-9">
-                      <h4 className="text-lg md:text-xl font-bold text-on-surface mb-1">{exp.role}</h4>
-                      <p className="text-primary font-semibold text-sm mb-3">{exp.company}</p>
-                      {exp.description && (
-                        <p className="text-xs md:text-sm text-outline leading-relaxed max-w-2xl font-body">
-                          {exp.description}
-                        </p>
-                      )}
+                  ))
+                ) : (
+                  experiences.map((exp, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`group grid grid-cols-1 md:grid-cols-12 p-6 md:p-8 rounded-xl transition-all duration-300 ${
+                        idx % 2 === 0 ? 'bg-surface-container-lowest' : 'bg-surface hover:bg-surface-container-low'
+                      } hover:bg-surface-container-low border border-outline-variant/5`}
+                    >
+                      <div className="md:col-span-3 pb-4 md:pb-0">
+                        <span className="text-primary font-bold font-headline text-base md:text-lg italic">
+                          {exp.duration}
+                        </span>
+                      </div>
+                      <div className="md:col-span-9">
+                        <h4 className="text-lg md:text-xl font-bold text-on-surface mb-1">{exp.role}</h4>
+                        <p className="text-primary font-semibold text-sm mb-3">{exp.company}</p>
+                        {exp.description && (
+                          <p className="text-xs md:text-sm text-outline leading-relaxed max-w-2xl font-body">
+                            {exp.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </section>
           )}
@@ -300,22 +619,86 @@ export default function ConsultantProfile() {
           {/* Education & Achievements Split */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20 text-left">
             {/* Education */}
-            {education.length > 0 && (
+            {(education.length > 0 || isEditing) && (
               <section id="education">
-                <h2 className="text-2xl md:text-3xl font-bold text-on-surface mb-10">Academic Excellence</h2>
+                <div className="flex items-center justify-between mb-10">
+                  <h2 className="text-2xl md:text-3xl font-bold text-on-surface">Academic Excellence</h2>
+                  {isEditing && (
+                    <button 
+                      type="button"
+                      onClick={() => setEditedEducation(prev => [...prev, { degree: 'New Degree', school: 'New Institution', year: 'Graduation Year' }])}
+                      className="bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm font-bold">add</span> Add
+                    </button>
+                  )}
+                </div>
                 <div className="bg-surface-container-low p-6 md:p-8 rounded-2xl space-y-6 border border-outline-variant/5">
-                  {education.map((edu, idx) => (
-                    <div key={idx} className="flex gap-4">
-                      <div className="bg-primary/10 text-primary p-2.5 rounded-lg h-fit">
-                        <span className="material-symbols-outlined text-2xl">school</span>
+                  {isEditing ? (
+                    editedEducation.map((edu, idx) => (
+                      <div key={idx} className="p-4 bg-white border border-slate-200/50 rounded-xl relative space-y-2 text-left">
+                        <button 
+                          type="button"
+                          onClick={() => setEditedEducation(prev => prev.filter((_, i) => i !== idx))}
+                          className="absolute top-2 right-2 p-1.5 rounded-full text-rose-500 hover:bg-rose-50 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                        <div>
+                          <label className="text-[9px] font-bold text-slate-400 uppercase">Degree</label>
+                          <input 
+                            type="text" 
+                            value={edu.degree} 
+                            onChange={(e) => {
+                              const updated = [...editedEducation];
+                              updated[idx].degree = e.target.value;
+                              setEditedEducation(updated);
+                            }}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-primary outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-bold text-slate-400 uppercase">Institution / School</label>
+                          <input 
+                            type="text" 
+                            value={edu.school} 
+                            onChange={(e) => {
+                              const updated = [...editedEducation];
+                              updated[idx].school = e.target.value;
+                              setEditedEducation(updated);
+                            }}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-primary outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-bold text-slate-400 uppercase">Year / Timeline</label>
+                          <input 
+                            type="text" 
+                            value={edu.year} 
+                            onChange={(e) => {
+                              const updated = [...editedEducation];
+                              updated[idx].year = e.target.value;
+                              setEditedEducation(updated);
+                            }}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-primary outline-none"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-headline font-bold text-base md:text-lg text-on-surface">{edu.degree}</h4>
-                        <p className="text-on-surface-variant font-medium text-xs md:text-sm">{edu.school}</p>
-                        <p className="text-[10px] text-outline mt-1 font-semibold italic">{edu.year}</p>
+                    ))
+                  ) : (
+                    education.map((edu, idx) => (
+                      <div key={idx} className="flex gap-4">
+                        <div className="bg-primary/10 text-primary p-2.5 rounded-lg h-fit">
+                          <span className="material-symbols-outlined text-2xl">school</span>
+                        </div>
+                        <div>
+                          <h4 className="font-headline font-bold text-base md:text-lg text-on-surface">{edu.degree}</h4>
+                          <p className="text-on-surface-variant font-medium text-xs md:text-sm">{edu.school}</p>
+                          <p className="text-[10px] text-outline mt-1 font-semibold italic">{edu.year}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </section>
             )}
@@ -362,22 +745,34 @@ export default function ConsultantProfile() {
                   Based on their rich background, {consultant.fullName || consultant.name}'s historical success in{' '}
                   <span className="font-bold text-primary">{consultant.role || consultant.profession}</span> and strategic execution provides a premium alignment with your learning and growth objectives.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {expertiseList.length > 0 ? (
-                    expertiseList.map((skill, i) => (
-                      <div 
-                        key={i} 
-                        className="bg-surface-container-lowest px-3 py-1.5 rounded-full text-xs font-semibold text-primary border border-primary/10 shadow-sm"
-                      >
-                        {skill}
+                {isEditing ? (
+                  <div className="space-y-1.5 w-full">
+                    <label className="text-[10px] font-bold text-primary uppercase block">Edit Expertise (Comma separated)</label>
+                    <input 
+                      type="text" 
+                      value={editedExpertise} 
+                      onChange={(e) => setEditedExpertise(e.target.value)}
+                      className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-primary w-full text-slate-800"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {expertiseList.length > 0 ? (
+                      expertiseList.map((skill, i) => (
+                        <div 
+                          key={i} 
+                          className="bg-surface-container-lowest px-3 py-1.5 rounded-full text-xs font-semibold text-primary border border-primary/10 shadow-sm"
+                        >
+                          {skill}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="bg-surface-container-lowest px-3 py-1.5 rounded-full text-xs font-semibold text-primary border border-primary/10 shadow-sm">
+                        Strategic Consulting
                       </div>
-                    ))
-                  ) : (
-                    <div className="bg-surface-container-lowest px-3 py-1.5 rounded-full text-xs font-semibold text-primary border border-primary/10 shadow-sm">
-                      Strategic Consulting
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -502,13 +897,41 @@ export default function ConsultantProfile() {
 
           {/* Call to Action for Mobile */}
           <div className="mt-12 lg:hidden">
-            <Link 
-              to="/form" 
-              state={{ consultant }}
-              className="block bg-primary hover:bg-primary-container text-on-primary text-center py-4 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-primary/20"
-            >
-              Book Strategic Session
-            </Link>
+            {isOwner ? (
+              <div className="flex flex-col gap-2">
+                {!isEditing ? (
+                  <button 
+                    onClick={startEditing}
+                    className="block bg-primary hover:bg-primary-container text-on-primary text-center py-4 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-primary/20"
+                  >
+                    Edit Profile
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={saveChanges}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white text-center py-4 rounded-xl font-bold text-sm transition-all active:scale-95"
+                    >
+                      Save Changes
+                    </button>
+                    <button 
+                      onClick={() => setIsEditing(false)}
+                      className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-center py-4 rounded-xl font-bold text-sm transition-all active:scale-95"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link 
+                to="/form" 
+                state={{ consultant }}
+                className="block bg-primary hover:bg-primary-container text-on-primary text-center py-4 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-primary/20"
+              >
+                Book Strategic Session
+              </Link>
+            )}
           </div>
 
         </main>
