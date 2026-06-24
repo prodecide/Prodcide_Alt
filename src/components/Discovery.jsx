@@ -228,6 +228,49 @@ export default function Discovery() {
     }
   }, [suggestedPaths, criticalGaps, currentSkills]);
 
+  const [isRedirectingToInsights, setIsRedirectingToInsights] = useState(false);
+
+  useEffect(() => {
+    if (readyToSuggest && !isRedirectingToInsights) {
+      setIsRedirectingToInsights(true);
+      
+      localStorage.setItem('discovery_results', JSON.stringify({
+        suggestedPaths,
+        criticalGaps,
+        currentSkills
+      }));
+
+      window.dispatchEvent(new Event('storage'));
+
+      const email = localStorage.getItem('discovery_verified_email');
+      const name = localStorage.getItem('discovery_verified_name');
+      const storedProfile = localStorage.getItem('discovery_user_profile');
+      let baseProfile = {};
+      if (storedProfile) {
+        try { baseProfile = JSON.parse(storedProfile); } catch (e) {}
+      }
+      if (email) {
+        fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            name: name || baseProfile.name || '',
+            ...baseProfile,
+            suggestedPaths,
+            gaps: criticalGaps,
+            currentSkills
+          })
+        }).catch(err => console.error("Failed to push AI results to database:", err));
+      }
+
+      const timer = setTimeout(() => {
+        navigate('/dashboard?tab=insights');
+      }, 2200);
+      return () => clearTimeout(timer);
+    }
+  }, [readyToSuggest, suggestedPaths, criticalGaps, currentSkills, navigate, isRedirectingToInsights]);
+
   // Handle Send OTP
   const handleSendOtp = async () => {
     if (!authName.trim()) {
@@ -1229,7 +1272,31 @@ export default function Discovery() {
         </div>
       )}
 
+      {isRedirectingToInsights && (
+        <div className="fixed inset-0 z-[99999] bg-slate-900/80 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-white text-center">
+          <div className="relative mb-8">
+            <div className="absolute -inset-4 bg-gradient-to-tr from-[#003ec7] to-blue-400 rounded-full blur-xl opacity-75 animate-pulse"></div>
+            <div className="relative w-24 h-24 rounded-full border-4 border-white/20 border-t-white animate-spin flex items-center justify-center bg-slate-900/90">
+              <span className="material-symbols-outlined text-4xl text-[#003ec7] animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>insights</span>
+            </div>
+          </div>
+          <h2 className="font-headline text-3xl font-extrabold tracking-tight mb-2 animate-bounce">
+            Synthesis Complete!
+          </h2>
+          <p className="text-slate-400 text-sm max-w-sm leading-relaxed mb-6 font-medium">
+            We have generated your strategic roadmap. Directing you to your Strategic Insights...
+          </p>
+          <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-[#003ec7] to-blue-400 animate-[loadingBar_2s_ease-out_forwards]"></div>
+          </div>
+        </div>
+      )}
+
       <style>{`
+        @keyframes loadingBar {
+          0% { width: 0%; }
+          100% { width: 100%; }
+        }
         @keyframes slideProgress {
           0% { transform: translateX(-100%); }
           100% { transform: translateX(300%); }
