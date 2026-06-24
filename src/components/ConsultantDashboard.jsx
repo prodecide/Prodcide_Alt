@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
 
@@ -344,6 +344,32 @@ export default function ConsultantDashboard() {
       setLoadingClientProfile(false);
     }
   };
+
+  const viewProfileProcessed = useRef(false);
+
+  useEffect(() => {
+    if (user && !viewProfileProcessed.current) {
+      const params = new URLSearchParams(window.location.search);
+      const viewProfileEmail = params.get('viewProfile');
+      if (viewProfileEmail) {
+        viewProfileProcessed.current = true;
+        
+        const realBooking = dbBookings.find(b => b.clientEmail === viewProfileEmail);
+        const legacyBooking = bookings.find(b => b.clientEmail === viewProfileEmail);
+        const bookingToView = realBooking || legacyBooking || {
+          clientName: 'Client',
+          clientEmail: viewProfileEmail,
+          clientCompany: 'Company',
+          challenge: 'Direct Profile View Link Request'
+        };
+        
+        handleViewClientProfile(bookingToView);
+
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    }
+  }, [user, dbBookings, bookings]);
 
   if (loading) {
     return (

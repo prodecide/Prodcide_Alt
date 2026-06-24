@@ -1,4 +1,6 @@
 import clientPromise from '../lib/mongodb.js';
+import { sendBookingAlertToConsultant } from './utils/email.js';
+
 
 export default async function handler(req, res) {
     try {
@@ -80,6 +82,21 @@ export default async function handler(req, res) {
             };
 
             const result = await bookings.insertOne(newBooking);
+
+            // Send email notification to the consultant (failsafe)
+            try {
+                const protocol = req.headers['x-forwarded-proto'] || 'http';
+                const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:3001';
+                let origin = `${protocol}://${host}`;
+                if (host.includes('localhost:3001')) {
+                    origin = 'http://localhost:5173';
+                }
+                const insertedBooking = { ...newBooking, _id: result.insertedId };
+                await sendBookingAlertToConsultant(insertedBooking, origin);
+            } catch (emailErr) {
+                console.error('Failed to send booking alert email to consultant:', emailErr);
+            }
+
             return res.status(201).json({ ...newBooking, _id: result.insertedId });
         }
 

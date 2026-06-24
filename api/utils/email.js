@@ -250,3 +250,129 @@ export async function sendOnboardingEmail(consultant, origin = 'https://prodecid
         throw error;
     }
 }
+
+export async function sendBookingAlertToConsultant(booking, origin = 'https://prodecide.co.in') {
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASSWORD;
+
+    const consultantEmail = booking.consultantEmail;
+    const consultantName = booking.consultantName || 'Expert';
+    const clientName = booking.clientName || 'Client';
+    const clientEmail = booking.clientEmail;
+    const sessionDate = booking.date;
+    const sessionSlot = booking.slot;
+    const meetLink = booking.meetLink;
+    const challengeContext = booking.context || 'No challenge context provided.';
+
+    const subject = `📅 New Consultation Booking: ${clientName} (${sessionDate} @ ${sessionSlot})`;
+    const dashboardLink = `${origin}/consultant-dashboard`;
+    const profileLink = `${origin}/consultant-dashboard?viewProfile=${encodeURIComponent(clientEmail)}`;
+
+    const htmlBody = `
+        <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <span style="font-size: 40px;">📅</span>
+            </div>
+            <h2 style="color: #0f172a; text-align: center; font-size: 24px; font-weight: 700; margin-top: 0; margin-bottom: 8px;">New Strategic Session Booked!</h2>
+            <p style="color: #475569; text-align: center; font-size: 16px; margin-bottom: 24px;">A client has scheduled a consultation session with you.</p>
+            
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #f1f5f9;">
+                <p style="margin-top: 0; color: #334155; font-size: 15px; line-height: 1.6;">
+                    Hello <strong>${consultantName}</strong>,
+                </p>
+                <p style="color: #334155; font-size: 15px; line-height: 1.6; margin-bottom: 0;">
+                    We are pleased to inform you that <strong>${clientName}</strong> has booked a consultation session with you. Here are the booking details:
+                </p>
+            </div>
+
+            <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <h3 style="margin-top: 0; margin-bottom: 16px; color: #0f172a; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">Session Details</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #475569;">
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; width: 120px; color: #0f172a;">Client Name:</td>
+                        <td style="padding: 6px 0;">${clientName}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #0f172a;">Client Email:</td>
+                        <td style="padding: 6px 0;">${clientEmail}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #0f172a;">Date:</td>
+                        <td style="padding: 6px 0;">${sessionDate}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #0f172a;">Time/Slot:</td>
+                        <td style="padding: 6px 0;">${sessionSlot} (45 mins)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; font-weight: bold; color: #0f172a; vertical-align: top;">Challenge:</td>
+                        <td style="padding: 6px 0; line-height: 1.5; font-style: italic;">"${challengeContext}"</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h3 style="color: #0f172a; font-size: 16px; font-weight: 600; margin-bottom: 16px; text-align: center;">Actions & Links</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; text-align: center;">
+                <div style="margin-bottom: 12px;">
+                    <a href="${meetLink}" target="_blank" style="background-color: #22c55e; color: #ffffff; padding: 12px 24px; text-decoration: none; font-weight: 600; font-size: 14px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);">
+                        🟢 Join Google Meet Session
+                    </a>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <a href="${profileLink}" target="_blank" style="background-color: #0052FF; color: #ffffff; padding: 12px 24px; text-decoration: none; font-weight: 600; font-size: 14px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(0, 82, 255, 0.15);">
+                        👤 View User Profile Context
+                    </a>
+                </div>
+                <div>
+                    <a href="${dashboardLink}" target="_blank" style="background-color: #f1f5f9; color: #334155; padding: 12px 24px; text-decoration: none; font-weight: 600; font-size: 14px; border-radius: 8px; display: inline-block; border: 1px solid #cbd5e1;">
+                        💻 Go to Booking Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 32px; border-top: 1px solid #f1f5f9; padding-top: 20px; margin-bottom: 0;">
+                This is an automated notification from ProDecide. Please make sure to add this session to your calendar.
+            </p>
+        </div>
+    `;
+
+    if (!user || !pass) {
+        console.warn("⚠️ SMTP credentials (SMTP_USER/SMTP_PASSWORD) are not set. Logging booking alert contents:");
+        console.log("-----------------------------------------");
+        console.log(`To: ${consultantEmail}`);
+        console.log(`Subject: ${subject}`);
+        console.log(`Meet Link: ${meetLink}`);
+        console.log(`Profile Link: ${profileLink}`);
+        console.log(`Dashboard Link: ${dashboardLink}`);
+        console.log("-----------------------------------------");
+        return { mock: true, sent: true };
+    }
+
+    try {
+        const transporter = nodemailer.createTransport({
+            host,
+            port,
+            secure: port === 465,
+            auth: {
+                user,
+                pass,
+            },
+        });
+
+        const info = await transporter.sendMail({
+            from: `"ProDecide Bookings" <${user}>`,
+            to: consultantEmail,
+            subject,
+            html: htmlBody,
+        });
+
+        console.log("✉️ Booking alert email sent successfully to consultant %s", consultantEmail);
+        return { sent: true, messageId: info.messageId };
+    } catch (error) {
+        console.error("❌ Failed to send SMTP booking alert email to consultant:", error);
+        throw error;
+    }
+}
