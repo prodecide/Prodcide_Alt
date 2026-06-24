@@ -163,3 +163,90 @@ export async function sendOtpEmail(email, code) {
         throw error;
     }
 }
+
+export async function sendOnboardingEmail(consultant, origin = 'https://prodecide.co.in') {
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASSWORD;
+
+    const consultantName = consultant.fullName || consultant.name || 'Expert';
+    const consultantEmail = consultant.email;
+
+    const subject = `🎉 Welcome to ProDecide! You are fully onboarded`;
+    const dashboardLink = `${origin}/consultant-dashboard`;
+
+    const htmlBody = `
+        <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <span style="font-size: 40px;">🎉</span>
+            </div>
+            <h2 style="color: #0f172a; text-align: center; font-size: 24px; font-weight: 700; margin-top: 0; margin-bottom: 8px;">You are Live on ProDecide!</h2>
+            <p style="color: #475569; text-align: center; font-size: 16px; margin-bottom: 24px;">Congratulations, your consultant profile has been approved.</p>
+            
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #f1f5f9;">
+                <p style="margin-top: 0; color: #334155; font-size: 15px; line-height: 1.6;">
+                    Hello <strong>${consultantName}</strong>,
+                </p>
+                <p style="color: #334155; font-size: 15px; line-height: 1.6; margin-bottom: 0;">
+                    We are excited to let you know that our team has approved your application! You are now fully onboarded to ProDecide as an expert advisor.
+                </p>
+                <p style="color: #334155; font-size: 15px; line-height: 1.6; margin-top: 12px; margin-bottom: 0;">
+                    Your profile is now active on our expert discovery directory. Clients can now view your details and schedule consultations with you.
+                </p>
+            </div>
+
+            <h3 style="color: #0f172a; font-size: 16px; font-weight: 600; margin-bottom: 12px;">What should you do next?</h3>
+            <ul style="color: #475569; font-size: 14px; line-height: 1.6; padding-left: 20px; margin-bottom: 28px;">
+                <li style="margin-bottom: 8px;"><strong>Set your availability:</strong> Log in and navigate to the <em>My Availability</em> tab to publish times you are open for client bookings.</li>
+                <li style="margin-bottom: 8px;"><strong>Review your profile:</strong> Ensure your bio, education details, and professional experience are up-to-date and look premium.</li>
+                <li style="margin-bottom: 8px;"><strong>Check incoming bookings:</strong> Monitor your consultant dashboard for client requests, challenge descriptions, and session times.</li>
+            </ul>
+
+            <div style="text-align: center; margin-bottom: 28px;">
+                <a href="${dashboardLink}" style="background-color: #0052FF; color: #ffffff; padding: 14px 28px; text-decoration: none; font-weight: 600; font-size: 15px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(0, 82, 255, 0.15); transition: background-color 0.2s;">
+                    Go to Consultant Dashboard
+                </a>
+            </div>
+
+            <p style="color: #64748b; font-size: 13px; text-align: center; margin-top: 32px; border-top: 1px solid #f1f5f9; padding-top: 20px; margin-bottom: 0;">
+                If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:support@prodecide.co.in" style="color: #0052FF; text-decoration: none;">support@prodecide.co.in</a>.
+            </p>
+        </div>
+    `;
+
+    if (!user || !pass) {
+        console.warn("⚠️ SMTP credentials (SMTP_USER/SMTP_PASSWORD) are not set. Logging onboarding email contents:");
+        console.log("-----------------------------------------");
+        console.log(`To: ${consultantEmail}`);
+        console.log(`Subject: ${subject}`);
+        console.log(`Link: ${dashboardLink}`);
+        console.log("-----------------------------------------");
+        return { mock: true, sent: true };
+    }
+
+    try {
+        const transporter = nodemailer.createTransport({
+            host,
+            port,
+            secure: port === 465,
+            auth: {
+                user,
+                pass,
+            },
+        });
+
+        const info = await transporter.sendMail({
+            from: `"ProDecide" <${user}>`,
+            to: consultantEmail,
+            subject,
+            html: htmlBody,
+        });
+
+        console.log("✉️ Onboarding welcome email sent successfully to %s", consultantEmail);
+        return { sent: true, messageId: info.messageId };
+    } catch (error) {
+        console.error("❌ Failed to send SMTP onboarding email:", error);
+        throw error;
+    }
+}

@@ -1,6 +1,6 @@
 import clientPromise from '../lib/mongodb.js';
 import { ObjectId } from 'mongodb';
-import { sendNewConsultantAlert } from './utils/email.js';
+import { sendNewConsultantAlert, sendOnboardingEmail } from './utils/email.js';
 
 export default async function handler(req, res) {
     try {
@@ -91,6 +91,15 @@ export default async function handler(req, res) {
                 // Keep string ID filter
             }
 
+            // Fetch the existing consultant profile first to check status transition
+            const existingConsultant = await consultants.findOne(filter);
+            if (!existingConsultant) {
+                return res.status(404).json({ error: 'Consultant not found' });
+            }
+
+            const wasApproved = existingConsultant.status === 'approved';
+            const isApproving = status === 'approved' && !wasApproved;
+
             const updateFields = {};
             if (status) updateFields.status = status;
             if (fullName !== undefined) updateFields.fullName = fullName;
@@ -113,6 +122,22 @@ export default async function handler(req, res) {
 
             if (result.matchedCount === 0) {
                 return res.status(404).json({ error: 'Consultant not found' });
+            }
+
+            // Send onboarding email if successfully approved
+            if (isApproving) {
+                try {
+                    const protocol = req.headers['x-forwarded-proto'] || 'http';
+                    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:3001';
+                    let origin = `${protocol}://${host}`;
+                    if (host.includes('localhost:3001')) {
+                        origin = 'http://localhost:5173';
+                    }
+                    const updatedConsultant = { ...existingConsultant, ...updateFields };
+                    await sendOnboardingEmail(updatedConsultant, origin);
+                } catch (emailErr) {
+                    console.error('Failed to send onboarding welcome email:', emailErr);
+                }
             }
 
             return res.status(200).json({ success: true, message: `Consultant updated successfully` });
