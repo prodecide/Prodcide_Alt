@@ -408,19 +408,19 @@ export default function Registration() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">Full Name</label>
-                    <input value={formData.fullName} onChange={handleChange} required id="fullName" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" placeholder="Dr. Julian Pierce" type="text"/>
+                    <input value={formData.fullName} onChange={handleChange} required id="fullName" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" type="text"/>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">Email</label>
-                    <input value={formData.email} onChange={handleChange} required id="email" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" placeholder="j.pierce@organization.com" type="email"/>
+                    <input value={formData.email} onChange={handleChange} required id="email" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" type="email"/>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">Phone Number</label>
-                    <input value={formData.phone} onChange={handleChange} required id="phone" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" placeholder="+1 (555) 000-0000" type="tel"/>
+                    <input value={formData.phone} onChange={handleChange} required id="phone" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" type="tel"/>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">City / Country</label>
-                    <input value={formData.location} onChange={handleChange} required id="location" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" placeholder="London, UK" type="text"/>
+                    <input value={formData.location} onChange={handleChange} required id="location" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" type="text"/>
                   </div>
                 </div>
  
@@ -429,12 +429,15 @@ export default function Registration() {
                     <div className="space-y-2" ref={expertiseDropdownRef}>
                       <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">Area of Expertise</label>
                       <div className="relative">
-                        <div onClick={() => setIsExpertiseOpen(!isExpertiseOpen)} className="w-full px-4 py-3 rounded-xl bg-slate-50 min-h-[44px] flex flex-wrap gap-1 items-center cursor-pointer">
+                        <div onClick={() => setIsExpertiseOpen(!isExpertiseOpen)} className="w-full px-4 py-3 rounded-xl bg-slate-50 min-h-[44px] flex flex-wrap justify-between gap-1 items-center cursor-pointer">
+                          <div className="flex flex-wrap items-center gap-1">
                             {formData.expertise.length > 0 ? (
-                                formData.expertise.map(e => (
-                                    <span key={e} className="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">{e}</span>
-                                ))
+                              formData.expertise.map(e => (
+                                <span key={e} className="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">{e}</span>
+                              ))
                             ) : <span className="text-slate-400 text-sm">Select Expertise</span>}
+                          </div>
+                          <span className="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
                         </div>
                         {isExpertiseOpen && (
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-100 z-50 max-h-64 overflow-y-auto p-4">
@@ -466,7 +469,7 @@ export default function Registration() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">Experience (Years)</label>
-                      <input value={formData.experience} onChange={handleChange} required id="experience" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" placeholder="12" type="number"/>
+                      <input value={formData.experience} onChange={handleChange} required id="experience" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" type="number"/>
                     </div>
                   </div>
 
@@ -494,7 +497,7 @@ export default function Registration() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">Organization</label>
-                      <input value={formData.organization} onChange={handleChange} required id="organization" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" placeholder="Global Consulting Group" type="text"/>
+                      <input value={formData.organization} onChange={handleChange} required id="organization" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" type="text"/>
                     </div>
                   </div>
 
@@ -502,7 +505,7 @@ export default function Registration() {
                     <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">LinkedIn Profile</label>
                     <div className="flex">
                       <span className="inline-flex items-center px-4 rounded-l-xl bg-slate-200/50 text-slate-500"><span className="material-symbols-outlined text-sm">link</span></span>
-                      <input value={formData.linkedin} onChange={handleChange} required id="linkedin" className="w-full px-4 py-3 rounded-r-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" placeholder="https://linkedin.com/in/username" type="url"/>
+                      <input value={formData.linkedin} onChange={handleChange} required id="linkedin" className="w-full px-4 py-3 rounded-r-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" type="url"/>
                     </div>
                   </div>
 
