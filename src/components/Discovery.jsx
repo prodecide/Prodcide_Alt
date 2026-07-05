@@ -411,11 +411,11 @@ export default function Discovery() {
         if (!response.ok) throw new Error("Failed to initialize discovery agent");
         const data = await response.json();
         
-        // Update context details
-        setCriticalGaps(data.criticalGaps || []);
-        setCurrentSkills(data.currentSkills || []);
-        setSuggestedPaths(data.suggestedPaths || []);
-        setReadyToSuggest(data.readyToSuggest || false);
+        // Only update accumulated results if API returns non-empty data
+        if (data.criticalGaps && data.criticalGaps.length > 0) setCriticalGaps(data.criticalGaps);
+        if (data.currentSkills && data.currentSkills.length > 0) setCurrentSkills(data.currentSkills);
+        if (data.suggestedPaths && data.suggestedPaths.length > 0) setSuggestedPaths(data.suggestedPaths);
+        if (data.readyToSuggest) setReadyToSuggest(true);
         if (data.limitExceeded) setLimitExceeded(true);
 
         setMessages(prev => [
@@ -523,11 +523,11 @@ export default function Discovery() {
       if (!response.ok) throw new Error("Failed to send message");
       const data = await response.json();
 
-      // Update context details
-      if (data.criticalGaps) setCriticalGaps(data.criticalGaps);
-      if (data.currentSkills) setCurrentSkills(data.currentSkills);
-      if (data.suggestedPaths) setSuggestedPaths(data.suggestedPaths);
-      if (data.readyToSuggest !== undefined) setReadyToSuggest(data.readyToSuggest);
+      // Only update accumulated results if API returns non-empty data (don't wipe existing)
+      if (data.criticalGaps && data.criticalGaps.length > 0) setCriticalGaps(data.criticalGaps);
+      if (data.currentSkills && data.currentSkills.length > 0) setCurrentSkills(data.currentSkills);
+      if (data.suggestedPaths && data.suggestedPaths.length > 0) setSuggestedPaths(data.suggestedPaths);
+      if (data.readyToSuggest) setReadyToSuggest(true);
       if (data.limitExceeded) setLimitExceeded(true);
 
       setMessages(prev => [
@@ -610,10 +610,11 @@ export default function Discovery() {
       if (!response.ok) throw new Error("Failed to send option message");
       const data = await response.json();
 
-      if (data.criticalGaps) setCriticalGaps(data.criticalGaps);
-      if (data.currentSkills) setCurrentSkills(data.currentSkills);
-      if (data.suggestedPaths) setSuggestedPaths(data.suggestedPaths);
-      if (data.readyToSuggest !== undefined) setReadyToSuggest(data.readyToSuggest);
+      // Only update accumulated results if API returns non-empty data (don't wipe existing)
+      if (data.criticalGaps && data.criticalGaps.length > 0) setCriticalGaps(data.criticalGaps);
+      if (data.currentSkills && data.currentSkills.length > 0) setCurrentSkills(data.currentSkills);
+      if (data.suggestedPaths && data.suggestedPaths.length > 0) setSuggestedPaths(data.suggestedPaths);
+      if (data.readyToSuggest) setReadyToSuggest(true);
       if (data.limitExceeded) setLimitExceeded(true);
 
       setMessages(prev => [

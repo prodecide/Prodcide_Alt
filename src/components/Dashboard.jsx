@@ -318,11 +318,15 @@ export default function Dashboard() {
           gapCategory: data.gapCategory,
           gapDescription: data.gapDescription
         }));
-        if (data.suggestedPaths || data.gaps || data.currentSkills) {
+        // Only overwrite localStorage results if DB actually has non-empty data
+        const dbHasPaths = data.suggestedPaths && data.suggestedPaths.length > 0;
+        const dbHasGaps = data.gaps && data.gaps.length > 0;
+        const dbHasSkills = data.currentSkills && data.currentSkills.length > 0;
+        if (dbHasPaths || dbHasGaps || dbHasSkills) {
           localStorage.setItem('discovery_results', JSON.stringify({
-            suggestedPaths: data.suggestedPaths,
-            criticalGaps: data.gaps,
-            currentSkills: data.currentSkills
+            suggestedPaths: data.suggestedPaths || [],
+            criticalGaps: data.gaps || [],
+            currentSkills: data.currentSkills || []
           }));
         }
       }

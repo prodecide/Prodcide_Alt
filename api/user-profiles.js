@@ -56,7 +56,7 @@ export default async function handler(req, res) {
             return res.status(200).json(profile);
         }
 
-        // POST — Create or full-update (upsert) user profile
+        // POST — Create or smart-merge (upsert) user profile
         if (req.method === 'POST') {
             const data = req.body;
             if (!data.email) {
@@ -64,42 +64,66 @@ export default async function handler(req, res) {
             }
             const normalizedEmail = data.email.toLowerCase().trim();
 
-            const profileFields = {
-                email: normalizedEmail,
-                name: data.name || '',
-                age: data.age || '',
-                college: data.college || '',
-                major: data.major || '',
-                phone: data.phone || '',
-                location: data.location || '',
-                bio: data.bio || '',
-                linkedIn: data.linkedIn || '',
-                avatar: data.avatar || '',
-                originalAvatar: data.originalAvatar || '',
-                aiAvatar: data.aiAvatar || '',
-                class10: data.class10 || '',
-                class12: data.class12 || '',
-                undergrad: data.undergrad || '',
-                postgrad: data.postgrad || '',
-                interests: data.interests || [],
-                customInterests: data.customInterests || [],
-                gaps: data.gaps || [],
-                gapCategory: data.gapCategory || '',
-                gapDescription: data.gapDescription || '',
-                suggestedPaths: data.suggestedPaths || [],
-                currentSkills: data.currentSkills || [],
-                updatedAt: new Date()
-            };
-
             const existing = await userProfiles.findOne({ email: normalizedEmail });
 
             if (existing) {
+                // Smart merge: only update fields that are explicitly provided and non-empty
+                const updateFields = { updatedAt: new Date() };
+                const stringFields = [
+                    'name', 'age', 'college', 'major', 'phone', 'location',
+                    'bio', 'linkedIn', 'avatar', 'originalAvatar', 'aiAvatar',
+                    'class10', 'class12', 'undergrad', 'postgrad',
+                    'gapCategory', 'gapDescription'
+                ];
+                const arrayFields = [
+                    'interests', 'customInterests', 'gaps',
+                    'suggestedPaths', 'currentSkills'
+                ];
+
+                for (const field of stringFields) {
+                    if (data[field] !== undefined && data[field] !== '') {
+                        updateFields[field] = data[field];
+                    }
+                }
+                for (const field of arrayFields) {
+                    if (data[field] !== undefined && Array.isArray(data[field]) && data[field].length > 0) {
+                        updateFields[field] = data[field];
+                    }
+                }
+
                 await userProfiles.updateOne(
                     { email: normalizedEmail },
-                    { $set: profileFields }
+                    { $set: updateFields }
                 );
             } else {
-                profileFields.createdAt = new Date();
+                // New profile: use all provided fields with defaults
+                const profileFields = {
+                    email: normalizedEmail,
+                    name: data.name || '',
+                    age: data.age || '',
+                    college: data.college || '',
+                    major: data.major || '',
+                    phone: data.phone || '',
+                    location: data.location || '',
+                    bio: data.bio || '',
+                    linkedIn: data.linkedIn || '',
+                    avatar: data.avatar || '',
+                    originalAvatar: data.originalAvatar || '',
+                    aiAvatar: data.aiAvatar || '',
+                    class10: data.class10 || '',
+                    class12: data.class12 || '',
+                    undergrad: data.undergrad || '',
+                    postgrad: data.postgrad || '',
+                    interests: data.interests || [],
+                    customInterests: data.customInterests || [],
+                    gaps: data.gaps || [],
+                    gapCategory: data.gapCategory || '',
+                    gapDescription: data.gapDescription || '',
+                    suggestedPaths: data.suggestedPaths || [],
+                    currentSkills: data.currentSkills || [],
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
                 await userProfiles.insertOne(profileFields);
             }
 
