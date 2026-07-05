@@ -627,12 +627,12 @@ export default function ConsultantDashboard() {
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3">
             <div className="flex items-center gap-1">
               <span className="w-6 h-6 rounded-full bg-green-500 text-white text-[10px] font-bold flex items-center justify-center">✓</span>
               <span className="text-xs font-bold text-slate-700">Submitted</span>
             </div>
-            <div className="w-8 h-0.5 bg-slate-200"></div>
+            <div className="hidden sm:block w-8 h-0.5 bg-slate-200"></div>
             <div className="flex items-center gap-1">
               <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center ${user.status === 'approved' ? 'bg-green-500 text-white' : user.status === 'declined' ? 'bg-rose-500 text-white' : 'bg-primary text-white animate-pulse'}`}>
                 {user.status === 'approved' ? '✓' : user.status === 'declined' ? '✗' : '2'}
@@ -641,7 +641,7 @@ export default function ConsultantDashboard() {
                 Screening
               </span>
             </div>
-            <div className="w-8 h-0.5 bg-slate-200"></div>
+            <div className="hidden sm:block w-8 h-0.5 bg-slate-200"></div>
             <div className="flex items-center gap-1">
               <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center ${user.status === 'approved' ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
                 {user.status === 'approved' ? '✓' : '3'}

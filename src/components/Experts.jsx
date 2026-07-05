@@ -100,7 +100,7 @@ export default function Experts() {
         <header className="mb-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="max-w-2xl">
-              <h1 className="font-headline text-5xl font-extrabold tracking-tight text-on-surface mb-4">Consultant Matchmaker</h1>
+              <h1 className="font-headline text-3xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-4">Consultant Matchmaker</h1>
               <p className="text-body text-lg text-on-surface-variant leading-relaxed">
                 We've analyzed your project metrics. Here are the experts best equipped to solve your specific scaling and operational bottlenecks.
               </p>

@@ -641,7 +641,7 @@ export default function Form() {
                               type="button"
                               disabled={day.isPast || !day.hasAvailability}
                               onClick={() => { setSelectedDate(day.dateStr); setSelectedSlot(''); }}
-                              className={`aspect-square rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5
+                              className={`aspect-square rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 p-1 sm:p-2
                                 ${day.isPast
                                   ? 'text-slate-200 cursor-not-allowed'
                                   : day.isFullyBooked

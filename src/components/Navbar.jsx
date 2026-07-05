@@ -12,12 +12,14 @@ export default function Navbar() {
   const [searchVal, setSearchVal] = useState('');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationsRef = useRef(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const storedName = localStorage.getItem('discovery_verified_name');
     const storedEmail = localStorage.getItem('discovery_verified_email');
     if (storedName) setUserName(storedName);
     if (storedEmail) setUserEmail(storedEmail);
+    setMobileMenuOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -188,8 +190,50 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Mobile menu toggle */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined text-2xl">
+              {mobileMenuOpen ? 'close' : 'menu'}
+            </span>
+          </button>
         </div>
       </div>
+
+      {/* Mobile nav drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white/95 dark:bg-[#191c1e]/95 backdrop-blur-lg border-t border-slate-200/40 p-6 space-y-4 shadow-lg animate-fade-in">
+          <nav className="flex flex-col gap-4">
+            <Link 
+              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800" 
+              to="/discovery"
+            >
+              Discover
+            </Link>
+            <Link 
+              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800" 
+              to="/about"
+            >
+              About Us
+            </Link>
+            <Link 
+              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800" 
+              to="/experts"
+            >
+              Consultants
+            </Link>
+            <Link 
+              className="text-[#0052FF] hover:underline font-manrope font-bold text-lg py-2" 
+              to="/registration"
+            >
+              Join as Expert
+            </Link>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

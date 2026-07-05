@@ -1618,10 +1618,10 @@ export default function Dashboard() {
       )}
 
       {/* ─── Mobile BottomNavBar ─── */}
-      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-4 pt-2 md:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl no-border shadow-2xl rounded-t-3xl">
+      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-4 pt-2 lg:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl no-border shadow-2xl rounded-t-3xl">
         <button 
           onClick={() => handleTabChange('profile')}
-          className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all ${
+          className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-none ${
             activeTab === 'profile' ? 'bg-[#0052FF] text-white scale-95' : 'text-slate-400'
           }`}
         >
@@ -1630,7 +1630,7 @@ export default function Dashboard() {
         </button>
         <button 
           onClick={() => handleTabChange('insights')}
-          className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all ${
+          className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all border-none ${
             activeTab === 'insights' ? 'bg-[#0052FF] text-white scale-95' : 'text-slate-400'
           }`}
         >
