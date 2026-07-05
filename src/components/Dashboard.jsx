@@ -261,11 +261,32 @@ export default function Dashboard() {
         if (data.postgrad) setPostgrad(data.postgrad);
         if (data.interests) setInterests(data.interests);
         if (data.customInterests) setCustomInterests(data.customInterests);
-        if (data.gaps) setGaps(data.gaps);
         if (data.gapCategory) setGapCategory(data.gapCategory);
         if (data.gapDescription) setGapDescription(data.gapDescription);
-        if (data.suggestedPaths) setSuggestedPaths(data.suggestedPaths);
-        if (data.currentSkills) setCurrentSkills(data.currentSkills);
+        // Safely sync AI results: prioritize non-empty results from db, fallback to localStorage
+        const localResultsStr = localStorage.getItem('discovery_results');
+        let localResults = null;
+        if (localResultsStr) {
+          try { localResults = JSON.parse(localResultsStr); } catch (e) {}
+        }
+
+        if (data.suggestedPaths && data.suggestedPaths.length > 0) {
+          setSuggestedPaths(data.suggestedPaths);
+        } else if (localResults && localResults.suggestedPaths && localResults.suggestedPaths.length > 0) {
+          setSuggestedPaths(localResults.suggestedPaths);
+        }
+
+        if (data.gaps && data.gaps.length > 0) {
+          setGaps(data.gaps);
+        } else if (localResults && localResults.criticalGaps && localResults.criticalGaps.length > 0) {
+          setGaps(localResults.criticalGaps);
+        }
+
+        if (data.currentSkills && data.currentSkills.length > 0) {
+          setCurrentSkills(data.currentSkills);
+        } else if (localResults && localResults.currentSkills && localResults.currentSkills.length > 0) {
+          setCurrentSkills(localResults.currentSkills);
+        }
         // Load new fields
         if (data.phone) setProfilePhone(data.phone);
         if (data.location) setProfileLocation(data.location);
