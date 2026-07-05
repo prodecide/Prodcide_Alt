@@ -44,6 +44,7 @@ export default function Discovery() {
   const [currentSkills, setCurrentSkills] = useState([]);
   const [suggestedPaths, setSuggestedPaths] = useState([]);
   const [readyToSuggest, setReadyToSuggest] = useState(false);
+  const [synthesisStep, setSynthesisStep] = useState(1);
 
   const domainDropdownRef = useRef(null);
   const chatMessagesEndRef = useRef(null);
@@ -243,6 +244,9 @@ export default function Discovery() {
 
       window.dispatchEvent(new Event('storage'));
 
+      // Clear the challenge cache so the user doesn't get redirected back to discovery upon logging in
+      localStorage.removeItem('discovery_challenge_text');
+
       const email = localStorage.getItem('discovery_verified_email');
       const name = localStorage.getItem('discovery_verified_name');
       const storedProfile = localStorage.getItem('discovery_user_profile');
@@ -265,10 +269,23 @@ export default function Discovery() {
         }).catch(err => console.error("Failed to push AI results to database:", err));
       }
 
+      // Step-by-step loading triggers
+      const step1 = setTimeout(() => setSynthesisStep(2), 650);
+      const step2 = setTimeout(() => setSynthesisStep(3), 1300);
+      const step3 = setTimeout(() => setSynthesisStep(4), 1950);
+      const step4 = setTimeout(() => setSynthesisStep(5), 2600);
+
       const timer = setTimeout(() => {
         navigate('/dashboard?tab=insights');
-      }, 2200);
-      return () => clearTimeout(timer);
+      }, 3200);
+
+      return () => {
+        clearTimeout(step1);
+        clearTimeout(step2);
+        clearTimeout(step3);
+        clearTimeout(step4);
+        clearTimeout(timer);
+      };
     }
   }, [readyToSuggest, suggestedPaths, criticalGaps, currentSkills, navigate, isRedirectingToInsights]);
 
@@ -1326,21 +1343,63 @@ export default function Discovery() {
       )}
 
       {isRedirectingToInsights && (
-        <div className="fixed inset-0 z-[99999] bg-slate-900/80 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-white text-center">
+        <div className="fixed inset-0 z-[99999] bg-[#0b0f19]/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-white text-center">
+          {/* Animated Glowing Mesh Backgrounds */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
+
+          {/* Premium Neural Logo / Double Spinner */}
           <div className="relative mb-8">
-            <div className="absolute -inset-4 bg-gradient-to-tr from-[#003ec7] to-blue-400 rounded-full blur-xl opacity-75 animate-pulse"></div>
-            <div className="relative w-24 h-24 rounded-full border-4 border-white/20 border-t-white animate-spin flex items-center justify-center bg-slate-900/90">
-              <span className="material-symbols-outlined text-4xl text-[#003ec7] animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>insights</span>
+            <div className="absolute -inset-6 bg-gradient-to-tr from-[#0052FF] to-purple-500 rounded-full blur-2xl opacity-40 animate-pulse animate-duration-1000"></div>
+            
+            {/* Outer Spinning Ring */}
+            <div className="w-28 h-28 rounded-full border border-white/5 border-t-[#0052FF] border-r-purple-500 animate-spin flex items-center justify-center bg-slate-950/80">
+              {/* Inner Reverse Spinning Ring */}
+              <div className="w-20 h-20 rounded-full border border-white/10 border-b-cyan-400 border-l-blue-500 animate-[spin_1.5s_linear_infinite_reverse] flex items-center justify-center">
+                <span className="material-symbols-outlined text-3xl text-white animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>insights</span>
+              </div>
             </div>
           </div>
-          <h2 className="font-headline text-3xl font-extrabold tracking-tight mb-2 animate-bounce">
-            Synthesis Complete!
+
+          <h2 className="font-headline text-3xl font-black tracking-tight mb-6 bg-gradient-to-r from-blue-400 via-indigo-200 to-purple-400 bg-clip-text text-transparent">
+            Synthesizing Career Roadmap
           </h2>
-          <p className="text-slate-400 text-sm max-w-sm leading-relaxed mb-6 font-medium">
-            We have generated your strategic roadmap. Directing you to your Strategic Insights...
-          </p>
-          <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-[#003ec7] to-blue-400 animate-[loadingBar_2s_ease-out_forwards]"></div>
+
+          {/* Status Check-off List */}
+          <div className="w-full max-w-xs bg-slate-900/40 border border-white/5 rounded-2xl p-5 space-y-3.5 text-left mb-8 backdrop-blur-md">
+            {[
+              { id: 1, text: "Analyzing career challenge context..." },
+              { id: 2, text: "Synthesizing critical gap vectors..." },
+              { id: 3, text: "Generating strategic transition roadmap..." },
+              { id: 4, text: "Matching top 1% industry advisors..." }
+            ].map((step) => {
+              const isActive = synthesisStep === step.id;
+              const isCompleted = synthesisStep > step.id;
+              return (
+                <div key={step.id} className="flex items-center gap-3 transition-all duration-300">
+                  {isCompleted ? (
+                    <span className="material-symbols-outlined text-green-400 text-sm font-bold animate-[scaleIn_0.2s_ease-out_forwards]">check_circle</span>
+                  ) : isActive ? (
+                    <div className="w-3.5 h-3.5 rounded-full border border-blue-400 border-t-transparent animate-spin"></div>
+                  ) : (
+                    <span className="material-symbols-outlined text-slate-600 text-sm">radio_button_unchecked</span>
+                  )}
+                  <span className={`text-xs font-semibold tracking-wide transition-colors duration-300 ${
+                    isCompleted ? 'text-slate-300' : isActive ? 'text-blue-400 font-bold' : 'text-slate-600'
+                  }`}>
+                    {step.text}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-64 h-1 bg-white/10 rounded-full overflow-hidden relative">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 rounded-full"
+              style={{ width: `${(synthesisStep - 1) * 25}%` }}
+            />
           </div>
         </div>
       )}
@@ -1353,6 +1412,10 @@ export default function Discovery() {
         @keyframes slideProgress {
           0% { transform: translateX(-100%); }
           100% { transform: translateX(300%); }
+        }
+        @keyframes scaleIn {
+          0% { transform: scale(0.6); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
         }
         .progress-bar-slide {
           animation: slideProgress 1.5s infinite linear;
