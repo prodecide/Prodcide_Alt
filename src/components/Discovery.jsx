@@ -214,7 +214,7 @@ export default function Discovery() {
       }
 
       if (email) {
-        fetch('/api/users', {
+        fetch('/api/user-profiles', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -255,7 +255,7 @@ export default function Discovery() {
         try { baseProfile = JSON.parse(storedProfile); } catch (e) {}
       }
       if (email) {
-        fetch('/api/users', {
+        fetch('/api/user-profiles', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
