@@ -1348,14 +1348,12 @@ export default function Discovery() {
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
 
-          {/* Premium Neural Logo / Double Spinner */}
-          <div className="relative mb-8">
-            <div className="absolute -inset-6 bg-gradient-to-tr from-[#0052FF] to-purple-500 rounded-full blur-2xl opacity-40 animate-pulse animate-duration-1000"></div>
-            
-            {/* Outer Spinning Ring */}
-            <div className="w-28 h-28 rounded-full border border-white/5 border-t-[#0052FF] border-r-purple-500 animate-spin flex items-center justify-center bg-slate-950/80">
-              {/* Inner Reverse Spinning Ring */}
-              <div className="w-20 h-20 rounded-full border border-white/10 border-b-cyan-400 border-l-blue-500 animate-[spin_1.5s_linear_infinite_reverse] flex items-center justify-center">
+          {/* 3D WebGL Neural Canvas Container */}
+          <div className="w-full h-72 relative mb-6">
+            <NeuralSynthesisCanvas />
+            {/* Overlay Icon in center */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-16 h-16 rounded-full bg-slate-950/80 border border-white/10 flex items-center justify-center shadow-2xl backdrop-blur-sm">
                 <span className="material-symbols-outlined text-3xl text-white animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>insights</span>
               </div>
             </div>
@@ -1436,4 +1434,149 @@ export default function Discovery() {
       `}</style>
     </div>
   );
+}
+
+// ─── Three.js Neural Sphere Synthesis Canvas ───
+function NeuralSynthesisCanvas() {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const SCRIPT_ID = 'three-js-script';
+    let script = document.getElementById(SCRIPT_ID);
+    
+    const initThree = () => {
+      if (!containerRef.current) return;
+      const THREE = window.THREE;
+      if (!THREE) return;
+
+      const container = containerRef.current;
+      container.innerHTML = '';
+
+      const width = container.clientWidth || window.innerWidth;
+      const height = container.clientHeight || window.innerHeight;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+      camera.position.z = 5;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      container.appendChild(renderer.domElement);
+
+      const primaryColor = new THREE.Color('#0052FF');
+      const accentColor = new THREE.Color('#00D1FF');
+      
+      const group = new THREE.Group();
+      scene.add(group);
+
+      const particlesCount = 1200;
+      const positions = new Float32Array(particlesCount * 3);
+      const colors = new Float32Array(particlesCount * 3);
+
+      for (let i = 0; i < particlesCount; i++) {
+          const phi = Math.acos(-1 + (2 * i) / particlesCount);
+          const theta = Math.sqrt(particlesCount * Math.PI) * phi;
+          
+          const radius = 2 + Math.random() * 0.1;
+          positions[i * 3] = radius * Math.cos(theta) * Math.sin(phi);
+          positions[i * 3 + 1] = radius * Math.sin(theta) * Math.sin(phi);
+          positions[i * 3 + 2] = radius * Math.cos(phi);
+
+          const mix = Math.random();
+          colors[i * 3] = THREE.MathUtils.lerp(primaryColor.r, accentColor.r, mix);
+          colors[i * 3 + 1] = THREE.MathUtils.lerp(primaryColor.g, accentColor.g, mix);
+          colors[i * 3 + 2] = THREE.MathUtils.lerp(primaryColor.b, accentColor.b, mix);
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const material = new THREE.PointsMaterial({
+          size: 0.04,
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.8,
+          blending: THREE.AdditiveBlending
+      });
+
+      const points = new THREE.Points(geometry, material);
+      group.add(points);
+
+      function createRing(radius, color, speed, axis) {
+          const ringGeom = new THREE.TorusGeometry(radius, 0.005, 16, 100);
+          const ringMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.3 });
+          const ring = new THREE.Mesh(ringGeom, ringMat);
+          ring.rotation.x = Math.random() * Math.PI;
+          ring.rotation.y = Math.random() * Math.PI;
+          group.add(ring);
+          return { mesh: ring, speed: speed, axis: axis };
+      }
+
+      const rings = [
+          createRing(2.5, primaryColor, 0.01, 'y'),
+          createRing(2.8, accentColor, -0.005, 'x'),
+          createRing(3.2, primaryColor, 0.008, 'z')
+      ];
+
+      let animationFrameId;
+      function animate() {
+          animationFrameId = requestAnimationFrame(animate);
+          
+          group.rotation.y += 0.002;
+          group.rotation.x += 0.001;
+          
+          rings.forEach(r => {
+              r.mesh.rotation[r.axis] += r.speed;
+          });
+
+          const scale = 1 + Math.sin(Date.now() * 0.001) * 0.05;
+          points.scale.set(scale, scale, scale);
+
+          renderer.render(scene, camera);
+      }
+
+      const handleResize = () => {
+          if (!containerRef.current) return;
+          const w = containerRef.current.clientWidth || window.innerWidth;
+          const h = containerRef.current.clientHeight || window.innerHeight;
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+      };
+
+      window.addEventListener('resize', handleResize);
+      animate();
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        cancelAnimationFrame(animationFrameId);
+        renderer.dispose();
+      };
+    };
+
+    if (!script) {
+      script = document.createElement('script');
+      script.id = SCRIPT_ID;
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+      script.async = true;
+      script.onload = initThree;
+      document.body.appendChild(script);
+    } else {
+      if (window.THREE) {
+        initThree();
+      } else {
+        script.addEventListener('load', initThree);
+      }
+    }
+
+    return () => {
+      if (script) {
+        script.removeEventListener('load', initThree);
+      }
+    };
+  }, []);
+
+  return <div ref={containerRef} className="absolute inset-0 w-full h-full" />;
 }
