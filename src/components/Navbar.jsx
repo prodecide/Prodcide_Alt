@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const pathname = location.pathname;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [userName, setUserName] = useState('');
@@ -64,6 +65,23 @@ export default function Navbar() {
     };
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem('discovery_verified_email');
+    localStorage.removeItem('discovery_verified_name');
+    localStorage.removeItem('discovery_user_profile');
+    localStorage.removeItem('discovery_results');
+    localStorage.removeItem('discovery_onboarding_context');
+    localStorage.removeItem('consultant_user');
+    localStorage.removeItem('prodecide_admin_auth');
+    setUserName('');
+    setUserEmail('');
+    setConsultantData(null);
+    setIncomingRequests([]);
+    setDropdownOpen(false);
+    navigate('/');
+    window.location.reload();
+  };
+
   const getLinkClass = (path) => {
     const isActive = pathname === path;
     if (isActive) {
@@ -71,6 +89,9 @@ export default function Navbar() {
     }
     return "text-slate-500 dark:text-slate-400 hover:text-[#0052FF] font-manrope tracking-tight font-bold text-lg transition-all duration-200 ease-in-out";
   };
+
+  const isAdminLoggedIn = localStorage.getItem('prodecide_admin_auth') === 'true';
+  const isAnyUserLoggedIn = !!userName || !!userEmail || !!consultantData || isAdminLoggedIn;
 
   return (
     <header className="sticky top-0 w-full z-50 bg-[#f7f9fb]/90 dark:bg-[#191c1e]/90 backdrop-blur-md border-b border-slate-200/40 shadow-sm">
@@ -187,9 +208,9 @@ export default function Navbar() {
             )}
           </div>
           
-          {userName && (
+          {isAnyUserLoggedIn && (
             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 hidden md:inline-block bg-slate-100/60 dark:bg-slate-800/60 px-3 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
-              {userName}
+              {consultantData ? (consultantData.name || 'Consultant') : isAdminLoggedIn ? 'Admin' : userName}
             </span>
           )}
 
@@ -208,10 +229,24 @@ export default function Navbar() {
  
             {dropdownOpen && (
               <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-white dark:bg-[#191c1e] border border-slate-200/50 dark:border-slate-800 shadow-xl py-2 z-50 transform origin-top-right transition-all">
-                {userName && (
+                {isAnyUserLoggedIn && (
                   <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
-                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{userName}</p>
-                    {userEmail && <p className="text-[10px] text-slate-400 truncate">{userEmail}</p>}
+                    {consultantData ? (
+                      <>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{consultantData.name || 'Consultant'}</p>
+                        <p className="text-[10px] text-slate-400 truncate">{consultantData.email}</p>
+                      </>
+                    ) : isAdminLoggedIn ? (
+                      <>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">Administrator</p>
+                        <p className="text-[10px] text-slate-400 truncate">admin@prodecide.com</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{userName}</p>
+                        {userEmail && <p className="text-[10px] text-slate-400 truncate">{userEmail}</p>}
+                      </>
+                    )}
                   </div>
                 )}
                 <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
@@ -250,6 +285,18 @@ export default function Navbar() {
                     <span className="material-symbols-outlined text-lg text-slate-400">badge</span>
                     Consultant Portal
                   </Link>
+                  {isAnyUserLoggedIn && (
+                    <>
+                      <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 hover:text-red-700 transition-all text-sm font-semibold border-none bg-transparent cursor-pointer text-left"
+                      >
+                        <span className="material-symbols-outlined text-lg text-red-500">logout</span>
+                        Logout
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             )}

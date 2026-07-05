@@ -645,12 +645,16 @@ export default function Dashboard() {
     localStorage.removeItem('discovery_verified_name');
     localStorage.removeItem('discovery_user_profile');
     localStorage.removeItem('discovery_results');
+    localStorage.removeItem('discovery_onboarding_context');
+    localStorage.removeItem('consultant_user');
+    localStorage.removeItem('prodecide_admin_auth');
     setIsAuthenticated(false);
     setOtpStep('none');
     setProfileEmail('');
     setProfileName('');
     window.dispatchEvent(new Event('storage'));
-    navigate('/discovery');
+    navigate('/');
+    window.location.reload();
   };
 
   // Dynamic Interest Handlers
@@ -788,10 +792,10 @@ export default function Dashboard() {
                     <span className="material-symbols-outlined text-sm text-slate-400">badge</span>
                     Consultant Portal
                   </Link>
-                  {isAuthenticated && (
+                  {(isAuthenticated || localStorage.getItem('consultant_user') || localStorage.getItem('prodecide_admin_auth') === 'true') && (
                     <button 
                       onClick={() => { setDropdownOpen(false); handleSignOut(); }}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 transition-all text-xs font-semibold text-left"
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 transition-all text-xs font-semibold text-left border-none bg-transparent cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-sm">logout</span>
                       Sign Out
