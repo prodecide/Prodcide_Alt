@@ -232,42 +232,141 @@ export default function Discovery() {
 
   const [isRedirectingToInsights, setIsRedirectingToInsights] = useState(false);
 
+  // Generate smart fallback results from the conversation context
+  const generateFallbackResults = () => {
+    const domain = selectedDomain || 'Career Path Selection';
+    const userMsgs = messages.filter(m => m.sender === 'user').map(m => m.text).join(' ').toLowerCase();
+    
+    let paths = [];
+    let gaps = [];
+    let skills = [];
+
+    // Infer paths from domain and conversation
+    if (domain.includes('Job') || userMsgs.includes('transition') || userMsgs.includes('switch')) {
+      paths = [
+        { title: 'Strategic Industry Pivot', icon: 'trending_up' },
+        { title: 'Upskill & Advance', icon: 'school' },
+        { title: 'Consulting & Advisory', icon: 'psychology' }
+      ];
+    } else {
+      paths = [
+        { title: 'Technology & Innovation', icon: 'psychology' },
+        { title: 'Business Strategy', icon: 'trending_up' },
+        { title: 'Research & Development', icon: 'science' }
+      ];
+    }
+
+    // Infer gaps
+    if (userMsgs.includes('ai') || userMsgs.includes('machine learning') || userMsgs.includes('tech')) {
+      gaps = ['Machine Learning Fundamentals', 'System Design', 'Data Engineering'];
+      skills = ['Analytical Thinking', 'Problem Solving', 'Self-Motivation'];
+    } else if (userMsgs.includes('finance') || userMsgs.includes('banking')) {
+      gaps = ['Financial Modeling', 'Risk Analysis', 'Regulatory Framework'];
+      skills = ['Quantitative Analysis', 'Critical Thinking', 'Communication'];
+    } else if (userMsgs.includes('consult') || userMsgs.includes('management')) {
+      gaps = ['Case Frameworks', 'Client Management', 'Market Sizing'];
+      skills = ['Logical Reasoning', 'Stakeholder Management', 'Presentation Skills'];
+    } else {
+      gaps = ['Domain Expertise', 'Professional Networking', 'Technical Foundations'];
+      skills = ['Analytical Thinking', 'Self-Motivation', 'Creative Problem Solving'];
+    }
+
+    return { suggestedPaths: paths, criticalGaps: gaps, currentSkills: skills };
+  };
+
   useEffect(() => {
     if (readyToSuggest && !isRedirectingToInsights) {
       setIsRedirectingToInsights(true);
-      
-      localStorage.setItem('discovery_results', JSON.stringify({
-        suggestedPaths,
-        criticalGaps,
-        currentSkills
-      }));
 
-      window.dispatchEvent(new Event('storage'));
+      // Use current state results, or generate fallbacks if empty
+      const finalizeAndRedirect = async () => {
+        let finalPaths = suggestedPaths;
+        let finalGaps = criticalGaps;
+        let finalSkills = currentSkills;
 
-      // Clear the challenge cache so the user doesn't get redirected back to discovery upon logging in
-      localStorage.removeItem('discovery_challenge_text');
+        // If results are empty, try one final synthesis API call
+        if (finalPaths.length === 0 && finalGaps.length === 0 && finalSkills.length === 0) {
+          try {
+            const response = await fetch('/api/discovery-chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                messages: [...messages, { sender: 'user', text: 'Please provide your final analysis now with suggestedPaths, criticalGaps, and currentSkills.' }],
+                selectedDomain,
+                onboardingContext: {
+                  name: onboardingName,
+                  age: onboardingAge,
+                  class: onboardingClass,
+                  subject: onboardingSubject,
+                  job: onboardingJob,
+                  education: onboardingEducation
+                }
+              })
+            });
+            if (response.ok) {
+              const data = await response.json();
+              if (data.suggestedPaths && data.suggestedPaths.length > 0) finalPaths = data.suggestedPaths;
+              if (data.criticalGaps && data.criticalGaps.length > 0) finalGaps = data.criticalGaps;
+              if (data.currentSkills && data.currentSkills.length > 0) finalSkills = data.currentSkills;
+            }
+          } catch (err) {
+            console.error('Final synthesis API call failed:', err);
+          }
+        }
 
-      const email = localStorage.getItem('discovery_verified_email');
-      const name = localStorage.getItem('discovery_verified_name');
-      const storedProfile = localStorage.getItem('discovery_user_profile');
-      let baseProfile = {};
-      if (storedProfile) {
-        try { baseProfile = JSON.parse(storedProfile); } catch (e) {}
-      }
-      if (email) {
-        fetch('/api/user-profiles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            name: name || baseProfile.name || '',
-            ...baseProfile,
-            suggestedPaths,
-            gaps: criticalGaps,
-            currentSkills
-          })
-        }).catch(err => console.error("Failed to push AI results to database:", err));
-      }
+        // If STILL empty after API call, use conversation-based fallback
+        if (finalPaths.length === 0 && finalGaps.length === 0 && finalSkills.length === 0) {
+          const fallback = generateFallbackResults();
+          finalPaths = fallback.suggestedPaths;
+          finalGaps = fallback.criticalGaps;
+          finalSkills = fallback.currentSkills;
+        }
+
+        // Update state so sidebar reflects final data
+        if (finalPaths.length > 0) setSuggestedPaths(finalPaths);
+        if (finalGaps.length > 0) setCriticalGaps(finalGaps);
+        if (finalSkills.length > 0) setCurrentSkills(finalSkills);
+
+        // Save to localStorage
+        localStorage.setItem('discovery_results', JSON.stringify({
+          suggestedPaths: finalPaths,
+          criticalGaps: finalGaps,
+          currentSkills: finalSkills
+        }));
+
+        window.dispatchEvent(new Event('storage'));
+
+        // Clear the challenge cache so the user doesn't get redirected back to discovery upon logging in
+        localStorage.removeItem('discovery_challenge_text');
+
+        // Push to database if authenticated
+        const email = localStorage.getItem('discovery_verified_email');
+        const name = localStorage.getItem('discovery_verified_name');
+        const storedProfile = localStorage.getItem('discovery_user_profile');
+        let baseProfile = {};
+        if (storedProfile) {
+          try { baseProfile = JSON.parse(storedProfile); } catch (e) {}
+        }
+        if (email) {
+          fetch('/api/user-profiles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              name: name || baseProfile.name || '',
+              ...baseProfile,
+              suggestedPaths: finalPaths,
+              gaps: finalGaps,
+              currentSkills: finalSkills
+            })
+          }).catch(err => console.error("Failed to push AI results to database:", err));
+        }
+
+        // Navigate after synthesis animation
+        setTimeout(() => {
+          navigate('/dashboard?tab=insights');
+        }, 3200);
+      };
 
       // Step-by-step loading triggers
       const step1 = setTimeout(() => setSynthesisStep(2), 650);
@@ -275,16 +374,13 @@ export default function Discovery() {
       const step3 = setTimeout(() => setSynthesisStep(4), 1950);
       const step4 = setTimeout(() => setSynthesisStep(5), 2600);
 
-      const timer = setTimeout(() => {
-        navigate('/dashboard?tab=insights');
-      }, 3200);
+      finalizeAndRedirect();
 
       return () => {
         clearTimeout(step1);
         clearTimeout(step2);
         clearTimeout(step3);
         clearTimeout(step4);
-        clearTimeout(timer);
       };
     }
   }, [readyToSuggest, suggestedPaths, criticalGaps, currentSkills, navigate, isRedirectingToInsights]);
