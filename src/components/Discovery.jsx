@@ -10,6 +10,7 @@ export default function Discovery() {
   const [selectedDomain, setSelectedDomain] = useState('Career Path Selection');
   const [isDomainOpen, setIsDomainOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showContextModal, setShowContextModal] = useState(false);
   
   // Chat transition states
   const [mode, setMode] = useState('input'); // 'input' or 'chat'
@@ -340,21 +341,17 @@ export default function Discovery() {
       alert("Please describe your challenge before analyzing.");
       return;
     }
-    if (!isAuthenticated) {
-      // Save onboarding form data and challenge to localStorage
-      localStorage.setItem('discovery_challenge_text', challengeText);
-      localStorage.setItem('discovery_onboarding_context', JSON.stringify({
-        name: onboardingName,
-        age: onboardingAge,
-        class: onboardingClass,
-        subject: onboardingSubject,
-        job: onboardingJob,
-        education: onboardingEducation
-      }));
-      navigate('/dashboard?tab=profile');
-    } else {
-      handleInitialAnalyze();
-    }
+    // Save onboarding form data and challenge to localStorage for state recovery
+    localStorage.setItem('discovery_challenge_text', challengeText);
+    localStorage.setItem('discovery_onboarding_context', JSON.stringify({
+      name: onboardingName,
+      age: onboardingAge,
+      class: onboardingClass,
+      subject: onboardingSubject,
+      job: onboardingJob,
+      education: onboardingEducation
+    }));
+    handleInitialAnalyze();
   };
 
   const handleInitialAnalyze = async () => {
@@ -431,29 +428,31 @@ export default function Discovery() {
     }, 1800);
   };
 
-  // Handle return redirect from Dashboard authentication
+  // Handle return redirect from Dashboard authentication & load context on mount
   useEffect(() => {
     const savedChallenge = localStorage.getItem('discovery_challenge_text');
     const savedContextStr = localStorage.getItem('discovery_onboarding_context');
     const email = localStorage.getItem('discovery_verified_email');
     
+    if (savedContextStr) {
+      try {
+        const savedContext = JSON.parse(savedContextStr);
+        setOnboardingName(savedContext.name || '');
+        setOnboardingAge(savedContext.age || '');
+        setOnboardingClass(savedContext.class || '');
+        setOnboardingSubject(savedContext.subject || '');
+        setOnboardingJob(savedContext.job || '');
+        setOnboardingEducation(savedContext.education || '');
+      } catch (e) {
+        console.error("Failed to parse saved onboarding context", e);
+      }
+    } else {
+      setShowContextModal(true);
+    }
+
     if (savedChallenge && email) {
       setChallengeText(savedChallenge);
       setIsAuthenticated(true);
-      
-      if (savedContextStr) {
-        try {
-          const savedContext = JSON.parse(savedContextStr);
-          setOnboardingName(savedContext.name || '');
-          setOnboardingAge(savedContext.age || '');
-          setOnboardingClass(savedContext.class || '');
-          setOnboardingSubject(savedContext.subject || '');
-          setOnboardingJob(savedContext.job || '');
-          setOnboardingEducation(savedContext.education || '');
-        } catch (e) {
-          console.error("Failed to parse saved onboarding context", e);
-        }
-      }
       
       // Clean up keys
       localStorage.removeItem('discovery_challenge_text');
@@ -642,219 +641,85 @@ export default function Discovery() {
 
       {/* ─── Mode 1: Initial Input Form ─── */}
       {mode === 'input' ? (
-        <main className="max-w-7xl mx-auto px-8 py-12 grid grid-cols-12 gap-8 flex-grow w-full">
-          <section className="col-span-12 lg:col-span-8 flex flex-col gap-12">
-            {/* AI Avatar & Welcome */}
-            <div className="flex flex-col gap-6">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#003ec7] to-[#0052ff] flex items-center justify-center shadow-lg">
-                <span className="material-symbols-outlined text-white text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-              </div>
-              <div className="max-w-2xl">
-                <h1 className="font-headline text-4xl font-extrabold tracking-tight text-slate-900 mb-4 animate-fade-in">
-                  Tell me about the challenge you're facing.
-                </h1>
-                <p className="text-body-lg text-slate-600 leading-relaxed text-lg">
-                  What is the core decision you need to make? Be as specific as possible—I'll help you structure the variables and evaluate the outcomes.
+        <main className="max-w-3xl mx-auto px-6 py-12 flex flex-col gap-10 flex-grow w-full">
+          {/* Context Preview Bar */}
+          <div className="bg-blue-50/50 border border-blue-200/50 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
+              <div>
+                <p className="text-xs font-bold text-slate-800">
+                  Target: {selectedDomain}
+                </p>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  {onboardingName || 'Anonymous'} ({onboardingAge || 'N/A'} yrs) • {selectedDomain === 'Career Path Selection' ? `${onboardingClass || 'N/A'} in ${onboardingSubject || 'N/A'}` : `${onboardingJob || 'N/A'} (Degree: ${onboardingEducation || 'N/A'})`}
                 </p>
               </div>
             </div>
+            <button 
+              type="button"
+              onClick={() => setShowContextModal(true)}
+              className="px-4 py-2 bg-white border border-slate-200 hover:border-[#0052FF]/30 text-xs font-bold rounded-xl text-slate-700 hover:text-primary transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+            >
+              <span className="material-symbols-outlined text-sm">tune</span>
+              Edit Profile details
+            </button>
+          </div>
 
-            {/* Input Field Area */}
-            <div className="relative group">
-              <div className="bg-white rounded-xl p-2 shadow-sm border border-slate-200 focus-within:ring-2 focus-within:ring-[#003ec7] transition-all">
-                <textarea 
-                  value={challengeText}
-                  onChange={(e) => setChallengeText(e.target.value)}
-                  className="w-full bg-transparent border-none focus:ring-0 text-slate-800 p-4 text-lg placeholder:text-slate-400 resize-none font-body outline-none" 
-                  placeholder="e.g., I'm deciding between two career paths: staying in my current specialized role or pivoting to a management position. Help me evaluate the long-term impact on my goals." 
-                  rows="4"
-                />
-                <div className="flex justify-between items-center px-4 py-3 bg-[#f2f4f6] rounded-lg">
-                  <div className="flex gap-2"></div>
-                  <button 
-                    onClick={handleAnalyzeClick}
-                    className="bg-gradient-to-br from-[#003ec7] to-[#0052ff] text-white px-6 py-2 rounded-md font-medium flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all"
-                  >
-                    <span>Analyze Problem</span>
-                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                  </button>
-                </div>
-              </div>
+          {/* AI Avatar & Welcome */}
+          <div className="flex flex-col gap-6">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#003ec7] to-[#0052ff] flex items-center justify-center shadow-lg">
+              <span className="material-symbols-outlined text-white text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+            </div>
+            <div>
+              <h1 className="font-headline text-3xl font-extrabold tracking-tight text-slate-900 mb-3">
+                Tell me about the challenge you're facing.
+              </h1>
+              <p className="text-body-lg text-slate-500 leading-relaxed font-medium">
+                What is the core decision you need to make? Be as specific as possible—I'll help you structure the variables and evaluate the outcomes.
+              </p>
+            </div>
+          </div>
 
-              {/* Prompt Suggestion */}
-              <div 
-                onClick={handleSuggestionClick}
-                className="mt-8 bg-blue-50/70 border border-blue-200 hover:bg-blue-50 backdrop-blur-md rounded-xl p-6 relative overflow-hidden cursor-pointer group/suggestion transition-all"
-              >
-                <div className="flex gap-4 items-start relative z-10">
-                  <span className="material-symbols-outlined text-[#003ec7] transition-transform group-hover/suggestion:scale-110" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
-                  <div>
-                    <h4 className="font-headline text-sm font-bold text-slate-800 mb-1">PROMPT SUGGESTION</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed group-hover/suggestion:text-[#003ec7] transition-colors">
-                      "Help me decide between Option A and Option B considering I want to be employed in 2 years"
-                    </p>
-                  </div>
-                </div>
-                <div className="absolute -right-12 -top-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+          {/* Input Field Area */}
+          <div className="relative group">
+            <div className="bg-white rounded-2xl p-2.5 shadow-sm border border-slate-200 focus-within:ring-2 focus-within:ring-[#003ec7] transition-all">
+              <textarea 
+                value={challengeText}
+                onChange={(e) => setChallengeText(e.target.value)}
+                className="w-full bg-transparent border-none focus:ring-0 text-slate-800 p-4 text-base placeholder:text-slate-400 resize-none font-body outline-none" 
+                placeholder="e.g., I'm deciding between two career paths: staying in my current specialized role or pivoting to a management position. Help me evaluate the long-term impact on my goals." 
+                rows="5"
+              />
+              <div className="flex justify-between items-center px-4 py-3 bg-[#f2f4f6] rounded-xl">
+                <div className="flex gap-2"></div>
+                <button 
+                  type="button"
+                  onClick={handleAnalyzeClick}
+                  className="bg-[#0052FF] hover:bg-[#003ec7] text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all border-none cursor-pointer shadow-md shadow-blue-500/10"
+                >
+                  <span>Analyze Problem</span>
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
               </div>
             </div>
-          </section>
 
-          {/* Sidebar Domain Selector */}
-          <aside className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-            <div className="bg-[#f2f4f6] rounded-xl p-8 sticky top-28 h-fit border border-slate-100">
-              <h3 className="font-headline text-lg font-extrabold tracking-tight text-slate-900 mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#003ec7] text-xl">account_tree</span>
-                Current Context
-              </h3>
-              <div className="space-y-6">
-                <div className="flex flex-col gap-2">
-                  <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">DOMAIN</span>
-                  <div className="relative" ref={domainDropdownRef}>
-                    <button 
-                      onClick={() => setIsDomainOpen(!isDomainOpen)}
-                      className="w-full bg-white px-4 py-3 rounded-lg flex items-center justify-between gap-3 border border-slate-200 hover:border-[#003ec7]/30 transition-all text-left"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-slate-500 text-sm">business_center</span>
-                        <span className="text-sm font-medium text-slate-800 font-manrope">{selectedDomain}</span>
-                      </div>
-                      <span className="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
-                    </button>
-                    {isDomainOpen && (
-                      <div className="absolute top-full left-0 w-full mt-1 bg-white rounded-lg shadow-lg border border-slate-100 py-1 z-20">
-                        {[
-                          { value: 'Career Path Selection', label: 'Career Path Selection', disabled: false },
-                          { value: 'Strategic Job Transitioning', label: 'Strategic Job Transitioning', disabled: false },
-                          { value: 'Enterprise Solution Design', label: 'Enterprise Solution Design', disabled: true },
-                          { value: 'Personal Problem Resolution', label: 'Personal Problem Resolution', disabled: true }
-                        ].map(opt => (
-                          <button
-                            key={opt.value}
-                            disabled={opt.disabled}
-                            onClick={() => { if(!opt.disabled) { setSelectedDomain(opt.value); setIsDomainOpen(false); } }}
-                            className={`w-full px-4 py-2.5 text-left text-xs font-manrope transition-colors font-medium flex items-center justify-between ${
-                              opt.disabled 
-                                ? 'text-slate-400 bg-slate-50/50 cursor-not-allowed' 
-                                : 'text-slate-700 hover:bg-slate-50 cursor-pointer'
-                            }`}
-                          >
-                            <span>{opt.label}</span>
-                            {opt.disabled && <span className="text-[8px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider scale-90">Coming Soon</span>}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+            {/* Prompt Suggestion */}
+            <div 
+              onClick={handleSuggestionClick}
+              className="mt-8 bg-blue-50/70 border border-blue-200/50 hover:bg-blue-50 backdrop-blur-md rounded-2xl p-6 relative overflow-hidden cursor-pointer group/suggestion transition-all"
+            >
+              <div className="flex gap-4 items-start relative z-10">
+                <span className="material-symbols-outlined text-[#003ec7] transition-transform group-hover/suggestion:scale-110" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+                <div>
+                  <h4 className="font-headline text-xs font-bold text-slate-800 tracking-wider uppercase mb-1">PROMPT SUGGESTION</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed group-hover/suggestion:text-[#003ec7] transition-colors">
+                    "Help me decide between Option A and Option B considering I want to be employed in 2 years"
+                  </p>
                 </div>
-
-                {/* Dynamic Onboarding Fields based on selected domain */}
-                {selectedDomain === 'Career Path Selection' && (
-                  <div className="space-y-4 pt-4 border-t border-slate-200/60 animate-fade-in">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Name</label>
-                      <input 
-                        type="text" 
-                        value={onboardingName} 
-                        onChange={(e) => setOnboardingName(e.target.value)}
-                        placeholder="Enter name"
-                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Age</label>
-                      <input 
-                        type="number" 
-                        value={onboardingAge} 
-                        onChange={(e) => onboardingAge >= 0 ? setOnboardingAge(e.target.value) : null}
-                        placeholder="Enter age"
-                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Class</label>
-                      <select 
-                        value={onboardingClass} 
-                        onChange={(e) => setOnboardingClass(e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
-                      >
-                        <option value="">Select Class</option>
-                        <option value="10th">10th</option>
-                        <option value="12th">12th</option>
-                        <option value="Grad">Graduation</option>
-                        <option value="Post Grad">Post Graduation</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Subject / Major</label>
-                      <input 
-                        type="text" 
-                        value={onboardingSubject} 
-                        onChange={(e) => setOnboardingSubject(e.target.value)}
-                        placeholder="e.g. Science, Commerce, CS"
-                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {selectedDomain === 'Strategic Job Transitioning' && (
-                  <div className="space-y-4 pt-4 border-t border-slate-200/60 animate-fade-in">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Name</label>
-                      <input 
-                        type="text" 
-                        value={onboardingName} 
-                        onChange={(e) => setOnboardingName(e.target.value)}
-                        placeholder="Enter name"
-                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Age</label>
-                      <input 
-                        type="number" 
-                        value={onboardingAge} 
-                        onChange={(e) => onboardingAge >= 0 ? setOnboardingAge(e.target.value) : null}
-                        placeholder="Enter age"
-                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Job / Role</label>
-                      <input 
-                        type="text" 
-                        value={onboardingJob} 
-                        onChange={(e) => setOnboardingJob(e.target.value)}
-                        placeholder="e.g. Software Engineer, Analyst"
-                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Education Qualification</label>
-                      <input 
-                        type="text" 
-                        value={onboardingEducation} 
-                        onChange={(e) => setOnboardingEducation(e.target.value)}
-                        placeholder="e.g. B.Tech CS, MBA Finance"
-                        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-1 focus:ring-primary outline-none font-medium"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
-              
-              <div className="mt-12 p-4 bg-[#e6e8ea] rounded-lg">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="w-2 h-2 rounded-full bg-[#003ec7] animate-pulse"></span>
-                  <span className="text-xs font-bold text-slate-800">AI ANALYSIS ENGINE</span>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  I am currently mapping your problem space. As you provide details, I will suggest best ways forward and suitable consultants to help you in decisioning.
-                </p>
-              </div>
+              <div className="absolute -right-12 -top-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
             </div>
-          </aside>
+          </div>
         </main>
       ) : (
         /* ─── Mode 2: Chat Discovery View ─── */
@@ -1168,6 +1033,194 @@ export default function Discovery() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ─── Context Onboarding Modal ─── */}
+      {showContextModal && (
+        <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl border border-slate-100 flex flex-col space-y-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#0052FF] text-2xl">account_tree</span>
+                <h3 className="font-headline text-xl font-black text-slate-900 tracking-tight">Set Up Your Profile Context</h3>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  const saved = localStorage.getItem('discovery_onboarding_context');
+                  if (saved) {
+                    setShowContextModal(false);
+                  } else {
+                    // Set default context if skipped
+                    setOnboardingName('Anonymous');
+                    setOnboardingAge('22');
+                    setOnboardingClass('Grad');
+                    setOnboardingSubject('General');
+                    setOnboardingJob('Professional');
+                    setOnboardingEducation('Graduate');
+                    localStorage.setItem('discovery_onboarding_context', JSON.stringify({
+                      name: 'Anonymous',
+                      age: '22',
+                      class: 'Grad',
+                      subject: 'General',
+                      job: 'Professional',
+                      education: 'Graduate'
+                    }));
+                    setShowContextModal(false);
+                  }
+                }} 
+                className="text-slate-400 hover:text-slate-600 border-none bg-transparent cursor-pointer"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <p className="text-xs text-slate-500 leading-relaxed font-medium">
+              We customize the decision mapping system based on your current academic or professional context.
+            </p>
+
+            <div className="space-y-5">
+              {/* Domain Dropdown */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Select Domain / Flow</label>
+                <div className="relative" ref={domainDropdownRef}>
+                  <button 
+                    type="button"
+                    onClick={() => setIsDomainOpen(!isDomainOpen)}
+                    className="w-full bg-slate-50 px-4 py-3 rounded-xl flex items-center justify-between gap-3 border border-slate-200 hover:border-[#0052FF]/30 transition-all text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-slate-500 text-sm">business_center</span>
+                      <span className="text-xs font-bold text-slate-700 font-manrope">{selectedDomain}</span>
+                    </div>
+                    <span className="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
+                  </button>
+                  {isDomainOpen && (
+                    <div className="absolute top-full left-0 w-full mt-1 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-[99999]">
+                      {[
+                        { value: 'Career Path Selection', label: 'Career Path Selection (Student Flow)', disabled: false },
+                        { value: 'Strategic Job Transitioning', label: 'Strategic Job Transitioning (Professional Flow)', disabled: false }
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => { setSelectedDomain(opt.value); setIsDomainOpen(false); }}
+                          className="w-full px-4 py-2.5 text-left text-xs font-manrope transition-colors font-semibold text-slate-700 hover:bg-slate-50 border-none bg-transparent cursor-pointer"
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Name & Age Row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Name</label>
+                  <input 
+                    type="text" 
+                    value={onboardingName} 
+                    onChange={(e) => setOnboardingName(e.target.value)}
+                    placeholder="Bobby"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Age</label>
+                  <input 
+                    type="number" 
+                    value={onboardingAge} 
+                    onChange={(e) => onboardingAge >= 0 ? setOnboardingAge(e.target.value) : null}
+                    placeholder="25"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Student Onboarding Fields */}
+              {selectedDomain === 'Career Path Selection' && (
+                <div className="grid grid-cols-2 gap-4 animate-fade-in animate-duration-200">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Current Class</label>
+                    <select 
+                      value={onboardingClass} 
+                      onChange={(e) => setOnboardingClass(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
+                    >
+                      <option value="">Select Level</option>
+                      <option value="10th">10th Standard</option>
+                      <option value="12th">12th Standard</option>
+                      <option value="Grad">Undergraduate</option>
+                      <option value="Post Grad">Postgraduate</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Subject / Major</label>
+                    <input 
+                      type="text" 
+                      value={onboardingSubject} 
+                      onChange={(e) => setOnboardingSubject(e.target.value)}
+                      placeholder="e.g. Science, CS"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Professional Onboarding Fields */}
+              {selectedDomain === 'Strategic Job Transitioning' && (
+                <div className="grid grid-cols-2 gap-4 animate-fade-in animate-duration-200">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Current Role</label>
+                    <input 
+                      type="text" 
+                      value={onboardingJob} 
+                      onChange={(e) => setOnboardingJob(e.target.value)}
+                      placeholder="e.g. Analyst"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Education / Qualification</label>
+                    <input 
+                      type="text" 
+                      value={onboardingEducation} 
+                      onChange={(e) => setOnboardingEducation(e.target.value)}
+                      placeholder="e.g. B.Tech CS, MBA"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button 
+              type="button"
+              onClick={() => {
+                if (!onboardingName.trim()) {
+                  alert("Please fill in your name.");
+                  return;
+                }
+                localStorage.setItem('discovery_onboarding_context', JSON.stringify({
+                  name: onboardingName,
+                  age: onboardingAge,
+                  class: onboardingClass,
+                  subject: onboardingSubject,
+                  job: onboardingJob,
+                  education: onboardingEducation,
+                  domain: selectedDomain
+                }));
+                setShowContextModal(false);
+              }}
+              className="w-full bg-primary hover:bg-[#003ec7] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-none shadow-md cursor-pointer active:scale-95"
+            >
+              <span>Confirm & Start Discovery</span>
+              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            </button>
+          </div>
         </div>
       )}
 
