@@ -14,12 +14,39 @@ export default function Navbar() {
   const notificationsRef = useRef(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const [incomingRequests, setIncomingRequests] = useState([]);
+  const [consultantData, setConsultantData] = useState(null);
+
   useEffect(() => {
     const storedName = localStorage.getItem('discovery_verified_name');
     const storedEmail = localStorage.getItem('discovery_verified_email');
     if (storedName) setUserName(storedName);
     if (storedEmail) setUserEmail(storedEmail);
     setMobileMenuOpen(false);
+
+    // Fetch real bookings if logged in as a consultant
+    const savedConsultant = localStorage.getItem('consultant_user');
+    if (savedConsultant) {
+      try {
+        const parsed = JSON.parse(savedConsultant);
+        setConsultantData(parsed);
+        fetch(`/api/bookings?consultantEmail=${encodeURIComponent(parsed.email)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (Array.isArray(data)) {
+              // Get pending incoming requests
+              const pending = data.filter(b => b.status === 'pending');
+              setIncomingRequests(pending);
+            }
+          })
+          .catch(err => console.error("Error fetching bookings in Navbar:", err));
+      } catch (e) {
+        console.error("Error parsing consultant_user:", e);
+      }
+    } else {
+      setConsultantData(null);
+      setIncomingRequests([]);
+    }
   }, [location.pathname]);
 
   useEffect(() => {
@@ -61,27 +88,29 @@ export default function Navbar() {
             Join as Expert
           </Link>
           {/* Interactive Search Expandable Input */}
-          <div className="flex items-center">
-            {searchOpen ? (
-              <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 animate-fade-in">
-                <input 
-                  type="text" 
-                  placeholder="Search network..." 
-                  value={searchVal}
-                  onChange={(e) => setSearchVal(e.target.value)}
-                  className="bg-transparent border-none outline-none text-xs w-32 md:w-44 text-slate-700 dark:text-slate-200 placeholder-slate-400 font-bold"
-                  autoFocus
-                />
-                <button onClick={() => { setSearchOpen(false); setSearchVal(''); }} className="text-slate-400 hover:text-slate-600 flex items-center">
-                  <span className="material-symbols-outlined text-sm">close</span>
+          {pathname !== '/' && (
+            <div className="flex items-center">
+              {searchOpen ? (
+                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 animate-fade-in">
+                  <input 
+                    type="text" 
+                    placeholder="Search network..." 
+                    value={searchVal}
+                    onChange={(e) => setSearchVal(e.target.value)}
+                    className="bg-transparent border-none outline-none text-xs w-32 md:w-44 text-slate-700 dark:text-slate-200 placeholder-slate-400 font-bold"
+                    autoFocus
+                  />
+                  <button onClick={() => { setSearchOpen(false); setSearchVal(''); }} className="text-slate-400 hover:text-slate-600 flex items-center">
+                    <span className="material-symbols-outlined text-sm">close</span>
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setSearchOpen(true)} className="p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 flex">
+                  <span className="material-symbols-outlined text-xl">search</span>
                 </button>
-              </div>
-            ) : (
-              <button onClick={() => setSearchOpen(true)} className="p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 flex">
-                <span className="material-symbols-outlined text-xl">search</span>
-              </button>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Interactive Notifications Panel */}
           <div className="relative" ref={notificationsRef}>
@@ -90,34 +119,69 @@ export default function Navbar() {
               className="p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 relative flex"
             >
               <span className="material-symbols-outlined text-xl">notifications</span>
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+              {((consultantData && incomingRequests.length > 0) || (!consultantData)) && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+              )}
             </button>
             
             {notificationsOpen && (
               <div className="absolute right-0 mt-3 w-80 rounded-2xl bg-white dark:bg-[#191c1e] border border-slate-200/50 dark:border-slate-800 shadow-xl py-3 z-50 transform origin-top-right transition-all">
                 <div className="px-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Notifications</p>
-                  <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">2 New</span>
+                  <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">
+                    {consultantData ? `${incomingRequests.length} New` : '2 New'}
+                  </span>
                 </div>
                 <div className="max-h-60 overflow-y-auto mt-2 divide-y divide-slate-100 dark:divide-slate-800">
-                  <div className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                    <div className="flex gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Matching algorithm complete</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">3 consulting experts have been hand-matched to your assessment.</p>
+                  {consultantData ? (
+                    incomingRequests.length > 0 ? (
+                      incomingRequests.map((req, reqIdx) => (
+                        <div key={reqIdx} className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          <Link to="/consultant-dashboard" onClick={() => setNotificationsOpen(false)} className="block text-left no-underline group">
+                            <div className="flex gap-2">
+                              <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
+                              <div>
+                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-[#0052FF] transition-colors">
+                                  Request from {req.clientName}
+                                </p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">
+                                  {req.date} at {req.slot}
+                                </p>
+                                <p className="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                                  Context: {req.context || 'No context shared.'}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-xs text-slate-400 font-medium">
+                        No new booking requests.
                       </div>
-                    </div>
-                  </div>
-                  <div className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                    <div className="flex gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Welcome to ProDecide AI!</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">Click 'Start Your Discovery' to get custom, neural-guided strategy mapping.</p>
+                    )
+                  ) : (
+                    <>
+                      <div className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex gap-2">
+                          <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Matching algorithm complete</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">3 consulting experts have been hand-matched to your assessment.</p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                      <div className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex gap-2">
+                          <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Welcome to ProDecide AI!</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">Click 'Start Your Discovery' to get custom, neural-guided strategy mapping.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
