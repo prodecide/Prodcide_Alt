@@ -1,5 +1,5 @@
 import clientPromise from '../lib/mongodb.js';
-import { verifyToken } from './utils/auth-middleware.js';
+import { verifyToken } from './_utils/auth-middleware.js';
 
 export default async function handler(req, res) {
     // JWT Authentication

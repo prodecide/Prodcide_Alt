@@ -1,8 +1,8 @@
 import clientPromise from '../lib/mongodb.js';
 import { ObjectId } from 'mongodb';
-import { sendOtpEmail } from './utils/email.js';
-import { checkRateLimit } from './utils/rate-limiter.js';
-import { generateToken } from './utils/auth-middleware.js';
+import { sendOtpEmail } from './_utils/email.js';
+import { checkRateLimit } from './_utils/rate-limiter.js';
+import { generateToken } from './_utils/auth-middleware.js';
 
 export default async function handler(req, res) {
     try {

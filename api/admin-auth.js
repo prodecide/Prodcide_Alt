@@ -1,4 +1,4 @@
-import { generateToken } from './utils/auth-middleware.js';
+import { generateToken } from './_utils/auth-middleware.js';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {

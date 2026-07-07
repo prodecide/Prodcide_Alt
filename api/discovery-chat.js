@@ -1,4 +1,4 @@
-import { checkRateLimit } from './utils/rate-limiter.js';
+import { checkRateLimit } from './_utils/rate-limiter.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

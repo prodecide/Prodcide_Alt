@@ -1,7 +1,7 @@
 import clientPromise from '../lib/mongodb.js';
 import { ObjectId } from 'mongodb';
-import { sendNewConsultantAlert, sendOnboardingEmail } from './utils/email.js';
-import { verifyToken } from './utils/auth-middleware.js';
+import { sendNewConsultantAlert, sendOnboardingEmail } from './_utils/email.js';
+import { verifyToken } from './_utils/auth-middleware.js';
 
 export default async function handler(req, res) {
     try {

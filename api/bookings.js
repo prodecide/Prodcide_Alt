@@ -1,7 +1,7 @@
 import clientPromise from '../lib/mongodb.js';
-import { sendBookingAlertToConsultant } from './utils/email.js';
-import { checkRateLimit } from './utils/rate-limiter.js';
-import { verifyToken } from './utils/auth-middleware.js';
+import { sendBookingAlertToConsultant } from './_utils/email.js';
+import { checkRateLimit } from './_utils/rate-limiter.js';
+import { verifyToken } from './_utils/auth-middleware.js';
 
 
 export default async function handler(req, res) {
