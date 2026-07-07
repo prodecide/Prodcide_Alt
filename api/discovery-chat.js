@@ -1,3 +1,5 @@
+import { checkRateLimit } from './utils/rate-limiter.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -6,6 +8,12 @@ export default async function handler(req, res) {
   const { messages, selectedDomain, onboardingContext } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'messages array is required' });
+  }
+
+  // Rate limit: Max 20 Gemini requests per hour per IP
+  const limitCheck = await checkRateLimit(req, 'discovery_chat', 20, 60 * 60 * 1000);
+  if (limitCheck.limited) {
+    return res.status(429).json({ error: `Too many chat requests. Try again in ${limitCheck.retryAfter} seconds.` });
   }
 
   const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;

@@ -1,5 +1,6 @@
 import clientPromise from '../lib/mongodb.js';
 import { sendBookingAlertToConsultant } from './utils/email.js';
+import { checkRateLimit } from './utils/rate-limiter.js';
 
 
 export default async function handler(req, res) {
@@ -41,6 +42,12 @@ export default async function handler(req, res) {
 
             if (!consultantId || !date || !slot || !clientEmail) {
                 return res.status(400).json({ error: 'Missing required booking fields' });
+            }
+
+            // Rate limit: Max 5 bookings per hour per IP
+            const limitCheck = await checkRateLimit(req, 'booking_create', 5, 60 * 60 * 1000);
+            if (limitCheck.limited) {
+                return res.status(429).json({ error: `Too many booking attempts. Try again in ${limitCheck.retryAfter} seconds.` });
             }
 
             // Check slot is still available (prevent double-booking)

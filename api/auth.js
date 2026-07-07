@@ -1,6 +1,7 @@
 import clientPromise from '../lib/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { sendOtpEmail } from './utils/email.js';
+import { checkRateLimit } from './utils/rate-limiter.js';
 
 export default async function handler(req, res) {
     try {
@@ -18,6 +19,12 @@ export default async function handler(req, res) {
                 const { email } = req.body;
                 if (!email) {
                     return res.status(400).json({ error: 'Email is required' });
+                }
+
+                // Rate limit: Max 3 OTPs generated per hour per IP
+                const limitCheck = await checkRateLimit(req, 'otp_generate', 3, 60 * 60 * 1000);
+                if (limitCheck.limited) {
+                    return res.status(429).json({ error: `Too many OTP requests. Try again in ${limitCheck.retryAfter} seconds.` });
                 }
 
                 const normalizedEmail = email.toLowerCase().trim();
@@ -41,6 +48,12 @@ export default async function handler(req, res) {
                 const { email } = req.body;
                 if (!email) {
                     return res.status(400).json({ error: 'Email is required' });
+                }
+
+                // Rate limit: Max 3 OTPs generated per hour per IP
+                const limitCheck = await checkRateLimit(req, 'otp_generate', 3, 60 * 60 * 1000);
+                if (limitCheck.limited) {
+                    return res.status(429).json({ error: `Too many OTP requests. Try again in ${limitCheck.retryAfter} seconds.` });
                 }
 
                 const normalizedEmail = email.toLowerCase().trim();
@@ -71,6 +84,12 @@ export default async function handler(req, res) {
                 const { email, code } = req.body;
                 if (!email || !code) {
                     return res.status(400).json({ error: 'Email and OTP code are required' });
+                }
+
+                // Rate limit: Max 5 verification attempts per 15 minutes per IP
+                const limitCheck = await checkRateLimit(req, 'otp_verify', 5, 15 * 60 * 1000);
+                if (limitCheck.limited) {
+                    return res.status(429).json({ error: `Too many verification attempts. Try again in ${limitCheck.retryAfter} seconds.` });
                 }
 
                 // Verify the OTP code
