@@ -10,6 +10,7 @@ import Admin from './components/Admin';
 import ConsultantDashboard from './components/ConsultantDashboard';
 import ConsultantProfile from './components/ConsultantProfile';
 import Dashboard from './components/Dashboard';
+import NotFound from './components/NotFound';
 
 function App() {
   return (
@@ -26,6 +27,8 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/consultant-dashboard" element={<ConsultantDashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          {/* Catch-all for 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>

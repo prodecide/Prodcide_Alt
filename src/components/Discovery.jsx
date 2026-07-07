@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
+import { apiFetch } from '../utils/api.js';
 
 export default function Discovery() {
   const navigate = useNavigate();
@@ -214,7 +215,7 @@ export default function Discovery() {
       }
 
       if (email) {
-        fetch('/api/user-profiles', {
+        apiFetch('/api/user-profiles', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -287,7 +288,7 @@ export default function Discovery() {
         // If results are empty, try one final synthesis API call
         if (finalPaths.length === 0 && finalGaps.length === 0 && finalSkills.length === 0) {
           try {
-            const response = await fetch('/api/discovery-chat', {
+            const response = await apiFetch('/api/discovery-chat', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -348,7 +349,7 @@ export default function Discovery() {
           try { baseProfile = JSON.parse(storedProfile); } catch (e) {}
         }
         if (email) {
-          fetch('/api/user-profiles', {
+          apiFetch('/api/user-profiles', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -398,7 +399,7 @@ export default function Discovery() {
     setAuthError('');
     setIsAuthLoading(true);
     try {
-      const response = await fetch('/api/auth?action=send-general-otp', {
+      const response = await apiFetch('/api/auth?action=send-general-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: authEmail })
@@ -423,7 +424,7 @@ export default function Discovery() {
     setAuthError('');
     setIsAuthLoading(true);
     try {
-      const response = await fetch('/api/auth?action=verify-otp', {
+      const response = await apiFetch('/api/auth?action=verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: authEmail, code: authOtp })
@@ -434,6 +435,7 @@ export default function Discovery() {
       // Save authenticated details
       localStorage.setItem('discovery_verified_name', authName.trim());
       localStorage.setItem('discovery_verified_email', authEmail.toLowerCase().trim());
+      if (data.token) localStorage.setItem('prodecide_jwt', data.token);
       setIsAuthenticated(true);
       setShowAuthModal(false);
       
@@ -485,7 +487,7 @@ export default function Discovery() {
       setIsAITyping(true);
 
       try {
-        const response = await fetch('/api/discovery-chat', {
+        const response = await apiFetch('/api/discovery-chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -594,7 +596,7 @@ export default function Discovery() {
     const updatedMessages = [...messages, userMsg];
 
     try {
-      const response = await fetch('/api/discovery-chat', {
+      const response = await apiFetch('/api/discovery-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -681,7 +683,7 @@ export default function Discovery() {
     }), userMsg];
 
     try {
-      const response = await fetch('/api/discovery-chat', {
+      const response = await apiFetch('/api/discovery-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

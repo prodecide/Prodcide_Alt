@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import { apiFetch } from '../utils/api.js';
 
 // ─── Generate 45-min slots for a day (8:00 AM – 8:00 PM) ────────────────────
 function generate45MinSlots() {
@@ -69,7 +70,7 @@ export default function ConsultantDashboard() {
   const fetchDbBookings = useCallback(async (consultantId, consultantEmail) => {
     try {
       const param = consultantId ? `consultantId=${consultantId}` : `consultantEmail=${encodeURIComponent(consultantEmail)}`;
-      const res = await fetch(`/api/bookings?${param}`);
+      const res = await apiFetch(`/api/bookings?${param}`);
       if (res.ok) {
         const data = await res.json();
         if (data.length > 0) setDbBookings(data);
@@ -82,7 +83,7 @@ export default function ConsultantDashboard() {
   // Fetch availability from DB
   const fetchAvailability = useCallback(async (consultantId) => {
     try {
-      const res = await fetch(`/api/availability?consultantId=${consultantId}`);
+      const res = await apiFetch(`/api/availability?consultantId=${consultantId}`);
       if (res.ok) {
         const data = await res.json();
         setAvailSchedule(data.schedule || {});
@@ -104,7 +105,7 @@ export default function ConsultantDashboard() {
 
   const fetchProfile = async (email, showAlert = false) => {
     try {
-      const response = await fetch('/api/auth?action=login', {
+      const response = await apiFetch('/api/auth?action=login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.toLowerCase().trim() }),
@@ -113,6 +114,7 @@ export default function ConsultantDashboard() {
         const data = await response.json();
         setUser(data.consultant);
         localStorage.setItem('consultant_user', JSON.stringify(data.consultant));
+        if (data.token) localStorage.setItem('prodecide_jwt', data.token);
         // Fetch related data
         if (data.consultant?._id) {
           fetchAvailability(data.consultant._id.toString());
@@ -141,7 +143,7 @@ export default function ConsultantDashboard() {
     if (!emailInput) return alert('Please enter your email');
     setIsSendingOtp(true);
     try {
-      const res = await fetch('/api/auth?action=send-otp', {
+      const res = await apiFetch('/api/auth?action=send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailInput.toLowerCase().trim() }),
@@ -163,7 +165,7 @@ export default function ConsultantDashboard() {
     if (otpCode.length !== 6) return alert('Please enter 6-digit OTP');
     setIsVerifyingOtp(true);
     try {
-      const res = await fetch('/api/auth?action=verify-otp', {
+      const res = await apiFetch('/api/auth?action=verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailInput.toLowerCase().trim(), code: otpCode }),
@@ -186,7 +188,7 @@ export default function ConsultantDashboard() {
     const id = booking.bookingId || booking.id;
     const meetLink = `https://meet.google.com/pd-${Math.random().toString(36).substring(2,5)}-${Math.random().toString(36).substring(2,5)}`;
     if (booking.bookingId) {
-      await fetch('/api/bookings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bookingId: booking.bookingId, status: 'accepted' }) });
+      await apiFetch('/api/bookings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bookingId: booking.bookingId, status: 'accepted' }) });
       setDbBookings(prev => prev.map(b => b.bookingId === booking.bookingId ? { ...b, status: 'accepted', meetLink } : b));
     } else {
       setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'accepted', meetLink } : b));
@@ -196,7 +198,7 @@ export default function ConsultantDashboard() {
   const handleDeclineRequest = async (booking) => {
     const id = booking.bookingId || booking.id;
     if (booking.bookingId) {
-      await fetch('/api/bookings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bookingId: booking.bookingId, status: 'declined' }) });
+      await apiFetch('/api/bookings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bookingId: booking.bookingId, status: 'declined' }) });
       setDbBookings(prev => prev.map(b => b.bookingId === booking.bookingId ? { ...b, status: 'declined' } : b));
     } else {
       setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'declined' } : b));
@@ -237,7 +239,7 @@ export default function ConsultantDashboard() {
     setAvailSaving(true);
     setAvailSaveMsg(null);
     try {
-      const res = await fetch('/api/availability', {
+      const res = await apiFetch('/api/availability', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ consultantId: user._id.toString(), schedule: availSchedule })
@@ -291,13 +293,13 @@ export default function ConsultantDashboard() {
     setLoadingClientProfile(true);
     try {
       const email = booking.clientEmail || 'bobby@gmail.com'; // default to Bobby
-      const response = await fetch(`/api/user-profiles?email=${encodeURIComponent(email)}`);
+      const response = await apiFetch(`/api/user-profiles?email=${encodeURIComponent(email)}`);
       if (response.ok) {
         const data = await response.json();
         setClientProfile(data);
       } else {
         // Fallback: search in legacy users
-        const responseLegacy = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
+        const responseLegacy = await apiFetch(`/api/users?email=${encodeURIComponent(email)}`);
         if (responseLegacy.ok) {
           const dataLegacy = await responseLegacy.json();
           setClientProfile(dataLegacy);

@@ -1,9 +1,16 @@
 import clientPromise from '../lib/mongodb.js';
 import { sendBookingAlertToConsultant } from './utils/email.js';
 import { checkRateLimit } from './utils/rate-limiter.js';
+import { verifyToken } from './utils/auth-middleware.js';
 
 
 export default async function handler(req, res) {
+    // JWT Authentication
+    const decoded = verifyToken(req);
+    if (!decoded) {
+        return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
+    }
+
     try {
         const client = await clientPromise;
         const database = client.db('prodecide');

@@ -1,3 +1,5 @@
+import { generateToken } from './utils/auth-middleware.js';
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -19,7 +21,8 @@ export default async function handler(req, res) {
     }
 
     if (username === expectedUsername && passcode === expectedPasscode) {
-        return res.status(200).json({ success: true, authenticated: true });
+        const token = generateToken({ role: 'admin', username }, '24h');
+        return res.status(200).json({ success: true, authenticated: true, token });
     }
 
     return res.status(401).json({ error: 'Invalid admin username or password.' });

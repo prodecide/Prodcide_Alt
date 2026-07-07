@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
+import { apiFetch } from '../utils/api.js';
 
 export default function Admin() {
     const [isAuthenticated, setIsAuthenticated] = useState(
@@ -34,7 +35,7 @@ export default function Admin() {
         setError('');
         try {
             // Fetch all consultants (including pending)
-            const res = await fetch('/api/consultants?all=true');
+            const res = await apiFetch('/api/consultants?all=true');
             if (!res.ok) throw new Error('Failed to fetch consultants');
             const data = await res.json();
             setConsultants(data);
@@ -50,7 +51,7 @@ export default function Admin() {
         setLoginError('');
         setIsLoggingIn(true);
         try {
-            const res = await fetch('/api/admin-auth', {
+            const res = await apiFetch('/api/admin-auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, passcode })
@@ -59,6 +60,7 @@ export default function Admin() {
             if (res.ok && data.authenticated) {
                 setIsAuthenticated(true);
                 localStorage.setItem('prodecide_admin_auth', 'true');
+                if (data.token) localStorage.setItem('prodecide_jwt', data.token);
             } else {
                 setLoginError(data.error || 'Invalid admin username or password. Please try again.');
             }
@@ -87,7 +89,7 @@ export default function Admin() {
                 body.expertise = profileData.expertise;
             }
 
-            const res = await fetch('/api/consultants', {
+            const res = await apiFetch('/api/consultants', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -125,7 +127,7 @@ export default function Admin() {
             const base64Data = reader.result.split(',')[1];
             setProcessingId(consultantId);
             try {
-                const res = await fetch('/api/generate-bio', {
+                const res = await apiFetch('/api/generate-bio', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pdfData: base64Data })

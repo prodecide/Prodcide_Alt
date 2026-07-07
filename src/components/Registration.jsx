@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import { apiFetch } from '../utils/api.js';
 
 const PROFESSION_OPTIONS = [
     "Software Engineer", "Data Scientist", "Cybersecurity Analyst", "Civil Engineer", "Mechanical Engineer",
@@ -103,7 +104,7 @@ export default function Registration() {
   const sendOtp = async () => {
     setIsSendingOtp(true);
     try {
-      const response = await fetch('/api/auth?action=send-otp', {
+      const response = await apiFetch('/api/auth?action=send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email }),
@@ -125,7 +126,7 @@ export default function Registration() {
     if (!formData.role) return alert("Select role");
     
     try {
-      const response = await fetch('/api/consultants', {
+      const response = await apiFetch('/api/consultants', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,7 +153,7 @@ export default function Registration() {
     
     setIsVerifyingOtp(true);
     try {
-      const response = await fetch('/api/auth?action=verify-otp', {
+      const response = await apiFetch('/api/auth?action=verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, code: otpCode }),
@@ -174,7 +175,7 @@ export default function Registration() {
   const handleGoogleLink = async (googleId) => {
     setIsLinkingGoogle(true);
     try {
-      const response = await fetch('/api/auth?action=google-link', {
+      const response = await apiFetch('/api/auth?action=google-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -192,6 +193,7 @@ export default function Registration() {
       
       const result = await response.json();
       localStorage.setItem('consultant_user', JSON.stringify(result.consultant));
+      if (result.token) localStorage.setItem('prodecide_jwt', result.token);
       window.location.href = '/consultant-dashboard';
     } catch (error) {
       alert(error.message);

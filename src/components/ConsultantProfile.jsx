@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import { apiFetch } from '../utils/api.js';
 
 export default function ConsultantProfile() {
   const { id } = useParams();
@@ -79,7 +80,7 @@ export default function ConsultantProfile() {
         educationDetails: editedEducation
       };
 
-      const res = await fetch('/api/consultants', {
+      const res = await apiFetch('/api/consultants', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -144,7 +145,7 @@ export default function ConsultantProfile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`/api/consultants?id=${id}`);
+        const res = await apiFetch(`/api/consultants?id=${id}`);
         if (!res.ok) {
           if (res.status === 404) throw new Error('Consultant profile not found');
           throw new Error('Failed to load profile details');
@@ -164,7 +165,7 @@ export default function ConsultantProfile() {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await fetch(`/api/reviews?consultantId=${id}`);
+        const res = await apiFetch(`/api/reviews?consultantId=${id}`);
         if (res.ok) {
           const data = await res.json();
           setReviews(data.reviews || []);
@@ -237,7 +238,7 @@ export default function ConsultantProfile() {
 
     setIsSubmittingReview(true);
     try {
-      const res = await fetch('/api/reviews', {
+      const res = await apiFetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

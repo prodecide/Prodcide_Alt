@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import { apiFetch } from '../utils/api.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function slotLabel(value) {
@@ -252,7 +253,7 @@ export default function Form() {
     if (!passedConsultant) {
       (async () => {
         try {
-          const res = await fetch('/api/consultants');
+          const res = await apiFetch('/api/consultants');
           if (res.ok) {
             const data = await res.json();
             setConsultants(data);
@@ -275,7 +276,7 @@ export default function Form() {
       setSelectedDate('');
       setSelectedSlot('');
       try {
-        const res = await fetch(`/api/availability?consultantId=${selectedConsultant._id}`);
+        const res = await apiFetch(`/api/availability?consultantId=${selectedConsultant._id}`);
         if (res.ok) {
           const data = await res.json();
           setAvailSchedule(data.schedule || {});
@@ -353,7 +354,7 @@ export default function Form() {
   const handlePay = async (total) => {
     setPaying(true);
     try {
-      const res = await fetch('/api/bookings', {
+      const res = await apiFetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

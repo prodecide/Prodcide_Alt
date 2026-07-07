@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api.js';
 
 export default function Navbar() {
   const location = useLocation();
@@ -31,7 +32,7 @@ export default function Navbar() {
       try {
         const parsed = JSON.parse(savedConsultant);
         setConsultantData(parsed);
-        fetch(`/api/bookings?consultantEmail=${encodeURIComponent(parsed.email)}`)
+        apiFetch(`/api/bookings?consultantEmail=${encodeURIComponent(parsed.email)}`)
           .then(res => res.json())
           .then(data => {
             if (Array.isArray(data)) {

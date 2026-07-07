@@ -2,6 +2,7 @@ import clientPromise from '../lib/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { sendOtpEmail } from './utils/email.js';
 import { checkRateLimit } from './utils/rate-limiter.js';
+import { generateToken } from './utils/auth-middleware.js';
 
 export default async function handler(req, res) {
     try {
@@ -119,7 +120,10 @@ export default async function handler(req, res) {
                 // Clean up all OTPs for this email after successful verification
                 await otps.deleteMany({ email: email.toLowerCase().trim() });
 
-                return res.status(200).json({ success: true, verified: true, isMock });
+                // Issue JWT for user session
+                const token = generateToken({ role: 'user', email: email.toLowerCase().trim() }, '7d');
+
+                return res.status(200).json({ success: true, verified: true, isMock, token });
             }
 
             if (action === 'google-link') {
@@ -155,7 +159,11 @@ export default async function handler(req, res) {
                 );
 
                 const updated = await consultants.findOne({ email: email.toLowerCase().trim() });
-                return res.status(200).json({ success: true, consultant: updated, isMock });
+                
+                // Issue JWT for consultant session
+                const token = generateToken({ role: 'consultant', email: updated.email, consultantId: updated._id.toString() }, '7d');
+
+                return res.status(200).json({ success: true, consultant: updated, isMock, token });
             }
 
             if (action === 'login') {
@@ -172,7 +180,10 @@ export default async function handler(req, res) {
                     return res.status(404).json({ error: 'No consultant profile found. Please register first.' });
                 }
 
-                return res.status(200).json({ success: true, consultant, isMock });
+                // Issue JWT for consultant session
+                const token = generateToken({ role: 'consultant', email: consultant.email, consultantId: consultant._id.toString() }, '7d');
+
+                return res.status(200).json({ success: true, consultant, isMock, token });
             }
         }
 

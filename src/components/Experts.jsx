@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import { apiFetch } from '../utils/api.js';
 
 export default function Experts() {
   const [consultants, setConsultants] = useState([]);
@@ -16,7 +17,7 @@ export default function Experts() {
   useEffect(() => {
     const fetchConsultants = async () => {
       try {
-        const response = await fetch('/api/consultants');
+        const response = await apiFetch('/api/consultants');
         if (!response.ok) throw new Error('Failed to fetch consultants');
         const data = await response.json();
         setConsultants(data);

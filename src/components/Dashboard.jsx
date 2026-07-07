@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { apiFetch } from '../utils/api.js';
 
 // Extracted outside Dashboard to prevent remount on every parent render
 function InlineField({ fieldName, value, setValue, label, placeholder, type = 'text', multiline = false, className = '', displayClassName = '', inputClassName = '', editingField, setEditingField, debouncedSaveField, saveProfileLocally, setIsDirty }) {
@@ -154,7 +155,7 @@ export default function Dashboard() {
     saveTimerRef.current = setTimeout(async () => {
       setSaveStatus('saving');
       try {
-        const res = await fetch('/api/user-profiles', {
+        const res = await apiFetch('/api/user-profiles', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: profileEmail, [fieldName]: fieldValue })
@@ -204,7 +205,7 @@ export default function Dashboard() {
         suggestedPaths,
         currentSkills
       };
-      const res = await fetch('/api/user-profiles', {
+      const res = await apiFetch('/api/user-profiles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileData)
@@ -228,18 +229,18 @@ export default function Dashboard() {
   const fetchAndSyncProfile = async (email) => {
     try {
       // Try the new user_profiles collection first
-      let res = await fetch(`/api/user-profiles?email=${encodeURIComponent(email)}`);
+      let res = await apiFetch(`/api/user-profiles?email=${encodeURIComponent(email)}`);
       let data;
 
       if (res.ok) {
         data = await res.json();
       } else {
         // Fallback: try the legacy users collection
-        res = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
+        res = await apiFetch(`/api/users?email=${encodeURIComponent(email)}`);
         if (res.ok) {
           data = await res.json();
           // Migrate to new collection
-          await fetch('/api/user-profiles', {
+          await apiFetch('/api/user-profiles', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...data, email })
@@ -360,7 +361,7 @@ export default function Dashboard() {
         suggestedPaths,
         currentSkills
       };
-      await fetch('/api/user-profiles', {
+      await apiFetch('/api/user-profiles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileData)
@@ -507,7 +508,7 @@ export default function Dashboard() {
     localStorage.setItem('discovery_user_profile', JSON.stringify(profileData));
 
     if (profileEmail) {
-      fetch('/api/user-profiles', {
+      apiFetch('/api/user-profiles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -538,7 +539,7 @@ export default function Dashboard() {
       
       setSaveStatus('saving');
       try {
-        const res = await fetch('/api/process-avatar', {
+        const res = await apiFetch('/api/process-avatar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: profileEmail, image: base64Data, mimeType })
@@ -589,7 +590,7 @@ export default function Dashboard() {
 
     setIsAuthLoading(true);
     try {
-      const response = await fetch('/api/auth?action=send-general-otp', {
+      const response = await apiFetch('/api/auth?action=send-general-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: profileEmail })
@@ -615,7 +616,7 @@ export default function Dashboard() {
     setAuthError('');
     setIsAuthLoading(true);
     try {
-      const response = await fetch('/api/auth?action=verify-otp', {
+      const response = await apiFetch('/api/auth?action=verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: profileEmail, code: otpCode })
@@ -626,6 +627,7 @@ export default function Dashboard() {
       // Persist authenticated state
       localStorage.setItem('discovery_verified_email', profileEmail.toLowerCase().trim());
       localStorage.setItem('discovery_verified_name', profileName.trim());
+      if (data.token) localStorage.setItem('prodecide_jwt', data.token);
       setIsAuthenticated(true);
       setOtpStep('verified');
 
