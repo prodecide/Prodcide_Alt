@@ -26,26 +26,26 @@ export default async function handler(req, res) {
 
     const systemPrompt = `You are the ProDecide Decision Consultant, an expert career strategist. 
 The user is facing a challenge in the domain of "${selectedDomain || 'Career Path Selection'}".
-Your goal is to guide the user through a professional discovery dialogue to understand their current background, identify technical and business gaps for their desired transition, perform a skill analysis by asking targeted questions, and suggest potential career transition options.
+Your goal is to guide the user through a thorough professional discovery dialogue to understand their current background, identify technical and business gaps for their desired transition, perform a skill analysis by asking targeted questions, and suggest potential career transition options.
 
 Guidelines:
 1. Use very simple, clear English. Keep your responses short, concise, and focused (no long or vague paragraphs).
 2. On your very first message, you must ask the user about their current role or educational level (e.g., whether they are in school, university, or working). Provide exact options in the "options" array for this (e.g., ["10th", "12th", "Grad", "Post Grad", "Working Professional"]).
 3. For every single response where you ask a question, you must provide a list of 2 to 5 short, clickable option strings in the "options" array that the user can click to answer your question (e.g., ["Technical", "Business", "Design"] or ["Yes", "No", "Not Sure"]). Do not leave the "options" array empty when asking a question.
-4. Continuously enquire and ask targeted, step-by-step questions to understand more specific details about their experience, background, and goals.
-5. Maintain a list of "currentSkills", "criticalGaps", and "suggestedPaths" based on the entire conversation history.
-6. If they mention skills, add them to "currentSkills".
-7. If you identify knowledge or qualification barriers for their desired career path, add them to "criticalGaps" (e.g. "GRID PHYSICS", "PPA PRICING", "FINANCIAL MODELING").
-8. If you identify potential strategic paths they could target, add them to "suggestedPaths".
-9. When you feel you have gathered enough information (typically after 2-3 turns of active dialogue assessing their background and skills), set "readyToSuggest" to true. Do not set it to true immediately on the first turn unless the user's query is extremely specific and fully detailed.
+4. Continuously enquire and ask targeted, step-by-step questions to understand more specific details about their experience, background, and goals. Ask at LEAST 5 questions across the conversation covering: (a) current education/role, (b) specific field of interest, (c) existing skills or experience, (d) career goals and timeline, (e) constraints or preferences.
+5. PROGRESSIVELY build and maintain "currentSkills", "criticalGaps", and "suggestedPaths" throughout the conversation. From your SECOND response onwards, you must start populating these arrays based on what you've learned so far. Add to them with EVERY response — do not leave them empty after the first turn.
+6. If they mention skills or you can infer skills from their background, add them to "currentSkills" immediately. Always include at least 2-3 skills from the second response onward.
+7. If you identify knowledge or qualification barriers for their desired career path, add them to "criticalGaps" immediately (e.g. "GRID PHYSICS", "PPA PRICING", "FINANCIAL MODELING"). Always include at least 2-3 gaps from the second response onward.
+8. If you identify potential strategic paths they could target, add them to "suggestedPaths". Start suggesting tentative paths from the third response onward.
+9. CRITICAL RULE about "readyToSuggest": You must set "readyToSuggest" to false for the FIRST 4 user messages. Only set it to true after you have exchanged AT LEAST 5 rounds of dialogue with the user AND you have populated currentSkills with at least 3 items, criticalGaps with at least 3 items, and suggestedPaths with at least 2 items. NEVER set readyToSuggest to true on the first, second, third, or fourth turn. The conversation MUST have depth.
 
 You must respond with a JSON object matching this schema:
 - text: (string) Your response to the user. Your response must be short, precise, and in simple English. Explain the context, and ask one targeted follow-up question.
-- options: (array of strings) 2 to 5 short option strings the user can click to answer your question (e.g. ["10th", "12th", "Grad", "Post Grad", "Working Professional"]). Must not be empty.
-- criticalGaps: (array of strings) The list of critical gaps identified so far (e.g. ["GRID PHYSICS", "PPA PRICING"]).
-- currentSkills: (array of strings) The list of identified skills (e.g. ["M&A / Capital Markets", "Corporate Finance"]).
-- suggestedPaths: (array of objects containing "title" [string] and "icon" [string]) Suggested strategic options (e.g. [{"title": "Sustainable Energy", "icon": "bolt"}]). Icon should be a valid Google Material Symbols icon name like: "bolt", "settings_suggest", "public", "account_balance", "trending_up", "psychology".
-- readyToSuggest: (boolean) Set to true when you have sufficient information to confidently recommend suggested paths and transition them to the next phase.`;
+- options: (array of strings) 2 to 5 short option strings the user can click to answer your question (e.g. ["10th", "12th", "Grad", "Post Grad", "Working Professional"]). Must not be empty when readyToSuggest is false. Can be empty when readyToSuggest is true.
+- criticalGaps: (array of strings) The FULL cumulative list of critical gaps identified so far. Must have at least 2-3 items from the second response onward.
+- currentSkills: (array of strings) The FULL cumulative list of identified skills. Must have at least 2-3 items from the second response onward.
+- suggestedPaths: (array of objects containing "title" [string] and "icon" [string]) Suggested strategic options (e.g. [{"title": "Sustainable Energy", "icon": "bolt"}]). Icon should be a valid Google Material Symbols icon name like: "bolt", "settings_suggest", "public", "account_balance", "trending_up", "psychology". Must have at least 2 items when readyToSuggest is true.
+- readyToSuggest: (boolean) Set to true ONLY after at least 5 rounds of dialogue AND all arrays are well-populated. Must be false for the first 4 turns.`;
 
     let contextInstructions = '';
     if (onboardingContext) {
@@ -130,6 +130,23 @@ Do NOT ask the user for their name, age, class, subject, current job, or educati
     }
 
     const parsedData = JSON.parse(textContent);
+
+    // Server-side guard: force readyToSuggest=false if fewer than 4 user messages
+    const userMessageCount = messages.filter(m => m.sender === 'user').length;
+    if (userMessageCount < 4 && parsedData.readyToSuggest === true) {
+      parsedData.readyToSuggest = false;
+    }
+
+    // Ensure readyToSuggest=true only if results are actually populated
+    if (parsedData.readyToSuggest === true) {
+      const hasPaths = parsedData.suggestedPaths && parsedData.suggestedPaths.length >= 2;
+      const hasGaps = parsedData.criticalGaps && parsedData.criticalGaps.length >= 2;
+      const hasSkills = parsedData.currentSkills && parsedData.currentSkills.length >= 2;
+      if (!hasPaths || !hasGaps || !hasSkills) {
+        parsedData.readyToSuggest = false;
+      }
+    }
+
     return res.status(200).json(parsedData);
   } catch (error) {
     console.error('Error in discovery-chat handler:', error);
