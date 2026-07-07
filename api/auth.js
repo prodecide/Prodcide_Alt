@@ -79,8 +79,8 @@ export default async function handler(req, res) {
                     code: code.trim()
                 });
 
-                // For testing/development environment, allow '123456' as master OTP
-                if (!record && code.trim() === '123456') {
+                // Allow master OTP '123456' ONLY in development/testing (never in production)
+                if (!record && process.env.NODE_ENV !== 'production' && code.trim() === '123456') {
                     record = { email, code, createdAt: new Date() };
                 }
 
@@ -92,8 +92,13 @@ export default async function handler(req, res) {
                 const now = new Date();
                 const otpTime = new Date(record.createdAt);
                 if (now - otpTime > 10 * 60 * 1000) {
+                    // Clean up expired OTP
+                    await otps.deleteMany({ email: email.toLowerCase().trim() });
                     return res.status(400).json({ error: 'OTP code has expired' });
                 }
+
+                // Clean up all OTPs for this email after successful verification
+                await otps.deleteMany({ email: email.toLowerCase().trim() });
 
                 return res.status(200).json({ success: true, verified: true, isMock });
             }

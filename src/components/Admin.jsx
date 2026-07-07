@@ -16,10 +16,7 @@ export default function Admin() {
     const [toast, setToast] = useState(null);
     const [processingId, setProcessingId] = useState(null);
     const [extractedProfiles, setExtractedProfiles] = useState({});
-
-    // Get expected credentials from environment or default
-    const expectedUsername = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
-    const expectedPasscode = import.meta.env.VITE_ADMIN_PASSCODE || '1234';
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -48,14 +45,27 @@ export default function Admin() {
         }
     };
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (username === expectedUsername && passcode === expectedPasscode) {
-            setIsAuthenticated(true);
-            localStorage.setItem('prodecide_admin_auth', 'true');
-            setLoginError('');
-        } else {
-            setLoginError('Invalid admin username or password. Please try again.');
+        setLoginError('');
+        setIsLoggingIn(true);
+        try {
+            const res = await fetch('/api/admin-auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, passcode })
+            });
+            const data = await res.json();
+            if (res.ok && data.authenticated) {
+                setIsAuthenticated(true);
+                localStorage.setItem('prodecide_admin_auth', 'true');
+            } else {
+                setLoginError(data.error || 'Invalid admin username or password. Please try again.');
+            }
+        } catch (err) {
+            setLoginError('Unable to reach the server. Please try again.');
+        } finally {
+            setIsLoggingIn(false);
         }
     };
 
@@ -186,10 +196,11 @@ export default function Admin() {
                             )}
                             <button
                                 type="submit"
-                                className="w-full bg-primary hover:bg-primary/95 text-white font-semibold py-3 px-4 rounded-xl transition shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2 mt-2"
+                                disabled={isLoggingIn}
+                                className="w-full bg-primary hover:bg-primary/95 text-white font-semibold py-3 px-4 rounded-xl transition shadow-lg hover:shadow-primary/20 flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                <span className="material-symbols-outlined text-lg">login</span>
-                                Verify & Access
+                                <span className="material-symbols-outlined text-lg">{isLoggingIn ? 'hourglass_empty' : 'login'}</span>
+                                {isLoggingIn ? 'Verifying...' : 'Verify & Access'}
                             </button>
                         </form>
                     </div>
