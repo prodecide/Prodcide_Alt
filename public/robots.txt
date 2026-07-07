@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and private dashboards
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /consultant-dashboard
+
+Sitemap: https://prodecide.co.in/sitemap.xml
