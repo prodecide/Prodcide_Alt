@@ -4,6 +4,7 @@ import { sendNewConsultantAlert, sendOnboardingEmail } from './_utils/email.js';
 import { verifyToken } from './_utils/auth-middleware.js';
 
 export default async function handler(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     try {
         const client = await clientPromise;
         const database = client.db('prodecide');
@@ -26,7 +27,15 @@ export default async function handler(req, res) {
             }
             const showAll = req.query.all === 'true';
             const query = showAll ? {} : { status: { $ne: 'pending' } };
-            const allConsultants = await consultants.find(query).toArray();
+            
+            let cursor = consultants.find(query);
+            if (showAll) {
+                cursor = cursor.project({ experienceDetails: 0 });
+            } else {
+                cursor = cursor.project({ experienceDetails: 0, educationDetails: 0 });
+            }
+            
+            const allConsultants = await cursor.toArray();
             return res.status(200).json(allConsultants);
         }
 

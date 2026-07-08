@@ -2,6 +2,7 @@ import clientPromise from '../lib/mongodb.js';
 import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     try {
         const client = await clientPromise;
         const database = client.db('prodecide');
