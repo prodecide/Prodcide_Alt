@@ -3,6 +3,14 @@ import { ObjectId } from 'mongodb';
 import { sendNewConsultantAlert, sendOnboardingEmail } from './_utils/email.js';
 import { verifyToken } from './_utils/auth-middleware.js';
 
+// Normalize names to Title Case: "NIYAS NAJEEM" -> "Niyas Najeem", "bijith t" -> "Bijith T"
+function toTitleCase(str) {
+    if (!str || typeof str !== 'string') return str;
+    return str.trim().replace(/\w\S*/g, (word) =>
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    );
+}
+
 export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     try {
@@ -63,6 +71,10 @@ export default async function handler(req, res) {
 
             // Normalize email address to avoid casing mismatch
             newConsultant.email = newConsultant.email.toLowerCase().trim();
+
+            // Normalize name casing: always store as Title Case
+            if (newConsultant.fullName) newConsultant.fullName = toTitleCase(newConsultant.fullName);
+            if (newConsultant.name) newConsultant.name = toTitleCase(newConsultant.name);
 
             // Check if email is already registered
             const existingConsultant = await consultants.findOne({ email: newConsultant.email });
@@ -138,8 +150,8 @@ export default async function handler(req, res) {
 
             const updateFields = {};
             if (status) updateFields.status = status;
-            if (fullName !== undefined) updateFields.fullName = fullName;
-            if (name !== undefined) updateFields.name = name;
+            if (fullName !== undefined) updateFields.fullName = toTitleCase(fullName);
+            if (name !== undefined) updateFields.name = toTitleCase(name);
             if (role !== undefined) updateFields.role = role;
             if (profession !== undefined) updateFields.profession = profession;
             if (organization !== undefined) updateFields.organization = organization;
