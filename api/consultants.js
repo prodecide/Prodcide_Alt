@@ -32,8 +32,8 @@ export default async function handler(req, res) {
             
             let cursor = consultants.find(query);
             if (showAll) {
-                // Admin view: exclude only the large nested detail fields
-                cursor = cursor.project({ experienceDetails: 0 });
+                // Admin view: strip PII and large nested detail fields
+                cursor = cursor.project({ email: 0, phone: 0, linkedin: 0, experienceDetails: 0 });
             } else {
                 // Public view: whitelist-only safe fields, strip all PII
                 cursor = cursor.project({
