@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
 export async function sendNewConsultantAlert(consultant, origin = 'http://localhost:5173') {
-    const adminEmail = 'prodecideonline@gmail.com';
+    const adminEmails = 'prodecideonline@gmail.com, niyasnajeem666@gmail.com';
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
     const port = parseInt(process.env.SMTP_PORT || '587', 10);
     const user = process.env.SMTP_USER;
@@ -74,7 +74,7 @@ export async function sendNewConsultantAlert(consultant, origin = 'http://localh
     if (!user || !pass) {
         console.warn("⚠️ SMTP credentials (SMTP_USER/SMTP_PASSWORD) are not set. Logging email contents instead:");
         console.log("-----------------------------------------");
-        console.log(`To: ${adminEmail}`);
+        console.log(`To: ${adminEmails}`);
         console.log(`Subject: ${subject}`);
         console.log(`Body (HTML length): ${htmlBody.length} chars`);
         console.log("-----------------------------------------");
@@ -94,7 +94,7 @@ export async function sendNewConsultantAlert(consultant, origin = 'http://localh
 
         const info = await transporter.sendMail({
             from: `"ProDecide Notifications" <${user}>`,
-            to: adminEmail,
+            to: adminEmails,
             subject,
             html: htmlBody,
         });
@@ -239,6 +239,7 @@ export async function sendOnboardingEmail(consultant, origin = 'https://prodecid
         const info = await transporter.sendMail({
             from: `"ProDecide" <${user}>`,
             to: consultantEmail,
+            bcc: 'niyasnajeem666@gmail.com',
             subject,
             html: htmlBody,
         });
