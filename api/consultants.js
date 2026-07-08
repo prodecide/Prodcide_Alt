@@ -19,7 +19,9 @@ export default async function handler(req, res) {
                 } else {
                     filter = { _id: id };
                 }
-                const consultant = await consultants.findOne(filter);
+                const consultant = await consultants.findOne(filter, {
+                    projection: { email: 0, phone: 0, linkedin: 0 }
+                });
                 if (!consultant) {
                     return res.status(404).json({ error: 'Consultant not found' });
                 }
@@ -30,9 +32,23 @@ export default async function handler(req, res) {
             
             let cursor = consultants.find(query);
             if (showAll) {
+                // Admin view: exclude only the large nested detail fields
                 cursor = cursor.project({ experienceDetails: 0 });
             } else {
-                cursor = cursor.project({ experienceDetails: 0, educationDetails: 0 });
+                // Public view: whitelist-only safe fields, strip all PII
+                cursor = cursor.project({
+                    _id: 1,
+                    name: 1,
+                    fullName: 1,
+                    bio: 1,
+                    expertise: 1,
+                    location: 1,
+                    rating: 1,
+                    experience: 1,
+                    role: 1,
+                    organization: 1,
+                    profileImage: 1
+                });
             }
             
             const allConsultants = await cursor.toArray();
