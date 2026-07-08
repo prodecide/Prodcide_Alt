@@ -121,6 +121,40 @@
         "student_level": "all",
         "status": "approved"
       }
+    ],
+    [
+      "6a282a3bc280b85ff6dcac0a",
+      {
+        "_id": "6a282a3bc280b85ff6dcac0a",
+        "name": "Pro Decide",
+        "fullName": "Pro Decide",
+        "email": "bijith.p21063@iimtrichy.ac.in",
+        "phone": "7592921209",
+        "location": "India",
+        "expertise": [
+          "Stock Trading",
+          "Finance & Banking"
+        ],
+        "experience": "5",
+        "experience_years": 5,
+        "role": "Stock Trader",
+        "organization": "DeepLearning.AI",
+        "linkedin": "http://localhost:5174/join-network",
+        "bio": "sdfgh",
+        "profileImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAACmwAAAYICAYAAACdfHc/AAAM…",
+        "status": "approved",
+        "rating": 5.0,
+        "price": "10,000",
+        "suitable_for": [
+          "individual",
+          "startup"
+        ],
+        "engagement_styles": [
+          "technical",
+          "hands-on"
+        ],
+        "student_level": "all"
+      }
     ]
   ],
   "otps": [

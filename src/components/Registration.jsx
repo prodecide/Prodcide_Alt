@@ -38,6 +38,7 @@ export default function Registration() {
   const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
   
   const [imagePreview, setImagePreview] = useState(null);
+  const [submitError, setSubmitError] = useState('');
   const [isProfessionsOpen, setIsProfessionsOpen] = useState(false);
   const [isExpertiseOpen, setIsExpertiseOpen] = useState(false);
   const [professionSearch, setProfessionSearch] = useState('');
@@ -71,6 +72,7 @@ export default function Registration() {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
+    setSubmitError('');
     setFormData(prev => ({ 
       ...prev, 
       [id]: id === 'email' ? value.toLowerCase().trim() : value 
@@ -122,6 +124,7 @@ export default function Registration() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError('');
     if (formData.expertise.length === 0) return alert("Select expertise");
     if (!formData.role) return alert("Select role");
     
@@ -143,7 +146,7 @@ export default function Registration() {
       setStep('otp');
     } catch (error) {
       console.error("Submission error:", error);
-      alert(error.message);
+      setSubmitError(error.message);
     }
   };
 
@@ -194,7 +197,7 @@ export default function Registration() {
       const result = await response.json();
       localStorage.setItem('consultant_user', JSON.stringify(result.consultant));
       if (result.token) localStorage.setItem('prodecide_jwt', result.token);
-      window.location.href = '/consultant-dashboard';
+      setStep('success');
     } catch (error) {
       alert(error.message);
     } finally {
@@ -202,6 +205,35 @@ export default function Registration() {
       setGoogleSelectorOpen(false);
     }
   };
+
+  if (step === 'success') {
+    return (
+      <div className="bg-surface font-body text-on-surface min-h-screen pb-12">
+        <Navbar />
+        <main className="max-w-md mx-auto px-6 py-16 animate-fade-in" style={{ animationDuration: '0.6s' }}>
+          <div className="bg-white rounded-3xl p-8 border border-outline-variant/10 shadow-2xl text-center">
+            <div className="w-20 h-20 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto mb-6">
+              <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+            </div>
+            <h2 className="font-headline font-extrabold text-2xl text-on-surface mb-3">Application Submitted</h2>
+            <p className="text-secondary text-sm leading-relaxed mb-8">
+              Your application has been sent for review. You will be able to log in to your dashboard once the admin approves your profile.
+            </p>
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100/50 mb-8 text-left">
+              <div className="flex gap-2 items-center mb-1">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Application Status</span>
+              </div>
+              <p className="text-xs text-slate-600 font-bold">Pending Admin Verification</p>
+            </div>
+            <Link to="/" className="w-full py-4 rounded-xl bg-slate-900 text-white font-bold text-center block hover:bg-slate-800 transition-all shadow-lg">
+              Return to Homepage
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (step === 'otp') {
     return (
@@ -414,7 +446,18 @@ export default function Registration() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">Email</label>
-                    <input value={formData.email} onChange={handleChange} required id="email" className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-primary text-sm" type="email"/>
+                    <input 
+                      value={formData.email} 
+                      onChange={handleChange} 
+                      required 
+                      id="email" 
+                      className={`w-full px-4 py-3 rounded-xl text-sm transition-all outline-none border focus:ring-2 ${
+                        submitError && submitError.toLowerCase().includes('email')
+                          ? 'bg-rose-50 border-rose-500 text-rose-900 focus:ring-rose-500 placeholder-rose-300'
+                          : 'bg-slate-50 border-transparent focus:border-primary focus:ring-primary text-slate-800'
+                      }`} 
+                      type="email"
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-secondary">Phone Number</label>
@@ -518,6 +561,12 @@ export default function Registration() {
                 </div>
 
                 <div className="pt-6">
+                  {submitError && (
+                    <div className="mb-4 p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-xs font-semibold flex items-center gap-2 animate-shake">
+                      <span className="material-symbols-outlined text-sm">error</span>
+                      {submitError}
+                    </div>
+                  )}
                   <button className="w-full py-4 rounded-xl bg-gradient-to-br from-primary to-primary-container text-white font-bold text-lg shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 group" type="submit">
                     Submit Application
                     <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>

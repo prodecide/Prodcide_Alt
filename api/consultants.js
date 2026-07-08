@@ -39,6 +39,12 @@ export default async function handler(req, res) {
             // Normalize email address to avoid casing mismatch
             newConsultant.email = newConsultant.email.toLowerCase().trim();
 
+            // Check if email is already registered
+            const existingConsultant = await consultants.findOne({ email: newConsultant.email });
+            if (existingConsultant) {
+                return res.status(409).json({ error: 'This email is already registered' });
+            }
+
             // Default new consultants to pending
             newConsultant.status = 'pending';
 
