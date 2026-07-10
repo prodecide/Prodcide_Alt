@@ -3,7 +3,16 @@ import { ObjectId } from 'mongodb';
 import { sendNewConsultantAlert, sendOnboardingEmail } from './_utils/email.js';
 import { verifyToken } from './_utils/auth-middleware.js';
 
+// Normalize names to Title Case: "NIYAS NAJEEM" -> "Niyas Najeem", "bijith t" -> "Bijith T"
+function toTitleCase(str) {
+    if (!str || typeof str !== 'string') return str;
+    return str.trim().replace(/\w\S*/g, (word) =>
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    );
+}
+
 export default async function handler(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     try {
         const client = await clientPromise;
         const database = client.db('prodecide');
@@ -18,7 +27,9 @@ export default async function handler(req, res) {
                 } else {
                     filter = { _id: id };
                 }
-                const consultant = await consultants.findOne(filter);
+                const consultant = await consultants.findOne(filter, {
+                    projection: { email: 0, phone: 0, linkedin: 0 }
+                });
                 if (!consultant) {
                     return res.status(404).json({ error: 'Consultant not found' });
                 }
@@ -26,7 +37,29 @@ export default async function handler(req, res) {
             }
             const showAll = req.query.all === 'true';
             const query = showAll ? {} : { status: { $ne: 'pending' } };
-            const allConsultants = await consultants.find(query).toArray();
+            
+            let cursor = consultants.find(query);
+            if (showAll) {
+                // Admin view: strip PII and large nested detail fields
+                cursor = cursor.project({ email: 0, phone: 0, linkedin: 0, experienceDetails: 0 });
+            } else {
+                // Public view: whitelist-only safe fields, strip all PII
+                cursor = cursor.project({
+                    _id: 1,
+                    name: 1,
+                    fullName: 1,
+                    bio: 1,
+                    expertise: 1,
+                    location: 1,
+                    rating: 1,
+                    experience: 1,
+                    role: 1,
+                    organization: 1,
+                    profileImage: 1
+                });
+            }
+            
+            const allConsultants = await cursor.toArray();
             return res.status(200).json(allConsultants);
         }
 
@@ -38,6 +71,16 @@ export default async function handler(req, res) {
 
             // Normalize email address to avoid casing mismatch
             newConsultant.email = newConsultant.email.toLowerCase().trim();
+
+            // Normalize name casing: always store as Title Case
+            if (newConsultant.fullName) newConsultant.fullName = toTitleCase(newConsultant.fullName);
+            if (newConsultant.name) newConsultant.name = toTitleCase(newConsultant.name);
+
+            // Check if email is already registered
+            const existingConsultant = await consultants.findOne({ email: newConsultant.email });
+            if (existingConsultant) {
+                return res.status(409).json({ error: 'This email is already registered' });
+            }
 
             // Default new consultants to pending
             newConsultant.status = 'pending';
@@ -107,8 +150,8 @@ export default async function handler(req, res) {
 
             const updateFields = {};
             if (status) updateFields.status = status;
-            if (fullName !== undefined) updateFields.fullName = fullName;
-            if (name !== undefined) updateFields.name = name;
+            if (fullName !== undefined) updateFields.fullName = toTitleCase(fullName);
+            if (name !== undefined) updateFields.name = toTitleCase(name);
             if (role !== undefined) updateFields.role = role;
             if (profession !== undefined) updateFields.profession = profession;
             if (organization !== undefined) updateFields.organization = organization;

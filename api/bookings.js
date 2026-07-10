@@ -5,6 +5,7 @@ import { verifyToken } from './_utils/auth-middleware.js';
 
 
 export default async function handler(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     // JWT Authentication
     const decoded = verifyToken(req);
     if (!decoded) {
@@ -83,12 +84,12 @@ export default async function handler(req, res) {
             const newBooking = {
                 bookingId,
                 consultantId,
-                consultantEmail,
+                consultantEmail: (consultantEmail || '').toLowerCase().trim(),
                 consultantName,
                 date,
                 slot,
                 clientName,
-                clientEmail,
+                clientEmail: (clientEmail || '').toLowerCase().trim(),
                 context,
                 meetLink: meetLink || `https://meet.google.com/pd-${Math.random().toString(36).substring(2, 5)}-${Math.random().toString(36).substring(2, 5)}`,
                 status: 'pending',   // pending → accepted / declined by consultant

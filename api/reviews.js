@@ -2,6 +2,7 @@ import clientPromise from '../lib/mongodb.js';
 import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     try {
         const client = await clientPromise;
         const database = client.db('prodecide');
@@ -14,8 +15,11 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: 'consultantId parameter is required' });
             }
 
-            // Fetch reviews matching the consultantId
-            const consultantReviews = await reviews.find({ consultantId }).toArray();
+            // Fetch reviews matching the consultantId, excluding sensitive user data
+            const consultantReviews = await reviews.find(
+                { consultantId },
+                { projection: { userEmail: 0 } }
+            ).toArray();
             
             // Calculate average rating
             let averageRating = 5.0;

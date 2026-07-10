@@ -6,6 +6,7 @@ dotenv.config({ path: '.env.local' });
 // Now import the handler after config is loaded
 const { default: consultantsHandler } = await import('./api/consultants.js');
 const { default: authHandler } = await import('./api/auth.js');
+const { default: adminAuthHandler } = await import('./api/admin-auth.js');
 const { default: generateBioHandler } = await import('./api/generate-bio.js');
 const { default: discoveryChatHandler } = await import('./api/discovery-chat.js');
 const { default: usersHandler } = await import('./api/users.js');
@@ -36,6 +37,7 @@ const vercelToExpress = (handler) => async (req, res) => {
 
 app.all('/api/consultants', vercelToExpress(consultantsHandler));
 app.all('/api/auth', vercelToExpress(authHandler));
+app.all('/api/admin-auth', vercelToExpress(adminAuthHandler));
 app.all('/api/generate-bio', vercelToExpress(generateBioHandler));
 app.all('/api/discovery-chat', vercelToExpress(discoveryChatHandler));
 app.all('/api/users', vercelToExpress(usersHandler));

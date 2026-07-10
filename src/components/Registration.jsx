@@ -4,17 +4,227 @@ import Navbar from './Navbar';
 import { apiFetch } from '../utils/api.js';
 
 const PROFESSION_OPTIONS = [
-    "Software Engineer", "Data Scientist", "Cybersecurity Analyst", "Civil Engineer", "Mechanical Engineer",
-    "Architect", "Investment Banker", "Chartered Accountant", "Stock Trader", "Corporate Lawyer",
-    "Criminal Lawyer", "Judge / Magistrate", "General Surgeon", "General Physician", "Psychiatrist",
-    "Emergency Medicine", "Management Consultant", "HR Manager", "Marketing Manager", "Sales Director",
-    "Entrepreneur / Founder", "Product Manager", "Graphic Designer", "UX/UI Designer", "Film Director",
-    "Journalist", "Content Creator", "Commercial Pilot", "Air Traffic Controller", "Army Officer",
-    "Research Scientist", "Biotechnologist", "Forensic Scientist", "Geologist", "Professor / Academic",
-    "School Teacher", "Career Counselor", "Event Manager", "Supply Chain Manager", "Hotel Manager",
-    "Political Scientist", "Diplomat", "Social Worker", "Economist", "Fashion Designer", "Interior Designer",
-    "Actuary", "Sports Manager", "Sustainability Consult", "Urban Planner"
+    // Healthcare & Medicine
+    "General Physician (MBBS)", "General Surgeon", "Cardiologist", "Neurologist", "Psychiatrist",
+    "Dermatologist", "Orthopedic Surgeon", "Pediatrician", "Gynecologist / Obstetrician",
+    "Radiologist", "Anesthesiologist", "Emergency Medicine Doctor", "Dentist", "Ophthalmologist",
+    "ENT Specialist", "Oncologist", "Pathologist", "Physiotherapist", "Pharmacist",
+    "Nurse / Staff Nurse", "Medical Lab Technician", "Veterinary Doctor", "AYUSH Practitioner",
+    "Occupational Therapist", "Dietitian / Nutritionist", "Speech Therapist",
+    "Medical Coder / Health Informatics Specialist", "Medical Transcriptionist",
+    "Clinical Research Associate", "Biostatistician", "Epidemiologist",
+    "Medical Officer (Government)", "Hospital Administrator", "Public Health Officer",
+    "Health Insurance Specialist", "Medical Billing Specialist",
+    "AIIMS / PGI Resident Doctor", "NEET Aspirant", "USMLE Aspirant",
+
+    // Defense & Armed Forces
+    "Indian Army Officer", "Indian Navy Officer", "Indian Air Force Officer",
+    "Army Soldier (JCO / OR)", "Navy Sailor", "Air Force Airman",
+    "Army Medical Corps Officer", "Military Engineer", "Army Education Corps",
+    "Defence Research Scientist (DRDO)", "NDA / CDS Aspirant", "Territorial Army Officer",
+    "Coast Guard Officer", "Coast Guard Navik",
+
+    // Police & Paramilitary
+    "IPS Officer", "State Police Officer", "Sub Inspector (SI)", "Constable",
+    "CRPF Personnel", "BSF Personnel", "CISF Personnel", "SSB Personnel",
+    "ITBP Personnel", "Assam Rifles Personnel",
+    "NSG / Special Forces", "Forest Guard / Range Officer",
+    "Prison / Jail Officer", "Traffic Police Officer", "Cyber Crime Officer",
+
+    // Civil Services & Government
+    "IAS Officer", "IRS Officer", "IFS Officer (Foreign Service)", "IFS Officer (Forest Service)",
+    "IPoS Officer (Postal Service)", "IRTS Officer (Railway Traffic)", "IRAS Officer (Railway Accounts)",
+    "State PSC Officer", "District Collector / DM", "Block Development Officer (BDO)",
+    "Government Administrator", "Public Policy Analyst", "Municipal Corporation Officer",
+    "Village Officer / Village Field Assistant (VFA)", "Panchayat / Gram Sevak",
+    "Tehsildar / Revenue Officer", "Talathi / Village Administrative Officer",
+    "Election Officer", "RTI Officer", "Information Officer",
+
+    // Banking & Finance (Government)
+    "IBPS Bank PO / Clerk", "SBI PO / Clerk", "RBI Grade B Officer",
+    "NABARD Officer", "SIDBI Officer", "NHB Officer",
+    "Insurance Officer (LIC / GIC)", "PSU Finance Officer",
+
+    // SSC & Central Government Jobs
+    "SSC CGL (Assistant / Inspector)", "SSC CHSL (LDC / DEO)", "SSC MTS", "SSC GD Constable",
+    "SSC CPO (Delhi Police / CAPF SI)", "Railway Officer (Group A/B)",
+    "Railway Technician / NTPC", "Railway Loco Pilot", "Railway Station Master",
+    "India Post (Postal Assistant / GDS)", "Staff Selection Commission Aspirant",
+    "UPSC CAPF AC", "Intelligence Bureau (IB) Officer", "CBI Officer",
+
+    // Teaching & Education
+    "School Teacher (Primary)", "School Teacher (Secondary / Senior)", "PGT / TGT", "KVS / NVS Teacher",
+    "College Lecturer", "University Professor", "Research Scholar (PhD)", "Post-Doctoral Researcher",
+    "UPSC / PSC Coach", "Career Counselor", "Educational Administrator",
+    "Special Education Teacher", "Montessori / Pre-school Educator",
+    "Online Tutor / EdTech Educator", "Training & Development Specialist",
+    "Librarian / Information Scientist", "Curriculum Designer", "Instructional Designer",
+
+    // Engineering & Technology
+    "Software Engineer", "Full Stack Developer", "Frontend Developer", "Backend Developer",
+    "Mobile App Developer", "DevOps / Cloud Engineer", "Data Scientist", "AI / ML Engineer",
+    "AI Engineer (Generative AI / LLM)", "Prompt Engineer", "MLOps Engineer",
+    "Cloud Architect", "Solutions Architect", "Enterprise Architect",
+    "Cybersecurity Analyst", "Ethical Hacker / Penetration Tester", "Network Engineer", "Embedded Systems Engineer",
+    "Blockchain Developer", "Web3 Developer", "Smart Contract Developer",
+    "Game Developer", "AR / VR Developer", "IoT Engineer",
+    "Civil Engineer", "Structural Engineer", "Geotechnical Engineer", "Highway / Transport Engineer",
+    "Mechanical Engineer", "Production / Manufacturing Engineer", "Quality Control Engineer",
+    "Electrical Engineer", "Power Systems Engineer", "Electronics Engineer", "VLSI Engineer",
+    "Chemical Engineer", "Process Engineer", "Polymer / Textile Engineer",
+    "Marine Engineer", "Naval Architect", "Port / Harbor Engineer",
+    "Petroleum / Oil & Gas Engineer", "Mining Engineer", "Agricultural Engineer",
+    "Aerospace / Aeronautical Engineer", "Environmental Engineer",
+    "Robotics Engineer", "Automobile / EV Engineer", "Instrumentation Engineer",
+    "Biomedical Engineer", "Genetic Engineer", "Nanotechnology Engineer",
+
+    // Law & Judiciary
+    "Advocate / Lawyer", "Corporate Lawyer", "Criminal Defense Lawyer", "Civil Litigation Lawyer",
+    "Family Law Lawyer", "Intellectual Property (IP) Lawyer", "Tax Lawyer", "Labour Law Lawyer",
+    "Environmental Lawyer", "International Law Lawyer",
+    "Public Prosecutor", "District Judge", "High Court Judge", "Supreme Court Advocate",
+    "Magistrate", "Legal Advisor / In-House Counsel", "Judiciary Aspirant (Judicial Services)",
+    "Notary / Legal Draftsman", "Patent Agent",
+
+    // Business, Finance & Management
+    "Chartered Accountant (CA)", "Cost & Management Accountant (CMA)", "Company Secretary (CS)",
+    "Investment Banker", "Stock Trader / Analyst", "Mutual Fund Distributor",
+    "Financial Planner / Wealth Manager", "Venture Capitalist", "Private Equity Analyst",
+    "Actuary", "Tax Consultant", "GST Practitioner", "Auditor",
+    "Chief Financial Officer (CFO)", "Chief Executive Officer (CEO)",
+    "Management Consultant", "Business Analyst", "Strategy Consultant",
+    "Product Manager", "Product Owner", "Project Manager (PMP)",
+    "Program Manager", "Scrum Master / Agile Coach", "Portfolio Manager",
+    "HR Manager", "Talent Acquisition Specialist", "HR Business Partner", "Payroll Specialist",
+    "Operations Manager", "Supply Chain Manager", "Logistics Manager", "Procurement Manager",
+    "Warehouse Manager", "Import / Export Manager",
+    "Entrepreneur / Startup Founder", "Business Development Manager", "Growth Hacker",
+    "Sales Director", "Inside Sales Representative", "Account Manager", "Key Account Manager",
+    "Marketing Manager", "Performance Marketing Manager", "Brand Manager", "Category Manager",
+    "Digital Marketing Specialist", "SEO / SEM Analyst", "Social Media Manager",
+    "E-commerce Manager", "Amazon / Flipkart Seller",
+
+    // Real Estate & Construction
+    "Real Estate Agent / Broker", "Property Developer / Builder",
+    "Real Estate Investor", "RERA Compliance Officer", "Valuation Officer",
+    "Site Engineer", "Construction Project Manager", "Quantity Surveyor",
+    "Building Inspector", "Facilities Manager", "Property Manager",
+
+    // Agriculture & Allied Sectors
+    "Farmer / Agri-Entrepreneur", "Agricultural Officer", "Horticulturist",
+    "Sericulture Officer", "Animal Husbandry Officer", "Fisheries Officer",
+    "Agricultural Extension Officer", "Food Technologist", "Dairy Technologist",
+    "Agri-Tech Entrepreneur", "Organic Farmer", "Plantation Manager",
+    "Cold Chain / Food Supply Manager", "Rubber Board / Spice Board Officer",
+
+    // Creative & Media
+    "Graphic Designer", "UX / UI Designer", "Product Designer", "Animator / Motion Designer",
+    "3D Artist / CGI Artist", "Concept Artist", "Illustrator",
+    "Film Director", "Screenwriter", "Video Editor", "Cinematographer / DoP",
+    "Photographer", "Photo Editor",
+    "Journalist / Reporter", "News Anchor", "Radio Jockey (RJ)", "Podcast Host",
+    "Content Creator / Influencer", "YouTube Creator", "Copywriter",
+    "PR Manager", "Advertising Professional", "Media Planner / Buyer",
+    "Fashion Designer", "Fashion Stylist", "Textile Designer",
+    "Interior Designer", "Landscape Designer", "Architect",
+    "Game Designer", "Level Designer", "Game Artist",
+
+    // Performing Arts & Entertainment
+    "Actor / Actress", "Stand-up Comedian", "Theatre Artist",
+    "Musician / Singer", "Music Composer", "Sound Engineer",
+    "Dancer / Choreographer", "Circus / Stunt Performer",
+    "Voice-Over Artist", "Dubbing Artist",
+
+    // Hospitality, Travel & Tourism
+    "Hotel Manager", "Front Office Manager", "Food & Beverage Manager",
+    "Chef / Culinary Expert", "Pastry Chef / Baker", "Bartender / Mixologist",
+    "Event Manager", "Wedding Planner",
+    "Travel Consultant", "Tour Guide", "Tourism Officer",
+    "Cruise Ship Officer / Crew",
+
+    // Aviation & Merchant Navy
+    "Commercial Pilot (CPL)", "Airline Transport Pilot (ATPL)",
+    "Air Traffic Controller", "Cabin Crew / Flight Attendant",
+    "Aircraft Maintenance Engineer (AME)", "Aviation Safety Officer",
+    "Merchant Navy Officer (Deck)", "Merchant Navy Engineer",
+    "Marine Superintendent", "Port Captain",
+
+    // Sports & Fitness
+    "Professional Athlete / Player", "Sports Coach", "Fitness Trainer / Gym Instructor",
+    "Yoga Instructor", "Sports Physiotherapist",
+    "Sports Manager / Agent", "Sports Analyst", "Referee / Umpire",
+    "Esports Player / Coach",
+
+    // Science & Research
+    "Research Scientist", "Biotechnologist", "Forensic Scientist",
+    "Geologist", "Meteorologist / Climatologist", "Oceanographer",
+    "Astrophysicist", "Nuclear Scientist", "Material Scientist",
+    "Biochemist", "Microbiologist", "Zoologist", "Botanist",
+    "Economist", "Psychologist", "Clinical Psychologist", "Counseling Psychologist",
+    "Sociologist", "Anthropologist", "Archaeologist",
+    "Statistician / Data Analyst", "Urban Planner",
+    "Environmental Scientist", "Space Scientist (ISRO)",
+
+    // Finance & Fintech
+    "Fintech Product Manager", "Cryptocurrency Analyst", "DeFi Analyst",
+    "Insurance Actuary", "Insurance Agent / Advisor", "Risk Manager", "Compliance Officer",
+    "Corporate Treasurer", "Credit Analyst", "Loan Officer", "Mortgage Broker",
+    "Portfolio Manager (Investments)", "Fund Manager", "Hedge Fund Analyst",
+
+    // Social, Development & NGO
+    "Social Worker / NGO Professional", "Diplomat",
+    "Political Scientist", "Political Activist / Worker",
+    "Development Sector Professional", "Sustainability Consultant",
+    "UN / International Organization Professional",
+    "Community Development Worker", "Child Rights Advocate",
+
+    // Spiritual & Wellness
+    "Yoga Teacher / Therapist", "Ayurvedic Practitioner",
+    "Meditation Coach", "Life Coach / NLP Practitioner",
+    "Astrologer", "Vastu Consultant",
+
+    // Skilled Trades & Vocational
+    "Electrician", "Plumber", "Welder / Fabricator",
+    "Carpenter / Furniture Maker", "Painter / Decorator",
+    "Auto Mechanic / Technician", "CNC Operator / Machinist",
+    "HVAC Technician", "Solar Panel Installer", "Lift / Elevator Technician",
+
+    // IT & Digital (Non-Engineering)
+    "IT Support / Help Desk", "System Administrator", "IT Consultant",
+    "Database Administrator (DBA)", "IT Project Manager", "IT Manager / CTO",
+    "Business Intelligence (BI) Analyst", "Data Engineer", "Data Architect",
+    "Technical Writer / Documentation Specialist", "QA / Test Engineer", "Automation Test Engineer",
+    "ERP Consultant (SAP / Oracle)", "CRM Specialist (Salesforce)",
+
+    // Journalism, Publishing & PR
+    "Editor (Newspaper / Magazine)", "Sub-Editor", "Columnist / Opinion Writer",
+    "Publisher", "Literary Agent", "Book Author",
+    "Corporate Communications Manager", "Crisis Management Consultant",
+
+    // Environment & Energy
+    "Renewable Energy Consultant", "Wind / Solar Energy Engineer",
+    "Carbon Credits Analyst", "Climate Change Specialist",
+    "Water Resource Engineer", "Waste Management Specialist",
+
+    // Transport & Logistics
+    "Truck Driver / Transport Operator", "Taxi / Auto Aggregator Operator",
+    "Shipping Agent", "Customs Clearing Agent", "Freight Broker",
+    "Drone Pilot / UAV Operator",
+
+    // Retail & Consumer
+    "Retail Store Manager", "Visual Merchandiser", "Buyer / Merchandise Planner",
+    "Franchise Owner", "Distributor / Dealer",
+
+    // Healthcare Support & Admin
+    "Health Insurance TPA Executive", "Pharmaceutical Sales Representative",
+    "Medical Device Sales", "Clinical Data Manager", "Drug Regulatory Affairs Specialist",
+
+    // Other
+    "Homemaker / Full-time Parent", "Freelancer / Independent Consultant",
+    "Student (Undergraduate)", "Student (Postgraduate)", "Career Changer",
+    "Aspirant / Job Seeker", "Other"
 ];
+
 
 const EXPERTISE_OPTIONS = [
     { category: "Healthcare & Medicine", options: ["Medicine (MBBS / MD / Specializations)", "Allied Healthcare (Physio, Nursing, Pharmacy)", "Mental Health & Psychology"] },
@@ -40,6 +250,7 @@ export default function Registration() {
   const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
   
   const [imagePreview, setImagePreview] = useState(null);
+  const [submitError, setSubmitError] = useState('');
   const [isProfessionsOpen, setIsProfessionsOpen] = useState(false);
   const [isExpertiseOpen, setIsExpertiseOpen] = useState(false);
   const [professionSearch, setProfessionSearch] = useState('');
@@ -74,6 +285,7 @@ export default function Registration() {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
+    setSubmitError('');
     setFormData(prev => ({ 
       ...prev, 
       [id]: id === 'email' ? value.toLowerCase().trim() : value 

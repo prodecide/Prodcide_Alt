@@ -22,8 +22,8 @@ export default async function handler(req, res) {
                     return res.status(400).json({ error: 'Email is required' });
                 }
 
-                // Rate limit: Max 3 OTPs generated per hour per IP
-                const limitCheck = await checkRateLimit(req, 'otp_generate', 3, 60 * 60 * 1000);
+                // Rate limit: Max 1 OTP generated per 15 seconds per IP (15s cooldown)
+                const limitCheck = await checkRateLimit(req, 'otp_generate', 1, 15 * 1000);
                 if (limitCheck.limited) {
                     return res.status(429).json({ error: `Too many OTP requests. Try again in ${limitCheck.retryAfter} seconds.` });
                 }
@@ -51,8 +51,8 @@ export default async function handler(req, res) {
                     return res.status(400).json({ error: 'Email is required' });
                 }
 
-                // Rate limit: Max 3 OTPs generated per hour per IP
-                const limitCheck = await checkRateLimit(req, 'otp_generate', 3, 60 * 60 * 1000);
+                // Rate limit: Max 1 OTP generated per 15 seconds per IP (15s cooldown)
+                const limitCheck = await checkRateLimit(req, 'otp_generate', 1, 15 * 1000);
                 if (limitCheck.limited) {
                     return res.status(429).json({ error: `Too many OTP requests. Try again in ${limitCheck.retryAfter} seconds.` });
                 }
