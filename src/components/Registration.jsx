@@ -493,7 +493,7 @@ export default function Registration() {
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen">
-      <Navbar />
+      <Navbar tempUser={(authMethod === 'google' || formData.email) ? { name: formData.fullName, email: formData.email, picture: formData.profileImage } : null} />
       
       <main className="max-w-3xl mx-auto px-6 py-12 lg:py-20">
         <div className="text-center mb-12">

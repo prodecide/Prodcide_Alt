@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../utils/api.js';
 
-export default function Navbar() {
+export default function Navbar({ tempUser = null }) {
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname;
@@ -92,7 +92,7 @@ export default function Navbar() {
   };
 
   const isAdminLoggedIn = localStorage.getItem('prodecide_admin_auth') === 'true';
-  const isAnyUserLoggedIn = !!userName || !!userEmail || !!consultantData || isAdminLoggedIn;
+  const isAnyUserLoggedIn = !!tempUser || !!userName || !!userEmail || !!consultantData || isAdminLoggedIn;
 
   return (
     <header className="sticky top-0 w-full z-50 bg-[#f7f9fb]/90 dark:bg-[#191c1e]/90 backdrop-blur-md border-b border-slate-200/40 shadow-sm">
@@ -211,7 +211,7 @@ export default function Navbar() {
           
           {isAnyUserLoggedIn && (
             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 hidden md:inline-block bg-slate-100/60 dark:bg-slate-800/60 px-3 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
-              {consultantData ? (consultantData.name || 'Consultant') : isAdminLoggedIn ? 'Admin' : userName}
+              {tempUser ? (tempUser.name || 'User') : consultantData ? (consultantData.name || 'Consultant') : isAdminLoggedIn ? 'Admin' : userName}
             </span>
           )}
 
@@ -223,7 +223,7 @@ export default function Navbar() {
             >
               <img 
                 alt="User Profile" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSCXL-0gLE1O170SZDAK5qcjkjlHzgDWgCAed04sK9q5lTVyLBY5AWHjBCkQG09u1tnbtWlcRM0g6JSdaKJxbGO_Ig7DNFIgrr3wnP8o3iBTqM-FH8pMQ2W2phyiWzQ4LEi8Qq9bSx4ea516zTUD77k5J4B10TBSWdD-v6XS6LE3L1Ewmt4tMDoP-O6Q_vtIO4y5jG3wGk6o5W_AUTZY-IW8fyX7HzV12RBpB1k27CjcNZsnWZ7rlXHolceeZK8drvj47Vj_efGnA" 
+                src={tempUser?.picture || consultantData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(tempUser?.name || consultantData?.name || userName || 'User')}&background=0D8ABC&color=fff`} 
                 className="w-full h-full object-cover" 
               />
             </button>
@@ -232,7 +232,12 @@ export default function Navbar() {
               <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-white dark:bg-[#191c1e] border border-slate-200/50 dark:border-slate-800 shadow-xl py-2 z-50 transform origin-top-right transition-all">
                 {isAnyUserLoggedIn && (
                   <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
-                    {consultantData ? (
+                    {tempUser ? (
+                      <>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{tempUser.name || 'User'}</p>
+                        <p className="text-[10px] text-slate-400 truncate">{tempUser.email}</p>
+                      </>
+                    ) : consultantData ? (
                       <>
                         <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{consultantData.name || 'Consultant'}</p>
                         <p className="text-[10px] text-slate-400 truncate">{consultantData.email}</p>
