@@ -20,6 +20,7 @@ export default function Registration() {
     googleId: null
   });
   
+  const [errors, setErrors] = useState({});
   const [authMethod, setAuthMethod] = useState(null);
   const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
   const [imagePreview, setImagePreview] = useState("https://lh3.googleusercontent.com/aida-public/AB6AXuCrzkwZlJbo5iL01Hilh5a_qdwSjk9OXXteTRJpAa8zeFRuEa95uL4FJD-Cz3RrcDUud4zboPwIkGCg9wjLRmuLGCws3qA2rpDHmipgDQ33LMsspAowx7eG6M-vQUDL2lyxXDKXo4RBA75RaHZgxtv7Y23HpX-Cssm26PJeZC3Q6VRHptlkx2A6MBEAJglCLg3iSc_gYZ4B0nuenHvD0CsiiWa0pMmHpW4fCqXV7f4myA1-cQk4d7PrM4c9b8WKmIhzTJFdIU6X14o");
@@ -33,6 +34,7 @@ export default function Registration() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSubmitError('');
+    setErrors(prev => ({ ...prev, [name]: '' }));
     setFormData(prev => ({ 
       ...prev, 
       [name]: name === 'email' ? value.toLowerCase().trim() : value 
@@ -71,6 +73,8 @@ export default function Registration() {
             profileImage: userInfo.picture || prev.profileImage,
             googleId: userInfo.sub
         }));
+        
+        setErrors(prev => ({ ...prev, fullName: '', email: '' }));
         
         if (userInfo.picture) {
            setImagePreview(userInfo.picture);
@@ -122,7 +126,20 @@ export default function Registration() {
   const handleSubmitInitial = async (e) => {
     e.preventDefault();
     
-    if (!formData.fullName || !formData.email || !formData.phone || !formData.location || !formData.expertise || !formData.experience || !formData.role || !formData.organization || !formData.linkedin || !formData.bio) {
+    let newErrors = {};
+    if (!formData.fullName.trim()) newErrors.fullName = "Full Name is required";
+    if (!formData.email.trim()) newErrors.email = "Work Email is required";
+    if (!formData.phone.trim()) newErrors.phone = "Phone is required";
+    if (!formData.location.trim()) newErrors.location = "Location is required";
+    if (!formData.expertise.trim()) newErrors.expertise = "Expertise is required";
+    if (!formData.experience.trim()) newErrors.experience = "Experience is required";
+    if (!formData.role.trim()) newErrors.role = "Role is required";
+    if (!formData.organization.trim()) newErrors.organization = "Organization is required";
+    if (!formData.linkedin.trim()) newErrors.linkedin = "LinkedIn is required";
+    if (!formData.bio.trim()) newErrors.bio = "Bio is required";
+
+    if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
         setSubmitError("Please fill in all mandatory fields.");
         return;
     }
@@ -173,6 +190,8 @@ export default function Registration() {
         setIsVerifyingOtp(false);
     }
   };
+  
+  const getInputClass = (fieldName) => `w-full px-4 py-3 rounded-xl bg-surface border focus:ring-2 focus:border-transparent transition-all text-sm ${errors[fieldName] ? 'border-error/50 focus:ring-error text-error placeholder:text-error/50' : 'border-outline-variant/30 focus:ring-primary text-on-surface placeholder:text-secondary/40'}`;
 
   if (step === 'success') {
     return (
@@ -281,7 +300,7 @@ export default function Registration() {
 
             {submitError && <div className="max-w-3xl mx-auto mb-4 p-4 bg-error/10 text-error rounded-xl text-sm font-semibold text-center">{submitError}</div>}
 
-            <form onSubmit={handleSubmitInitial} className="space-y-6">
+            <form noValidate onSubmit={handleSubmitInitial} className="space-y-6">
                 {/* Three Columns Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                     
@@ -330,20 +349,24 @@ export default function Registration() {
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-secondary" htmlFor="fullName">Full Name *</label>
-                                    <input required value={formData.fullName} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface transition-all placeholder:text-secondary/40 text-sm" id="fullName" name="fullName" placeholder="Dr. Julian Pierce" type="text" />
+                                    <input value={formData.fullName} onChange={handleChange} className={getInputClass('fullName')} id="fullName" name="fullName" placeholder="Dr. Julian Pierce" type="text" />
+                                    {errors.fullName && <p className="text-error text-[10px] font-bold mt-1 pl-1">{errors.fullName}</p>}
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-secondary" htmlFor="email">Work Email *</label>
-                                    <input required value={formData.email} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface transition-all placeholder:text-secondary/40 text-sm" id="email" name="email" placeholder="j.pierce@organization.com" type="email" />
+                                    <input value={formData.email} onChange={handleChange} className={getInputClass('email')} id="email" name="email" placeholder="j.pierce@organization.com" type="email" />
+                                    {errors.email && <p className="text-error text-[10px] font-bold mt-1 pl-1">{errors.email}</p>}
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-bold uppercase tracking-widest text-secondary" htmlFor="phone">Phone *</label>
-                                        <input required value={formData.phone} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface transition-all placeholder:text-secondary/40 text-sm" id="phone" name="phone" placeholder="+1..." type="tel" />
+                                        <input value={formData.phone} onChange={handleChange} className={getInputClass('phone')} id="phone" name="phone" placeholder="+1..." type="tel" />
+                                        {errors.phone && <p className="text-error text-[10px] font-bold mt-1 pl-1">{errors.phone}</p>}
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-bold uppercase tracking-widest text-secondary" htmlFor="location">Location *</label>
-                                        <input required value={formData.location} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface transition-all placeholder:text-secondary/40 text-sm" id="location" name="location" placeholder="London, UK" type="text" />
+                                        <input value={formData.location} onChange={handleChange} className={getInputClass('location')} id="location" name="location" placeholder="London, UK" type="text" />
+                                        {errors.location && <p className="text-error text-[10px] font-bold mt-1 pl-1">{errors.location}</p>}
                                     </div>
                                 </div>
                             </div>
@@ -363,7 +386,7 @@ export default function Registration() {
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-secondary" htmlFor="expertise">Area of Expertise *</label>
                                 <div className="relative">
-                                    <select required value={formData.expertise} onChange={handleChange} className="w-full appearance-none px-4 py-3 rounded-xl bg-surface border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface transition-all text-sm" id="expertise" name="expertise">
+                                    <select value={formData.expertise} onChange={handleChange} className={`appearance-none ${getInputClass('expertise')}`} id="expertise" name="expertise">
                                         <option value="Strategic Management">Strategic Management</option>
                                         <option value="Artificial Intelligence">Artificial Intelligence</option>
                                         <option value="Financial Risk Assessment">Financial Risk Assessment</option>
@@ -372,21 +395,25 @@ export default function Registration() {
                                     </select>
                                     <span className="material-symbols-outlined absolute right-3 top-3 pointer-events-none text-secondary">expand_more</span>
                                 </div>
+                                {errors.expertise && <p className="text-error text-[10px] font-bold mt-1 pl-1">{errors.expertise}</p>}
                             </div>
 
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-secondary" htmlFor="experience">Years of Experience *</label>
-                                <input required min="0" max="80" value={formData.experience} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface transition-all placeholder:text-secondary/40 text-sm" id="experience" name="experience" placeholder="12" type="number" />
+                                <input min="0" max="80" value={formData.experience} onChange={handleChange} className={getInputClass('experience')} id="experience" name="experience" placeholder="12" type="number" />
+                                {errors.experience && <p className="text-error text-[10px] font-bold mt-1 pl-1">{errors.experience}</p>}
                             </div>
 
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-secondary" htmlFor="role">Current Role / Profession *</label>
-                                <input required value={formData.role} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface transition-all placeholder:text-secondary/40 text-sm" id="role" name="role" placeholder="Senior Strategy Lead" type="text" />
+                                <input value={formData.role} onChange={handleChange} className={getInputClass('role')} id="role" name="role" placeholder="Senior Strategy Lead" type="text" />
+                                {errors.role && <p className="text-error text-[10px] font-bold mt-1 pl-1">{errors.role}</p>}
                             </div>
 
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-secondary" htmlFor="organization">Organization *</label>
-                                <input required value={formData.organization} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface transition-all placeholder:text-secondary/40 text-sm" id="organization" name="organization" placeholder="Global Consulting Group" type="text" />
+                                <input value={formData.organization} onChange={handleChange} className={getInputClass('organization')} id="organization" name="organization" placeholder="Global Consulting Group" type="text" />
+                                {errors.organization && <p className="text-error text-[10px] font-bold mt-1 pl-1">{errors.organization}</p>}
                             </div>
 
                             <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 mt-4">
@@ -410,17 +437,21 @@ export default function Registration() {
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-secondary" htmlFor="linkedin">LinkedIn / Portfolio Link *</label>
                                 <div className="flex">
-                                    <span className="inline-flex items-center px-3 rounded-l-xl bg-surface border border-r-0 border-outline-variant/30 text-secondary">
+                                    <span className={`inline-flex items-center px-3 rounded-l-xl bg-surface border border-r-0 ${errors.linkedin ? 'border-error/50 text-error' : 'border-outline-variant/30 text-secondary'}`}>
                                         <span className="material-symbols-outlined text-sm">link</span>
                                     </span>
-                                    <input required value={formData.linkedin} onChange={handleChange} className="w-full px-4 py-3 rounded-r-xl bg-surface border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface transition-all placeholder:text-secondary/40 text-sm" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/username" type="url" />
+                                    <input value={formData.linkedin} onChange={handleChange} className={`${getInputClass('linkedin')} rounded-l-none`} id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/username" type="url" />
                                 </div>
+                                {errors.linkedin && <p className="text-error text-[10px] font-bold mt-1 pl-1">{errors.linkedin}</p>}
                             </div>
 
                             <div className="space-y-1.5 flex flex-col flex-grow">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-secondary" htmlFor="bio">Short Bio *</label>
-                                <textarea required value={formData.bio} onChange={handleChange} maxLength={250} className="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface transition-all placeholder:text-secondary/40 text-sm flex-grow min-h-[160px] resize-none" id="bio" name="bio" placeholder="Briefly describe your core value proposition and key achievements..." rows="6"></textarea>
-                                <p className="text-[9px] text-secondary text-right font-bold mt-2 uppercase tracking-widest">{formData.bio.length} / 250 characters</p>
+                                <textarea value={formData.bio} onChange={handleChange} maxLength={250} className={`${getInputClass('bio')} flex-grow min-h-[160px] resize-none`} id="bio" name="bio" placeholder="Briefly describe your core value proposition and key achievements..." rows="6"></textarea>
+                                <div className="flex justify-between items-center mt-2">
+                                    <p className="text-[9px] text-error font-bold pl-1 uppercase tracking-widest">{errors.bio || ''}</p>
+                                    <p className="text-[9px] text-secondary font-bold uppercase tracking-widest">{formData.bio.length} / 250 characters</p>
+                                </div>
                             </div>
 
                             <div className="space-y-4 pt-4 border-t border-outline-variant/10">
