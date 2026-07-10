@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import { apiFetch } from '../utils/api.js';
+import { useGoogleLogin } from '@react-oauth/google';
 
 const PROFESSION_OPTIONS = [
     // Healthcare & Medicine
@@ -246,7 +247,7 @@ export default function Registration() {
   
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [googleSelectorOpen, setGoogleSelectorOpen] = useState(false);
+
   const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
   
   const [imagePreview, setImagePreview] = useState(null);
@@ -316,22 +317,38 @@ export default function Registration() {
     }
   };
 
-  const handleGoogleLink = async (mockGoogleId) => {
-    setIsLinkingGoogle(true);
-    // Mocking Google Sign In data fetch
-    setTimeout(() => {
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsLinkingGoogle(true);
+      try {
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        const userInfo = await userInfoRes.json();
+        
         setFormData(prev => ({
             ...prev,
-            fullName: prev.fullName || 'Alex Consultant',
-            email: prev.email || 'alex@example.com',
-            googleId: mockGoogleId
+            fullName: userInfo.name || prev.fullName,
+            email: userInfo.email || prev.email,
+            profileImage: userInfo.picture || prev.profileImage,
+            googleId: userInfo.sub
         }));
+        
+        if (userInfo.picture) {
+           setImagePreview(userInfo.picture);
+        }
+        
         setAuthMethod('google');
-        setIsLinkingGoogle(false);
-        setGoogleSelectorOpen(false);
         setStep(3); // Skip OTP, go straight to Professional Details
-    }, 1000);
-  };
+      } catch (err) {
+        console.error("Google login failed", err);
+        alert("Failed to pull Google account details.");
+      } finally {
+        setIsLinkingGoogle(false);
+      }
+    },
+    onError: (error) => console.log('Login Failed:', error)
+  });
 
   const sendOtp = async () => {
     setIsSendingOtp(true);
@@ -473,50 +490,6 @@ export default function Registration() {
       );
   };
 
-  const renderGoogleSelector = () => {
-    if (!googleSelectorOpen) return null;
-    return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                    <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                        </svg>
-                        <span className="font-semibold text-sm text-slate-700">Sign in with Google</span>
-                    </div>
-                    <button onClick={() => setGoogleSelectorOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                        <span className="material-symbols-outlined text-lg">close</span>
-                    </button>
-                </div>
-                <div className="p-6 space-y-4">
-                    <div className="text-center pb-2">
-                        <h3 className="font-bold text-slate-800 text-lg">Choose an account</h3>
-                        <p className="text-xs text-slate-500 mt-1">to continue to <span className="font-semibold text-primary">ProDecide</span></p>
-                    </div>
-                    <div className="space-y-2">
-                        <button 
-                            onClick={() => handleGoogleLink(`google_${Math.random().toString(36).substr(2, 9)}`)}
-                            disabled={isLinkingGoogle}
-                            className="w-full p-3 rounded-xl border border-slate-200 hover:border-primary/30 hover:bg-primary/5 flex items-center gap-3 text-left transition-all group disabled:opacity-50"
-                        >
-                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-400">
-                                <span className="material-symbols-outlined text-xl">person</span>
-                            </div>
-                            <div className="flex-1">
-                                <p className="font-bold text-sm text-slate-700">Alex Consultant</p>
-                                <p className="text-xs text-slate-400">alex@example.com</p>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-  }
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen">
@@ -543,7 +516,7 @@ export default function Registration() {
 
                     <button 
                         type="button"
-                        onClick={() => setGoogleSelectorOpen(true)}
+                        onClick={() => login()}
                         className="w-full py-4 px-4 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm flex items-center justify-center gap-3 transition-all shadow-sm mb-8"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -785,7 +758,7 @@ export default function Registration() {
                 </div>
             )}
         </div>
-        {renderGoogleSelector()}
+
       </main>
     </div>
   );

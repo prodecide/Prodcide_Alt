@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.13.5",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "jwt-decode": "^4.0.0",
     "mongodb": "^7.1.1",
     "nodemailer": "^8.0.10",
     "razorpay": "^2.9.6",
