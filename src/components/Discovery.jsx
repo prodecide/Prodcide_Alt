@@ -994,7 +994,6 @@ export default function Discovery() {
           )}
           </div>
         </div>
-      )}
 
       {/* ─── Context Onboarding Modal ─── */}
       {showContextModal && (
