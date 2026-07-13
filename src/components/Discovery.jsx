@@ -918,13 +918,7 @@ export default function Discovery() {
           <div className="flex-grow flex overflow-hidden w-full max-w-[1920px] mx-auto rounded-[2rem] border border-white/40 shadow-2xl backdrop-blur-xl bg-white/10">
             {/* Main Chat Interface */}
             <main className="flex-grow flex flex-col relative">
-              {/* Chat Header */}
-              <div className="px-8 py-5 border-b border-white/20 flex items-center gap-3 bg-white/20">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
-                </div>
-                <h1 className="font-headline text-lg font-bold tracking-tight text-slate-800">Discovery Phase</h1>
-              </div>
+
 
               {/* Messages Stream */}
               <div className="flex-grow overflow-y-auto p-8 space-y-8 h-[calc(100vh-320px)]">
