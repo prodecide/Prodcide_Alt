@@ -522,8 +522,6 @@ export default function Discovery() {
       // Trigger state sync event so Navbar updates immediately
       window.dispatchEvent(new Event('storage'));
       
-      // Proceed to analysis flow
-      handleInitialAnalyze();
     } catch (err) {
       setAuthError(err.message);
     } finally {
@@ -1292,28 +1290,6 @@ export default function Discovery() {
         </div>
       )}
 
-      {/* AI Analysis Initial Overlay */}
-      {isAnalyzing && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[9999] transition-all duration-300">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl border border-slate-100 flex flex-col items-center text-center space-y-6">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-2xl bg-[#003ec7]/10 flex items-center justify-center text-[#003ec7] animate-pulse">
-                <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-              </div>
-              <div className="absolute inset-0 rounded-2xl border-2 border-[#003ec7] border-t-transparent animate-spin"></div>
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-xl font-extrabold text-slate-900">Analyzing Problem Space</h3>
-              <p className="text-sm text-slate-500 max-w-xs leading-relaxed">
-                Mapping your challenges, detecting constraint vectors, and initiating strategic discovery chat...
-              </p>
-            </div>
-            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden relative">
-              <div className="bg-[#003ec7] h-full progress-bar-slide w-1/3 rounded-full absolute left-0 top-0"></div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {isRedirectingToInsights && (
         <div className="fixed inset-0 z-[99999] bg-[#0b0f19]/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-white text-center">
