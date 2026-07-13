@@ -96,6 +96,34 @@ export default function Discovery() {
   const domainDropdownRef = useRef(null);
   const chatMessagesEndRef = useRef(null);
 
+  // Sound effect refs for context engine
+  const prevSkillsRef = useRef(0);
+  const prevGapsRef = useRef(0);
+
+  // Play pop sound when new skills/gaps are added
+  useEffect(() => {
+    if (currentSkills.length > prevSkillsRef.current || criticalGaps.length > prevGapsRef.current) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); 
+        oscillator.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.1);
+      } catch (e) {
+        console.log("Audio not supported or blocked");
+      }
+      prevSkillsRef.current = currentSkills.length;
+      prevGapsRef.current = criticalGaps.length;
+    }
+  }, [currentSkills.length, criticalGaps.length]);
+
   const getFallbackResponse = (userMsgText, historyList) => {
     const userHistory = historyList.filter(m => m.sender === 'user').map(m => m.text);
     if (userMsgText && !userHistory.includes(userMsgText)) {
@@ -886,9 +914,9 @@ export default function Discovery() {
       ) : (
         /* ─── Mode 2: Chat Discovery View ─── */
         <div className="flex-grow flex overflow-hidden w-full chat-gradient-bg p-4 md:p-6 lg:p-8">
-          <div className="flex-grow flex overflow-hidden w-full max-w-[1920px] mx-auto rounded-[2rem] border border-white/40 shadow-2xl backdrop-blur-xl bg-white/30">
+          <div className="flex-grow flex overflow-hidden w-full max-w-[1920px] mx-auto rounded-[2rem] border border-white/40 shadow-2xl backdrop-blur-xl bg-white/10">
             {/* Main Chat Interface */}
-            <main className="flex-grow flex flex-col relative border-r border-white/20">
+            <main className="flex-grow flex flex-col relative">
               {/* Chat Header */}
               <div className="px-8 py-5 border-b border-white/20 flex items-center gap-3 bg-white/20">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -1012,11 +1040,11 @@ export default function Discovery() {
 
           {/* ─── Context Engine Sidebar ─── */}
           {!readyToSuggest ? (
-            <aside className="w-80 h-[calc(100vh-80px)] sticky top-0 hidden lg:flex flex-col bg-transparent">
+            <aside className="w-80 m-6 ml-0 hidden lg:flex flex-col bg-white/40 backdrop-blur-xl border border-white/40 rounded-3xl shadow-lg relative overflow-hidden">
               <div className="p-6 overflow-y-auto flex-grow space-y-8">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shadow-md">
                     <span className="material-symbols-outlined text-white text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>hub</span>
                   </div>
                   <div>
@@ -1025,63 +1053,34 @@ export default function Discovery() {
                   </div>
                 </div>
 
-                {/* Suggested Paths list */}
-                {suggestedPaths.length > 0 && (
-                  <section>
-                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Suggested Paths</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {suggestedPaths.map((path, idx) => (
-                        <div 
-                          key={idx} 
-                          onClick={() => handleSelectPath(path.title)}
-                          className="p-3 rounded-xl border border-slate-200 bg-white hover:border-primary transition-all cursor-pointer shadow-sm group"
-                        >
-                          <div className="flex flex-col gap-2">
-                            <span className="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors text-lg">
-                              {path.icon || 'explore'}
-                            </span>
-                            <span className="text-[10px] font-bold text-slate-800 leading-tight group-hover:text-primary transition-colors">
-                              {path.title}
-                            </span>
-                          </div>
+                {/* Current Skills list */}
+                {currentSkills.length > 0 && (
+                  <section key={`skills-${currentSkills.length}`} className="animate-pop-in">
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Current Skills</h3>
+                    <div className="space-y-2">
+                      {currentSkills.map((skill, idx) => (
+                        <div key={idx} className="flex items-center gap-3 p-3 bg-white/60 backdrop-blur-md rounded-xl border border-white/60 shadow-sm">
+                          <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
+                          <span className="text-xs font-semibold text-slate-700">{skill}</span>
                         </div>
                       ))}
                     </div>
                   </section>
                 )}
 
-                {/* Current Skills list */}
-                <section>
-                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Current Skills</h3>
-                  <div className="space-y-2">
-                    {currentSkills.length > 0 ? (
-                      currentSkills.map((skill, idx) => (
-                        <div key={idx} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-100">
-                          <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
-                          <span className="text-xs font-semibold text-slate-700">{skill}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-xs italic text-slate-400 pl-1">Analyzing skills...</p>
-                    )}
-                  </div>
-                </section>
-
                 {/* Critical Gaps list */}
-                <section>
-                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Critical Gaps</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {criticalGaps.length > 0 ? (
-                      criticalGaps.map((gap, idx) => (
-                        <span key={idx} className="px-2 py-1 bg-red-50 text-red-600 border border-red-100 text-[9px] font-extrabold rounded tracking-wide uppercase">
+                {criticalGaps.length > 0 && (
+                  <section key={`gaps-${criticalGaps.length}`} className="animate-pop-in">
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Critical Gaps</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {criticalGaps.map((gap, idx) => (
+                        <span key={idx} className="px-3 py-1.5 bg-red-50/80 backdrop-blur-md text-red-600 border border-red-200/50 text-[10px] font-extrabold rounded-lg tracking-wide uppercase shadow-sm">
                           {gap}
                         </span>
-                      ))
-                    ) : (
-                      <p className="text-xs italic text-slate-400 pl-1">Mapping transition gaps...</p>
-                    )}
-                  </div>
-                </section>
+                      ))}
+                    </div>
+                  </section>
+                )}
 
                 {/* Direct Action Trigger */}
                 <button 
@@ -1648,6 +1647,13 @@ export default function Discovery() {
         @keyframes cursorBlink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
+        }
+        .animate-pop-in {
+          animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+          0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
         }
       `}</style>
     </div>
