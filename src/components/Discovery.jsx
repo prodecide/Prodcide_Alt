@@ -827,7 +827,7 @@ export default function Discovery() {
   };
 
   return (
-    <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col bg-[#f7f9fb]">
+    <div className="font-body text-on-surface min-h-screen flex flex-col chat-gradient-bg">
       <Navbar />
 
       {/* ─── Mode 1: Initial Input Form ─── */}
@@ -914,7 +914,7 @@ export default function Discovery() {
         </main>
       ) : (
         /* ─── Mode 2: Chat Discovery View ─── */
-        <div className="flex-grow flex overflow-hidden w-full chat-gradient-bg p-4 md:p-6 lg:p-8">
+        <div className="flex-grow flex overflow-hidden w-full p-4 md:p-6 lg:p-8">
           <div className="flex-grow flex overflow-hidden w-full max-w-[1920px] mx-auto rounded-[2rem] border border-white/40 shadow-2xl backdrop-blur-xl bg-white/10">
             {/* Main Chat Interface */}
             <main className="flex-grow flex flex-col relative">
