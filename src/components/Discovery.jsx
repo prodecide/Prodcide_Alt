@@ -885,19 +885,20 @@ export default function Discovery() {
         </main>
       ) : (
         /* ─── Mode 2: Chat Discovery View ─── */
-        <div className="flex-grow flex overflow-hidden max-w-[1920px] mx-auto w-full">
-          {/* Main Chat Interface */}
-          <main className="flex-grow flex flex-col relative">
-            {/* Chat Header */}
-            <div className="px-8 py-5 border-b border-white/20 flex items-center gap-3 backdrop-blur-sm bg-white/30">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
+        <div className="flex-grow flex overflow-hidden w-full chat-gradient-bg p-4 md:p-6 lg:p-8">
+          <div className="flex-grow flex overflow-hidden w-full max-w-[1920px] mx-auto rounded-[2rem] border border-white/40 shadow-2xl backdrop-blur-xl bg-white/30">
+            {/* Main Chat Interface */}
+            <main className="flex-grow flex flex-col relative border-r border-white/20">
+              {/* Chat Header */}
+              <div className="px-8 py-5 border-b border-white/20 flex items-center gap-3 bg-white/20">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
+                </div>
+                <h1 className="font-headline text-lg font-bold tracking-tight text-slate-800">Discovery Phase</h1>
               </div>
-              <h1 className="font-headline text-lg font-bold tracking-tight text-slate-800">Discovery Phase</h1>
-            </div>
 
-            {/* Messages Stream */}
-            <div className="flex-grow overflow-y-auto p-8 space-y-8 h-[calc(100vh-320px)] chat-gradient-bg">
+              {/* Messages Stream */}
+              <div className="flex-grow overflow-y-auto p-8 space-y-8 h-[calc(100vh-320px)]">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
                   {msg.sender === 'ai' ? (
@@ -1011,7 +1012,7 @@ export default function Discovery() {
 
           {/* ─── Context Engine Sidebar ─── */}
           {!readyToSuggest ? (
-            <aside className="w-80 h-[calc(100vh-80px)] sticky top-0 hidden lg:flex flex-col bg-[#f2f4f6] border-l border-slate-100">
+            <aside className="w-80 h-[calc(100vh-80px)] sticky top-0 hidden lg:flex flex-col bg-transparent">
               <div className="p-6 overflow-y-auto flex-grow space-y-8">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-6">
@@ -1090,21 +1091,6 @@ export default function Discovery() {
                   <span>Generate Roadmap</span>
                   <span className="material-symbols-outlined text-sm">auto_awesome</span>
                 </button>
-              </div>
-
-              {/* Sidebar Curator Profile Info */}
-              <div className="mt-auto p-6 border-t border-slate-200">
-                <div className="flex items-center gap-4 mb-4">
-                  <img alt="AI Agent" className="w-10 h-10 rounded-full border-2 border-[#0052ff]/30 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-lvZ4zMD4SLOVyCgm7AwGzHNkK4YQLKC27eepoXwX8fd4i0KiK5cy9QEQmAFs4Ze7cLlForj_rPBd6JYY3jsjlESfFWn7-KcfS-st0sKMT-6E9Jk7NFJgxHjaabvWt7QysG5BLSju6FjNEksQqnoSzEa6frxzj-iOX5GSkD38YPMuPxiAisHN7JxjQs5JdCgdw2x25hVLFRPd1axTIYsxfF27nzgNBsgQzaEBjEuAgiErw_0utHzn-zZx1fAF4XXfWrE0g0--iM0" />
-                  <div>
-                    <p className="text-xs font-bold text-slate-800">Senior Strat-Agent</p>
-                    <p className="text-[10px] text-slate-400 italic">Refining Discovery...</p>
-                  </div>
-                </div>
-                <div className="text-[10px] text-slate-400 leading-tight">
-                  Session Context: Career Evolution v4.2<br />
-                  Data Freshness: Real-time Market Access
-                </div>
               </div>
             </aside>
           ) : (
@@ -1201,6 +1187,7 @@ export default function Discovery() {
               </div>
             </div>
           )}
+          </div>
         </div>
       )}
 
