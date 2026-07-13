@@ -15,6 +15,7 @@ export default function Navbar({ tempUser = null }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationsRef = useRef(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userPicture, setUserPicture] = useState('');
 
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [consultantData, setConsultantData] = useState(null);
@@ -22,8 +23,10 @@ export default function Navbar({ tempUser = null }) {
   useEffect(() => {
     const storedName = localStorage.getItem('discovery_verified_name');
     const storedEmail = localStorage.getItem('discovery_verified_email');
+    const storedPicture = localStorage.getItem('discovery_user_picture');
     if (storedName) setUserName(storedName);
     if (storedEmail) setUserEmail(storedEmail);
+    if (storedPicture) setUserPicture(storedPicture);
     setMobileMenuOpen(false);
 
     // Fetch real bookings if logged in as a consultant
@@ -51,6 +54,20 @@ export default function Navbar({ tempUser = null }) {
     }
   }, [location.pathname]);
 
+  // Listen for storage events (e.g. from Discovery Google auth)
+  useEffect(() => {
+    const handleStorageEvent = () => {
+      const pic = localStorage.getItem('discovery_user_picture');
+      const name = localStorage.getItem('discovery_verified_name');
+      const email = localStorage.getItem('discovery_verified_email');
+      if (pic) setUserPicture(pic);
+      if (name) setUserName(name);
+      if (email) setUserEmail(email);
+    };
+    window.addEventListener('storage', handleStorageEvent);
+    return () => window.removeEventListener('storage', handleStorageEvent);
+  }, []);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -72,10 +89,12 @@ export default function Navbar({ tempUser = null }) {
     localStorage.removeItem('discovery_user_profile');
     localStorage.removeItem('discovery_results');
     localStorage.removeItem('discovery_onboarding_context');
+    localStorage.removeItem('discovery_user_picture');
     localStorage.removeItem('consultant_user');
     localStorage.removeItem('prodecide_admin_auth');
     setUserName('');
     setUserEmail('');
+    setUserPicture('');
     setConsultantData(null);
     setIncomingRequests([]);
     setDropdownOpen(false);
@@ -223,7 +242,7 @@ export default function Navbar({ tempUser = null }) {
             >
               <img 
                 alt="User Profile" 
-                src={tempUser?.picture || consultantData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(tempUser?.name || consultantData?.name || userName || 'User')}&background=0D8ABC&color=fff`} 
+                src={tempUser?.picture || consultantData?.profileImage || userPicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(tempUser?.name || consultantData?.name || userName || 'User')}&background=0D8ABC&color=fff`} 
                 className="w-full h-full object-cover" 
               />
             </button>

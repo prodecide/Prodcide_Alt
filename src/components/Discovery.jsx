@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import { apiFetch } from '../utils/api.js';
+import { useGoogleLogin } from '@react-oauth/google';
 
 export default function Discovery() {
   const navigate = useNavigate();
@@ -31,6 +32,51 @@ export default function Discovery() {
   const [authStep, setAuthStep] = useState('email'); // 'email' or 'otp'
   const [authError, setAuthError] = useState('');
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  // Google auth state
+  const [isGoogleAuthed, setIsGoogleAuthed] = useState(false);
+  const [googlePicture, setGooglePicture] = useState(null);
+  const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
+
+  // Google login hook
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsLinkingGoogle(true);
+      try {
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        const userInfo = await userInfoRes.json();
+
+        // Auto-fill name from Google
+        if (userInfo.name) setOnboardingName(userInfo.name);
+
+        // Store auth details
+        if (userInfo.email) {
+          localStorage.setItem('discovery_verified_email', userInfo.email.toLowerCase().trim());
+        }
+        if (userInfo.name) {
+          localStorage.setItem('discovery_verified_name', userInfo.name);
+        }
+        if (userInfo.picture) {
+          setGooglePicture(userInfo.picture);
+          localStorage.setItem('discovery_user_picture', userInfo.picture);
+        }
+
+        setIsAuthenticated(true);
+        setIsGoogleAuthed(true);
+
+        // Trigger Navbar update
+        window.dispatchEvent(new Event('storage'));
+      } catch (err) {
+        console.error('Google login failed', err);
+        alert('Failed to pull Google account details.');
+      } finally {
+        setIsLinkingGoogle(false);
+      }
+    },
+    onError: (error) => console.log('Google Login Failed:', error)
+  });
 
   // Onboarding fields state
   const [onboardingName, setOnboardingName] = useState('');
@@ -1165,38 +1211,60 @@ export default function Discovery() {
                 type="button"
                 onClick={() => {
                   const saved = localStorage.getItem('discovery_onboarding_context');
-                  if (saved) {
-                    setShowContextModal(false);
-                  } else {
-                    // Set default context if skipped
-                    setOnboardingName('Anonymous');
-                    setOnboardingAge('22');
-                    setOnboardingClass('Grad');
-                    setOnboardingSubject('General');
-                    setOnboardingJob('Professional');
-                    setOnboardingEducation('Graduate');
-                    localStorage.setItem('discovery_onboarding_context', JSON.stringify({
-                      name: 'Anonymous',
-                      age: '22',
-                      class: 'Grad',
-                      subject: 'General',
-                      job: 'Professional',
-                      education: 'Graduate'
-                    }));
+                  if (saved && isGoogleAuthed) {
                     setShowContextModal(false);
                   }
                 }} 
-                className="text-slate-400 hover:text-slate-600 border-none bg-transparent cursor-pointer"
+                className={`border-none bg-transparent cursor-pointer ${isGoogleAuthed ? 'text-slate-400 hover:text-slate-600' : 'text-slate-200 cursor-not-allowed'}`}
+                disabled={!isGoogleAuthed}
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             
             <p className="text-xs text-slate-500 leading-relaxed font-medium">
-              We customize the decision mapping system based on your current academic or professional context.
+              Sign in with Google and customize the decision mapping system based on your current academic or professional context.
             </p>
 
-            <div className="space-y-5">
+            {/* Google Sign-In Button */}
+            {!isGoogleAuthed ? (
+              <button
+                type="button"
+                onClick={() => googleLogin()}
+                disabled={isLinkingGoogle}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3.5 bg-white border-2 border-slate-200 hover:border-[#4285F4] rounded-xl text-sm font-bold text-slate-700 hover:text-[#4285F4] transition-all shadow-sm hover:shadow-md active:scale-[0.98] cursor-pointer disabled:opacity-50"
+              >
+                {isLinkingGoogle ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-slate-300 border-t-[#4285F4] rounded-full animate-spin"></div>
+                    <span>Connecting Google...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    <span>Continue with Google</span>
+                  </>
+                )}
+              </button>
+            ) : (
+              <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                {googlePicture && (
+                  <img src={googlePicture} alt="Google" className="w-8 h-8 rounded-full border border-emerald-300" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-emerald-800 truncate">{onboardingName || 'Signed in'}</p>
+                  <p className="text-[10px] text-emerald-600 truncate">{localStorage.getItem('discovery_verified_email')}</p>
+                </div>
+                <span className="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
+              </div>
+            )}
+
+            <div className={`space-y-5 ${!isGoogleAuthed ? 'opacity-40 pointer-events-none' : ''}`}>
               {/* Domain Dropdown */}
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Select Domain / Flow</label>
@@ -1240,8 +1308,8 @@ export default function Discovery() {
                     type="text" 
                     value={onboardingName} 
                     onChange={(e) => setOnboardingName(e.target.value)}
-                    placeholder="Bobby"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
+                    readOnly={isGoogleAuthed}
+                    className={`w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none ${isGoogleAuthed ? 'bg-slate-100 cursor-not-allowed' : ''}`}
                   />
                 </div>
                 <div>
@@ -1250,7 +1318,6 @@ export default function Discovery() {
                     type="number" 
                     value={onboardingAge} 
                     onChange={(e) => onboardingAge >= 0 ? setOnboardingAge(e.target.value) : null}
-                    placeholder="25"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
                   />
                 </div>
@@ -1260,7 +1327,7 @@ export default function Discovery() {
               {selectedDomain === 'Career Path Selection' && (
                 <div className="grid grid-cols-2 gap-4 animate-fade-in animate-duration-200">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Current Class</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Qualification</label>
                     <select 
                       value={onboardingClass} 
                       onChange={(e) => setOnboardingClass(e.target.value)}
@@ -1279,7 +1346,6 @@ export default function Discovery() {
                       type="text" 
                       value={onboardingSubject} 
                       onChange={(e) => setOnboardingSubject(e.target.value)}
-                      placeholder="e.g. Science, CS"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
                     />
                   </div>
@@ -1295,7 +1361,6 @@ export default function Discovery() {
                       type="text" 
                       value={onboardingJob} 
                       onChange={(e) => setOnboardingJob(e.target.value)}
-                      placeholder="e.g. Analyst"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
                     />
                   </div>
@@ -1305,7 +1370,6 @@ export default function Discovery() {
                       type="text" 
                       value={onboardingEducation} 
                       onChange={(e) => setOnboardingEducation(e.target.value)}
-                      placeholder="e.g. B.Tech CS, MBA"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-semibold focus:ring-2 focus:ring-[#0052FF] outline-none"
                     />
                   </div>
@@ -1315,6 +1379,7 @@ export default function Discovery() {
 
             <button 
               type="button"
+              disabled={!isGoogleAuthed}
               onClick={() => {
                 if (!onboardingName.trim()) {
                   alert("Please fill in your name.");
@@ -1331,10 +1396,19 @@ export default function Discovery() {
                 }));
                 setShowContextModal(false);
               }}
-              className="w-full bg-primary hover:bg-[#003ec7] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-none shadow-md cursor-pointer active:scale-95"
+              className={`w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-none shadow-md cursor-pointer active:scale-95 ${isGoogleAuthed ? 'bg-primary hover:bg-[#003ec7] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
             >
-              <span>Confirm & Start Discovery</span>
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              {!isGoogleAuthed ? (
+                <>
+                  <span className="material-symbols-outlined text-sm">lock</span>
+                  <span>Sign in with Google to continue</span>
+                </>
+              ) : (
+                <>
+                  <span>Confirm & Start Discovery</span>
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </>
+              )}
             </button>
           </div>
         </div>

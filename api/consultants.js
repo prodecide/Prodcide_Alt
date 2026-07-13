@@ -41,7 +41,7 @@ export default async function handler(req, res) {
             let cursor = consultants.find(query);
             if (showAll) {
                 // Admin view: strip PII and large nested detail fields
-                cursor = cursor.project({ email: 0, phone: 0, linkedin: 0, experienceDetails: 0 });
+                cursor = cursor.project({ email: 0, phone: 0, linkedin: 0 });
             } else {
                 // Public view: whitelist-only safe fields, strip all PII
                 cursor = cursor.project({
@@ -55,7 +55,9 @@ export default async function handler(req, res) {
                     experience: 1,
                     role: 1,
                     organization: 1,
-                    profileImage: 1
+                    profileImage: 1,
+                    experienceDetails: 1,
+                    educationDetails: 1
                 });
             }
             
