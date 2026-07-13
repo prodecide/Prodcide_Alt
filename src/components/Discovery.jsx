@@ -34,7 +34,9 @@ export default function Discovery() {
   const [isAuthLoading, setIsAuthLoading] = useState(false);
 
   // Google auth state
-  const [isGoogleAuthed, setIsGoogleAuthed] = useState(false);
+  const [isGoogleAuthed, setIsGoogleAuthed] = useState(
+    !!localStorage.getItem('discovery_verified_email')
+  );
   const [googlePicture, setGooglePicture] = useState(null);
   const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
 
@@ -623,7 +625,7 @@ export default function Discovery() {
     const savedContextStr = localStorage.getItem('discovery_onboarding_context');
     const email = localStorage.getItem('discovery_verified_email');
     
-    if (savedContextStr) {
+    if (savedContextStr && email) {
       try {
         const savedContext = JSON.parse(savedContextStr);
         setOnboardingName(savedContext.name || '');
@@ -643,9 +645,8 @@ export default function Discovery() {
       setChallengeText(savedChallenge);
       setIsAuthenticated(true);
       
-      // Clean up keys
+      // Clean up challenge text only
       localStorage.removeItem('discovery_challenge_text');
-      localStorage.removeItem('discovery_onboarding_context');
       
       // Auto-trigger analysis
       setTimeout(() => {
