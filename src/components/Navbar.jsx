@@ -114,7 +114,7 @@ export default function Navbar({ tempUser = null }) {
   const isAnyUserLoggedIn = !!tempUser || !!userName || !!userEmail || !!consultantData || isAdminLoggedIn;
 
   return (
-    <header className="sticky top-0 w-full z-50 bg-[#f7f9fb]/90 dark:bg-[#191c1e]/90 backdrop-blur-md border-b border-slate-200/40 shadow-sm">
+    <header className={`sticky top-0 w-full z-50 transition-all duration-300 ${pathname === '/discovery' ? 'bg-transparent border-none' : 'bg-[#f7f9fb]/90 dark:bg-[#191c1e]/90 backdrop-blur-md border-b border-slate-200/40 shadow-sm'}`}>
       <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
         <div className="flex items-center gap-8">
           <Link className="text-xl font-black text-[#0052FF] tracking-tighter font-headline" to="/">ProDecide</Link>
