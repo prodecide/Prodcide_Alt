@@ -887,34 +887,34 @@ export default function Discovery() {
         /* ─── Mode 2: Chat Discovery View ─── */
         <div className="flex-grow flex overflow-hidden max-w-[1920px] mx-auto w-full">
           {/* Main Chat Interface */}
-          <main className="flex-grow flex flex-col relative bg-white border-r border-slate-100">
+          <main className="flex-grow flex flex-col relative">
             {/* Chat Header */}
-            <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <h1 className="font-headline text-2xl font-bold tracking-tight text-slate-900">AI Discovery Phase</h1>
-                <p className="text-sm text-slate-500 font-medium">Navigating complex career transitions with deep intelligence.</p>
+            <div className="px-8 py-5 border-b border-white/20 flex items-center gap-3 backdrop-blur-sm bg-white/30">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
               </div>
-              <div className="flex items-center gap-3">
-                {/* Session Message Limit Indicator */}
-                <span className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border ${messages.length >= 8 ? 'bg-red-50 text-red-600 border-red-100' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
-                  SESSION QUOTA: {messages.length}/8 MESSAGES
-                </span>
-                <span className="px-3 py-1 bg-blue-50 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest border border-blue-100">Active Insight</span>
-              </div>
+              <h1 className="font-headline text-lg font-bold tracking-tight text-slate-800">Discovery Phase</h1>
             </div>
 
             {/* Messages Stream */}
-            <div className="flex-grow overflow-y-auto p-8 space-y-8 h-[calc(100vh-320px)]">
+            <div className="flex-grow overflow-y-auto p-8 space-y-8 h-[calc(100vh-320px)] chat-gradient-bg">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
                   {msg.sender === 'ai' ? (
                     <div className="flex items-start gap-4 max-w-3xl">
-                      <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center shrink-0 shadow-sm">
-                        <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                      {/* Animated Waveform Avatar */}
+                      <div className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shrink-0 shadow-sm border border-white/40">
+                        <div className="waveform-container">
+                          <div className="waveform-bar"></div>
+                          <div className="waveform-bar"></div>
+                          <div className="waveform-bar"></div>
+                          <div className="waveform-bar"></div>
+                          <div className="waveform-bar"></div>
+                        </div>
                       </div>
                       <div className="flex flex-col gap-2">
-                        <div className="bg-[#f2f4f6] p-6 rounded-2xl rounded-tl-none border border-slate-200/40 shadow-sm">
-                          <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                        <div className="bg-white/70 backdrop-blur-md p-6 rounded-2xl rounded-tl-none border border-white/40 shadow-sm">
+                          <TypewriterText text={msg.text} isLatest={i === messages.length - 1} />
                         </div>
                         {i === messages.length - 1 && msg.options && msg.options.length > 0 && !isAITyping && (
                           <div className="flex flex-wrap gap-2 mt-1 ml-1 animate-fade-in">
@@ -946,15 +946,21 @@ export default function Discovery() {
               {/* Typing Indicator */}
               {isAITyping && (
                 <div className="flex items-start gap-4 max-w-3xl mb-8">
-                  <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center shrink-0 shadow-sm">
-                    <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                  <div className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shrink-0 shadow-sm border border-white/40">
+                    <div className="waveform-container">
+                      <div className="waveform-bar"></div>
+                      <div className="waveform-bar"></div>
+                      <div className="waveform-bar"></div>
+                      <div className="waveform-bar"></div>
+                      <div className="waveform-bar"></div>
+                    </div>
                   </div>
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 px-4 py-3 bg-[#f2f4f6] rounded-2xl rounded-tl-none">
+                    <div className="flex items-center gap-2 px-4 py-3 bg-white/70 backdrop-blur-md rounded-2xl rounded-tl-none border border-white/40">
                       <div className="typing-dot"></div>
                       <div className="typing-dot"></div>
                       <div className="typing-dot"></div>
-                      <span className="text-xs italic text-primary ml-2">Mapping technical skill gaps...</span>
+                      <span className="text-xs italic text-primary ml-2">Analyzing...</span>
                     </div>
                   </div>
                 </div>
@@ -963,7 +969,7 @@ export default function Discovery() {
             </div>
 
             {/* Input Area */}
-            <div className="p-8 border-t border-slate-100 bg-white">
+            <div className="p-8 border-t border-white/30 bg-white/40 backdrop-blur-sm">
               <div className="max-w-4xl mx-auto">
                 <div className="relative group">
                   <textarea 
@@ -1604,8 +1610,98 @@ export default function Discovery() {
           0%, 80%, 100% { transform: scale(0); }
           40% { transform: scale(1.0); }
         }
+        /* Gradient chat background */
+        .chat-gradient-bg {
+          background: linear-gradient(135deg, 
+            #e8eaf6 0%, 
+            #f3e5f5 25%, 
+            #e3f2fd 50%, 
+            #fce4ec 75%, 
+            #e8eaf6 100%);
+          background-size: 400% 400%;
+          animation: gradientShift 15s ease infinite;
+        }
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        /* Animated waveform bars */
+        .waveform-container {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+          height: 18px;
+        }
+        .waveform-bar {
+          width: 3px;
+          background-color: #6b7280;
+          border-radius: 2px;
+          animation: waveform 1.2s ease-in-out infinite;
+        }
+        .waveform-bar:nth-child(1) { animation-delay: 0s; height: 8px; }
+        .waveform-bar:nth-child(2) { animation-delay: 0.15s; height: 14px; }
+        .waveform-bar:nth-child(3) { animation-delay: 0.3s; height: 18px; }
+        .waveform-bar:nth-child(4) { animation-delay: 0.45s; height: 12px; }
+        .waveform-bar:nth-child(5) { animation-delay: 0.6s; height: 6px; }
+        @keyframes waveform {
+          0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+          50% { transform: scaleY(1); opacity: 1; }
+        }
+        /* Typewriter cursor blink */
+        .typewriter-cursor {
+          display: inline-block;
+          width: 2px;
+          height: 1em;
+          background-color: #003ec7;
+          margin-left: 2px;
+          animation: cursorBlink 0.7s step-end infinite;
+          vertical-align: text-bottom;
+        }
+        @keyframes cursorBlink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
       `}</style>
     </div>
+  );
+}
+
+// ─── Typewriter Text Effect for AI Messages ───
+function TypewriterText({ text, isLatest }) {
+  const [displayedText, setDisplayedText] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+
+  useEffect(() => {
+    if (!isLatest) {
+      setDisplayedText(text);
+      setIsComplete(true);
+      return;
+    }
+
+    setDisplayedText('');
+    setIsComplete(false);
+    let index = 0;
+    const speed = 15; // ms per character
+
+    const interval = setInterval(() => {
+      if (index < text.length) {
+        setDisplayedText(text.slice(0, index + 1));
+        index++;
+      } else {
+        setIsComplete(true);
+        clearInterval(interval);
+      }
+    }, speed);
+
+    return () => clearInterval(interval);
+  }, [text, isLatest]);
+
+  return (
+    <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
+      {displayedText}
+      {isLatest && !isComplete && <span className="typewriter-cursor" />}
+    </p>
   );
 }
 
