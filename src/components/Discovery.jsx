@@ -8,15 +8,19 @@ export default function Discovery() {
   const navigate = useNavigate();
   
   // Form view states
-  const [challengeText, setChallengeText] = useState('');
   const [selectedDomain, setSelectedDomain] = useState('Career Path Selection');
   const [isDomainOpen, setIsDomainOpen] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showContextModal, setShowContextModal] = useState(false);
   
-  // Chat transition states
-  const [mode, setMode] = useState('input'); // 'input' or 'chat'
-  const [messages, setMessages] = useState([]);
+  // Chat states
+  const [messages, setMessages] = useState([
+    {
+      sender: 'ai',
+      text: "Hello! Tell me about the challenge you're facing. What is the core decision you need to make? Be as specific as possible—I'll help you structure the variables and evaluate the outcomes.",
+      options: ["Help me decide between Option A and Option B considering I want to be employed in 2 years"],
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+  ]);
   const [inputValue, setInputValue] = useState('');
   const [isAITyping, setIsAITyping] = useState(false);
   const [limitExceeded, setLimitExceeded] = useState(false);
@@ -527,101 +531,8 @@ export default function Discovery() {
     }
   };
 
-  const handleAnalyzeClick = () => {
-    if (!challengeText.trim()) {
-      alert("Please describe your challenge before analyzing.");
-      return;
-    }
-    // Save onboarding form data and challenge to localStorage for state recovery
-    localStorage.setItem('discovery_challenge_text', challengeText);
-    localStorage.setItem('discovery_onboarding_context', JSON.stringify({
-      name: onboardingName,
-      age: onboardingAge,
-      class: onboardingClass,
-      subject: onboardingSubject,
-      job: onboardingJob,
-      education: onboardingEducation
-    }));
-    handleInitialAnalyze();
-  };
-
-  const handleInitialAnalyze = async () => {
-    setIsAnalyzing(true);
-    
-    // Simulate analyzing overlay for 1.8 seconds before opening the chat
-    setTimeout(async () => {
-      setIsAnalyzing(false);
-      setMode('chat');
-      
-      const initialUserMsg = {
-        sender: 'user',
-        text: challengeText,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      setMessages([initialUserMsg]);
-      setIsAITyping(true);
-
-      try {
-        const response = await apiFetch('/api/discovery-chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            messages: [initialUserMsg],
-            selectedDomain: selectedDomain,
-            onboardingContext: {
-              name: onboardingName,
-              age: onboardingAge,
-              class: onboardingClass,
-              subject: onboardingSubject,
-              job: onboardingJob,
-              education: onboardingEducation
-            }
-          })
-        });
-
-        if (!response.ok) throw new Error("Failed to initialize discovery agent");
-        const data = await response.json();
-        
-        // Only update accumulated results if API returns non-empty data
-        if (data.criticalGaps && data.criticalGaps.length > 0) setCriticalGaps(data.criticalGaps);
-        if (data.currentSkills && data.currentSkills.length > 0) setCurrentSkills(data.currentSkills);
-        if (data.suggestedPaths && data.suggestedPaths.length > 0) setSuggestedPaths(data.suggestedPaths);
-        if (data.readyToSuggest) setReadyToSuggest(true);
-        if (data.limitExceeded) setLimitExceeded(true);
-
-        setMessages(prev => [
-          ...prev,
-          {
-            sender: 'ai',
-            text: data.text,
-            options: data.options || [],
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      } catch (err) {
-        console.error("Discovery error:", err);
-        const fallback = getFallbackResponse("", []);
-        setMessages(prev => [
-          ...prev,
-          {
-            sender: 'ai',
-            text: fallback.text,
-            options: fallback.options,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      } finally {
-        setIsAITyping(false);
-      }
-    }, 1800);
-  };
-
   // Handle return redirect from Dashboard authentication & load context on mount
   useEffect(() => {
-    const savedChallenge = localStorage.getItem('discovery_challenge_text');
     const savedContextStr = localStorage.getItem('discovery_onboarding_context');
     const email = localStorage.getItem('discovery_verified_email');
     
@@ -640,19 +551,9 @@ export default function Discovery() {
     } else {
       setShowContextModal(true);
     }
-
-    if (savedChallenge && email) {
-      setChallengeText(savedChallenge);
-      setIsAuthenticated(true);
-      
-      // Clean up challenge text only
-      localStorage.removeItem('discovery_challenge_text');
-      
-      // Auto-trigger analysis
-      setTimeout(() => {
-        handleInitialAnalyze();
-      }, 500);
-    }
+    
+    // Clean up challenge text only
+    localStorage.removeItem('discovery_challenge_text');
   }, []);
 
   const handleSendMessage = async () => {
@@ -817,104 +718,16 @@ export default function Discovery() {
     }
   };
 
-  const handleSuggestionClick = () => {
-    setChallengeText("Help me decide between Option A and Option B considering I want to be employed in 2 years");
-  };
-
   // Navigates directly to matching experts based on the selected career path
   const handleSelectPath = (pathTitle) => {
-    navigate('/experts', { state: { challenge: challengeText, domain: selectedDomain, selectedPath: pathTitle } });
+    navigate('/experts', { state: { domain: selectedDomain, selectedPath: pathTitle } });
   };
 
   return (
     <div className="font-body text-on-surface min-h-screen flex flex-col chat-gradient-bg">
       <Navbar />
 
-      {/* ─── Mode 1: Initial Input Form ─── */}
-      {mode === 'input' ? (
-        <main className="max-w-3xl mx-auto px-6 py-12 flex flex-col gap-10 flex-grow w-full">
-          {/* Context Preview Bar */}
-          <div className="bg-blue-50/50 border border-blue-200/50 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 animate-fade-in">
-            <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
-              <div>
-                <p className="text-xs font-bold text-slate-800">
-                  Target: {selectedDomain}
-                </p>
-                <p className="text-[11px] text-slate-500 font-medium">
-                  {onboardingName || 'Anonymous'} ({onboardingAge || 'N/A'} yrs) • {selectedDomain === 'Career Path Selection' ? `${onboardingClass || 'N/A'} in ${onboardingSubject || 'N/A'}` : `${onboardingJob || 'N/A'} (Degree: ${onboardingEducation || 'N/A'})`}
-                </p>
-              </div>
-            </div>
-            <button 
-              type="button"
-              onClick={() => setShowContextModal(true)}
-              className="px-4 py-2 bg-white border border-slate-200 hover:border-[#0052FF]/30 text-xs font-bold rounded-xl text-slate-700 hover:text-primary transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
-            >
-              <span className="material-symbols-outlined text-sm">tune</span>
-              Edit Profile details
-            </button>
-          </div>
-
-          {/* AI Avatar & Welcome */}
-          <div className="flex flex-col gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#003ec7] to-[#0052ff] flex items-center justify-center shadow-lg">
-              <span className="material-symbols-outlined text-white text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-            </div>
-            <div>
-              <h1 className="font-headline text-3xl font-extrabold tracking-tight text-slate-900 mb-3">
-                Tell me about the challenge you're facing.
-              </h1>
-              <p className="text-body-lg text-slate-500 leading-relaxed font-medium">
-                What is the core decision you need to make? Be as specific as possible—I'll help you structure the variables and evaluate the outcomes.
-              </p>
-            </div>
-          </div>
-
-          {/* Input Field Area */}
-          <div className="relative group">
-            <div className="bg-white rounded-2xl p-2.5 shadow-sm border border-slate-200 focus-within:ring-2 focus-within:ring-[#003ec7] transition-all">
-              <textarea 
-                value={challengeText}
-                onChange={(e) => setChallengeText(e.target.value)}
-                className="w-full bg-transparent border-none focus:ring-0 text-slate-800 p-4 text-base placeholder:text-slate-400 resize-none font-body outline-none" 
-                placeholder="e.g., I'm deciding between two career paths: staying in my current specialized role or pivoting to a management position. Help me evaluate the long-term impact on my goals." 
-                rows="5"
-              />
-              <div className="flex justify-between items-center px-4 py-3 bg-[#f2f4f6] rounded-xl">
-                <div className="flex gap-2"></div>
-                <button 
-                  type="button"
-                  onClick={handleAnalyzeClick}
-                  className="bg-[#0052FF] hover:bg-[#003ec7] text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all border-none cursor-pointer shadow-md shadow-blue-500/10"
-                >
-                  <span>Analyze Problem</span>
-                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Prompt Suggestion */}
-            <div 
-              onClick={handleSuggestionClick}
-              className="mt-8 bg-blue-50/70 border border-blue-200/50 hover:bg-blue-50 backdrop-blur-md rounded-2xl p-6 relative overflow-hidden cursor-pointer group/suggestion transition-all"
-            >
-              <div className="flex gap-4 items-start relative z-10">
-                <span className="material-symbols-outlined text-[#003ec7] transition-transform group-hover/suggestion:scale-110" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
-                <div>
-                  <h4 className="font-headline text-xs font-bold text-slate-800 tracking-wider uppercase mb-1">PROMPT SUGGESTION</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed group-hover/suggestion:text-[#003ec7] transition-colors">
-                    "Help me decide between Option A and Option B considering I want to be employed in 2 years"
-                  </p>
-                </div>
-              </div>
-              <div className="absolute -right-12 -top-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
-            </div>
-          </div>
-        </main>
-      ) : (
-        /* ─── Mode 2: Chat Discovery View ─── */
-        <div className="flex-grow flex overflow-hidden w-full p-4 md:p-6 lg:p-8">
+      <div className="flex-grow flex overflow-hidden w-full p-4 md:p-6 lg:p-8">
           <div className="flex-grow flex overflow-hidden w-full max-w-[1920px] mx-auto rounded-[2rem] border border-white/40 shadow-2xl backdrop-blur-xl bg-white/10">
             {/* Main Chat Interface */}
             <main className="flex-grow flex flex-col relative">
