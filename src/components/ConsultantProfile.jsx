@@ -215,7 +215,7 @@ export default function ConsultantProfile() {
     );
   }
 
-  const defaultAvatar = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop';
+  const defaultAvatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
   const expertiseList = Array.isArray(consultant.expertise) 
     ? consultant.expertise 
     : (consultant.expertise ? consultant.expertise.split(',').map(s => s.trim()) : []);

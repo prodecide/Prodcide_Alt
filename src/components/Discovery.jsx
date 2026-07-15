@@ -1007,13 +1007,10 @@ export default function Discovery() {
               <button 
                 type="button"
                 onClick={() => {
-                  const saved = localStorage.getItem('discovery_onboarding_context');
-                  if (saved && isGoogleAuthed) {
-                    setShowContextModal(false);
-                  }
+                  setShowContextModal(false);
+                  navigate('/');
                 }} 
-                className={`border-none bg-transparent cursor-pointer ${isGoogleAuthed ? 'text-slate-400 hover:text-slate-600' : 'text-slate-200 cursor-not-allowed'}`}
-                disabled={!isGoogleAuthed}
+                className="border-none bg-transparent cursor-pointer text-slate-400 hover:text-slate-600"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>

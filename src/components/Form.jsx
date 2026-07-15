@@ -60,7 +60,7 @@ function PaymentModal({ consultant, date, slot, clientName, clientEmail, onPay, 
           <div className="flex items-center justify-between bg-white/10 rounded-2xl px-4 py-3">
             <div className="flex items-center gap-3">
               <img
-                src={consultant?.profileImage || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'}
+                src={consultant?.profileImage || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}
                 className="w-10 h-10 rounded-xl object-cover ring-2 ring-white/30" alt=""
               />
               <div>
@@ -421,7 +421,7 @@ export default function Form() {
 
                 <div className="flex items-center gap-4">
                   <img
-                    src={bookingDetails.consultant.profileImage || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'}
+                    src={bookingDetails.consultant.profileImage || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}
                     className="w-14 h-14 rounded-xl object-cover"
                     alt={bookingDetails.consultant.fullName}
                   />
@@ -521,7 +521,7 @@ export default function Form() {
                   <div className="flex flex-col items-center text-center pb-6 border-b border-slate-100">
                     <div className="w-24 h-24 rounded-2xl overflow-hidden bg-slate-100 mb-4 shadow-md">
                       <img
-                        src={selectedConsultant.profileImage || selectedConsultant.imageUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop'}
+                        src={selectedConsultant.profileImage || selectedConsultant.imageUrl || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}
                         alt={selectedConsultant.fullName || selectedConsultant.name}
                         className="w-full h-full object-cover"
                       />

@@ -524,7 +524,7 @@ export default function ConsultantDashboard() {
             <div className="text-center pb-6 border-b border-slate-100">
               <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 mx-auto mb-4 shadow-sm">
                 <img 
-                  src={user.profileImage || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop'} 
+                  src={user.profileImage || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} 
                   alt={user.fullName} 
                   className="w-full h-full object-cover" 
                 />
@@ -664,7 +664,7 @@ export default function ConsultantDashboard() {
               <div className="flex flex-col items-center text-center pb-6 border-b border-slate-100">
                 <div className="w-24 h-24 rounded-2xl overflow-hidden bg-slate-100 mb-4 shadow-md">
                   <img 
-                    src={user.profileImage || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop'} 
+                    src={user.profileImage || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} 
                     alt={user.fullName} 
                     className="w-full h-full object-cover" 
                   />

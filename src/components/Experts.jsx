@@ -374,7 +374,7 @@ export default function Experts() {
               <div key={c._id} className="group bg-white rounded-3xl p-6 border border-outline-variant/10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <div className="flex items-start gap-4 mb-6">
                   <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0 shadow-inner">
-                    <img src={c.profileImage || c.imageUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop'} alt={c.fullName || c.name} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all" />
+                    <img src={c.profileImage || c.imageUrl || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'} alt={c.fullName || c.name} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
