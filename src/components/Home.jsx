@@ -1,9 +1,31 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
 
 export default function Home() {
   const frameworkRef = useRef(null);
+  const cardRef = useRef(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    const card = cardRef.current;
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left - width / 2;
+    const mouseY = e.clientY - rect.top - height / 2;
+    
+    // Smoothly calculate rotation angles (max 15 degrees)
+    const rX = -(mouseY / height) * 15;
+    const rY = (mouseX / width) * 15;
+    setTilt({ x: rX, y: rY });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 });
+  };
+
   return (
     <div className="bg-surface font-body text-on-surface antialiased">
       <Navbar />
@@ -37,28 +59,48 @@ export default function Home() {
                 </button>
               </div>
             </div>
-            <div className="flex-1 relative w-full">
-              {/* Abstract "Intelligence" Visual */}
-              <div className="relative group">
-                <div className="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-transparent blur-3xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
-                <div className="relative bg-white border border-slate-200 p-2 rounded-2xl shadow-2xl overflow-hidden">
-                  <img className="rounded-xl w-full aspect-[4/3] object-cover grayscale hover:grayscale-0 transition-all duration-1000" alt="Abstract 3D architectural intelligence structure" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZdLfr0vK_PXrmB9AE5OHi2BLCmq3_wZ6zHI_BoHPqmJnZ17J_u2hpA7314m2jCDho1pRCr_S-1XFHGZx0SphrxM-MBYcxtFeL1s7FjZehCBjzJWqrIxE0dSJ7nEWKdj2VG64wyMjJQuNoRjdRRQvHCoJ9cEyWWnrmeKOYHdUosn_L1mSySgAIiKckeIA04Fn9zi0HEj0pCvKnchnXOPk_szxQfLu2xEONPf-37P9voCncd11Sg8vBGvEwUQkoMZQQa5cR5okY4R0" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent"></div>
-                  {/* Floating Insight Card */}
-                  <div className="absolute bottom-8 left-8 right-8 glass-effect p-6 rounded-xl shadow-xl animate-float">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-1.5 bg-primary rounded-md">
-                        <span className="material-symbols-outlined text-white text-lg">psychology</span>
-                      </div>
-                      <span className="font-headline font-bold text-sm tracking-tight text-slate-900">Active Synthesis</span>
+            <div className="flex-1 relative w-full flex justify-center">
+              {/* Interactive 3D Perspective Video Showcase */}
+              <div 
+                ref={cardRef}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                style={{
+                  transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(1.02, 1.02, 1.02)`,
+                  transition: 'transform 0.1s ease-out',
+                  transformStyle: 'preserve-3d'
+                }}
+                className="relative group w-full max-w-lg bg-white/20 backdrop-blur-xl border border-white/40 p-3 rounded-2xl shadow-2xl overflow-hidden"
+              >
+                <div className="absolute -inset-4 bg-gradient-to-tr from-primary/30 to-transparent blur-3xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                
+                {/* 3D Glassmorphic Frame containing the Video */}
+                <div style={{ transform: 'translateZ(20px)' }} className="relative rounded-xl overflow-hidden aspect-[4/3] bg-black/90">
+                  <video 
+                    className="w-full h-full object-cover"
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline
+                  >
+                    <source src="/Video.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none"></div>
+                </div>
+
+                {/* Floating 3D Insight Card */}
+                <div 
+                  style={{ transform: 'translateZ(40px)' }} 
+                  className="absolute bottom-8 left-8 right-8 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md p-5 rounded-xl shadow-xl border border-white/50 animate-float"
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="p-1.5 bg-primary rounded-md flex items-center justify-center">
+                      <span className="material-symbols-outlined text-white text-sm">play_circle</span>
                     </div>
-                    <div className="space-y-2">
-                      <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary w-[88%] animate-pulse"></div>
-                      </div>
-                      <p className="text-[11px] text-slate-600 font-medium">Risk Mitigation Strategy: 88% structural integrity verified.</p>
-                    </div>
+                    <span className="font-headline font-bold text-xs tracking-tight text-slate-800 dark:text-white">Product Overview</span>
                   </div>
+                  <p className="text-[10px] text-slate-600 dark:text-slate-300 font-medium">Hover over the frame to explore the platform in 3D perspective.</p>
                 </div>
               </div>
             </div>
