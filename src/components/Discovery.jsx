@@ -25,6 +25,12 @@ export default function Discovery() {
   const [isAITyping, setIsAITyping] = useState(false);
   const [limitExceeded, setLimitExceeded] = useState(false);
   
+  // Audio state
+  const [isListening, setIsListening] = useState(false);
+  const [speakingMsgIndex, setSpeakingMsgIndex] = useState(null);
+  const recognitionRef = useRef(null);
+  const speechUtteranceRef = useRef(null);
+  
   // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!localStorage.getItem('discovery_verified_email')
@@ -129,6 +135,82 @@ export default function Discovery() {
       prevGapsRef.current = criticalGaps.length;
     }
   }, [currentSkills.length, criticalGaps.length]);
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = false;
+      rec.lang = 'en-US';
+
+      rec.onstart = () => {
+        setIsListening(true);
+      };
+
+      rec.onresult = (event) => {
+        const transcript = event.results[event.results.length - 1][0].transcript;
+        setInputValue(prev => prev + (prev ? ' ' : '') + transcript);
+      };
+
+      rec.onerror = (event) => {
+        console.error('Speech recognition error', event);
+        setIsListening(false);
+      };
+
+      rec.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = rec;
+    }
+
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const toggleSpeechRecognition = () => {
+    if (!recognitionRef.current) {
+      alert("Speech recognition is not supported in this browser. Please try Chrome or Safari.");
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+    }
+  };
+
+  const toggleSpeakText = (text, index) => {
+    if (!('speechSynthesis' in window)) {
+      alert("Text-to-speech is not supported in this browser.");
+      return;
+    }
+
+    if (speakingMsgIndex === index) {
+      window.speechSynthesis.cancel();
+      setSpeakingMsgIndex(null);
+    } else {
+      window.speechSynthesis.cancel();
+      // Strip markdown/html if any from text for better TTS reading
+      const cleanText = text.replace(/[*_`#\-]/g, '');
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.onend = () => {
+        setSpeakingMsgIndex(null);
+      };
+      utterance.onerror = () => {
+        setSpeakingMsgIndex(null);
+      };
+      setSpeakingMsgIndex(index);
+      speechUtteranceRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
   const getFallbackResponse = (userMsgText, historyList) => {
     const userHistory = historyList.filter(m => m.sender === 'user').map(m => m.text);
@@ -557,6 +639,15 @@ export default function Discovery() {
   const handleSendMessage = async () => {
     if (!inputValue.trim() || limitExceeded) return;
 
+    // Stop speaking/listening when sending message
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setSpeakingMsgIndex(null);
+    }
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+
     const userMsg = {
       sender: 'user',
       text: inputValue,
@@ -631,6 +722,15 @@ export default function Discovery() {
 
   const handleOptionClick = async (optionText) => {
     if (isAITyping || limitExceeded) return;
+
+    // Stop speaking/listening when selecting an option
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setSpeakingMsgIndex(null);
+    }
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
 
     const userMsg = {
       sender: 'user',
@@ -757,14 +857,26 @@ export default function Discovery() {
                               <button
                                 key={oIdx}
                                 onClick={() => handleOptionClick(opt)}
-                                className="bg-[#0052FF] text-white hover:bg-[#003ec7] px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 border-none"
+                                className="bg-[#0052FF] text-white hover:bg-[#003ec7] px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 border-none animate-fade-in"
                               >
                                 {opt}
                               </button>
                             ))}
                           </div>
                         )}
-                        <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest ml-2">{msg.time || 'AI Agent'}</span>
+                        <div className="flex items-center gap-2 mt-1 ml-2">
+                          <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">{msg.time || 'AI Agent'}</span>
+                          <button
+                            onClick={() => toggleSpeakText(msg.text, i)}
+                            type="button"
+                            className="p-1 rounded hover:bg-slate-200/50 text-slate-400 hover:text-slate-600 transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
+                            title={speakingMsgIndex === i ? "Stop reading" : "Read message aloud"}
+                          >
+                            <span className="material-symbols-outlined text-xs">
+                              {speakingMsgIndex === i ? 'volume_off' : 'volume_up'}
+                            </span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -822,6 +934,21 @@ export default function Discovery() {
                     rows="2"
                   />
                   <div className="absolute right-4 bottom-4 flex items-center gap-3">
+                    <button 
+                      onClick={toggleSpeechRecognition}
+                      disabled={limitExceeded}
+                      type="button"
+                      className={`p-2.5 rounded-xl transition-all flex items-center justify-center shadow-md active:scale-95 border-none cursor-pointer ${
+                        isListening 
+                          ? 'bg-red-500 text-white animate-pulse' 
+                          : 'bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-800'
+                      }`}
+                      title={isListening ? "Stop listening" : "Start voice typing"}
+                    >
+                      <span className="material-symbols-outlined text-lg">
+                        {isListening ? 'mic_off' : 'mic'}
+                      </span>
+                    </button>
                     <button 
                       onClick={handleSendMessage}
                       disabled={limitExceeded || !inputValue.trim()}
