@@ -33,76 +33,56 @@ export default function Home() {
 
 
         {/* Merged Top Section: Hero */}
-        <section className="relative pt-24 pb-32 px-8 overflow-hidden">
-          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20">
-            <div className="flex-1 text-left z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider uppercase mb-8">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                </span>
-                Next-Gen Decision Intelligence
-              </div>
-              <h1 className="font-headline text-5xl lg:text-7xl font-extrabold tracking-tight text-on-surface mb-8 leading-[1.05]">
-                The Architecture <br />of <span className="text-primary">Definitive</span> Choice.
-              </h1>
-              <p className="text-lg md:text-xl text-on-surface-variant mb-12 max-w-xl leading-relaxed">
-                We help students and professionals make high-stakes career decisions. Fusing predictive career mapping with real-world mentorship from industry executives.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link className="premium-gradient text-white font-bold py-4 px-10 rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-center inline-block" to="/discovery">Start Your Discovery</Link>
-                <button 
-                  onClick={() => frameworkRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                  className="bg-white/80 backdrop-blur-sm text-on-surface border border-slate-200 font-bold py-4 px-10 rounded-lg hover:bg-white transition-all"
-                >
-                  The Methodology
-                </button>
-              </div>
-            </div>
-            <div className="flex-1 relative w-full flex justify-center">
-              {/* Interactive 3D Perspective Video Showcase */}
-              <div 
-                ref={cardRef}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-                style={{
-                  transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(1.02, 1.02, 1.02)`,
-                  transition: 'transform 0.1s ease-out',
-                  transformStyle: 'preserve-3d'
-                }}
-                className="relative group w-full max-w-lg bg-white/20 backdrop-blur-xl border border-white/40 p-3 rounded-2xl shadow-2xl overflow-hidden"
-              >
-                <div className="absolute -inset-4 bg-gradient-to-tr from-primary/30 to-transparent blur-3xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
-                
-                {/* 3D Glassmorphic Frame containing the Video */}
-                <div style={{ transform: 'translateZ(20px)' }} className="relative rounded-xl overflow-hidden aspect-[4/3] bg-black/90">
-                  <video 
-                    className="w-full h-full object-cover"
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline
-                  >
-                    <source src="/Video.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none"></div>
-                </div>
+        <section 
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          className="relative pt-32 pb-40 px-8 overflow-hidden min-h-[90vh] flex items-center justify-center"
+        >
+          {/* Full-bleed 3D Background Video */}
+          <div 
+            style={{
+              transform: `perspective(1200px) rotateX(${tilt.x * 0.3}deg) rotateY(${tilt.y * 0.3}deg) translate3d(${tilt.y * 1.5}px, ${-tilt.x * 1.5}px, -20px) scale(1.08)`,
+              transition: 'transform 0.15s ease-out',
+              transformStyle: 'preserve-3d'
+            }}
+            className="absolute inset-0 w-full h-full pointer-events-none z-0"
+          >
+            <video 
+              className="w-full h-full object-cover opacity-50 dark:opacity-30"
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+            >
+              <source src="/Video.mp4" type="video/mp4" />
+            </video>
+            {/* Premium glass mask to ensure readable text */}
+            <div className="absolute inset-0 bg-white/70 dark:bg-slate-950/70 backdrop-blur-[3px]"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#f7f9fb]"></div>
+          </div>
 
-                {/* Floating 3D Insight Card */}
-                <div 
-                  style={{ transform: 'translateZ(40px)' }} 
-                  className="absolute bottom-8 left-8 right-8 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md p-5 rounded-xl shadow-xl border border-white/50 animate-float"
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-1.5 bg-primary rounded-md flex items-center justify-center">
-                      <span className="material-symbols-outlined text-white text-sm">play_circle</span>
-                    </div>
-                    <span className="font-headline font-bold text-xs tracking-tight text-slate-800 dark:text-white">Product Overview</span>
-                  </div>
-                  <p className="text-[10px] text-slate-600 dark:text-slate-300 font-medium">Hover over the frame to explore the platform in 3D perspective.</p>
-                </div>
-              </div>
+          <div className="max-w-4xl mx-auto text-center z-10 flex flex-col items-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider uppercase mb-8">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+              Next-Gen Decision Intelligence
+            </div>
+            <h1 className="font-headline text-5xl lg:text-7xl font-extrabold tracking-tight text-on-surface mb-8 leading-[1.1]">
+              The Architecture <br />of <span className="text-primary">Definitive</span> Choice.
+            </h1>
+            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 mb-12 max-w-2xl leading-relaxed">
+              We help students and professionals make high-stakes career decisions. Fusing predictive career mapping with real-world mentorship from industry executives.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link className="premium-gradient text-white font-bold py-4 px-10 rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-center inline-block" to="/discovery">Start Your Discovery</Link>
+              <button 
+                onClick={() => frameworkRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-white/80 backdrop-blur-sm text-on-surface border border-slate-200 font-bold py-4 px-10 rounded-lg hover:bg-white transition-all"
+              >
+                The Methodology
+              </button>
             </div>
           </div>
         </section>
