@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
 import Navbar from './Navbar';
 import { apiFetch } from '../utils/api.js';
+import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function slotLabel(value) {
@@ -375,6 +377,8 @@ export default function Form() {
         id:        booking.bookingId,
         consultant: selectedConsultant,
         date:      new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+        dateRaw:   selectedDate,
+        slotRaw:   selectedSlot,
         time:      `${slotLabel(selectedSlot)} (45 min)`,
         clientName,
         clientEmail,
@@ -390,8 +394,66 @@ export default function Form() {
     }
   };
 
+  // Google Calendar OAuth handler
+  const [calendarSynced, setCalendarSynced]   = useState(false);
+  const [syncingCalendar, setSyncingCalendar] = useState(false);
+  const [copiedMeet, setCopiedMeet]           = useState(false);
+
+  const triggerGoogleSync = useGoogleLogin({
+    scope: 'https://www.googleapis.com/auth/calendar.events',
+    onSuccess: async (tokenResponse) => {
+      if (!bookingDetails) return;
+      setSyncingCalendar(true);
+      try {
+        const res = await apiFetch('/api/calendar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            accessToken: tokenResponse.access_token,
+            summary: `ProDecide Advisory Session with ${bookingDetails.consultant.fullName || bookingDetails.consultant.name}`,
+            description: `Client: ${bookingDetails.clientName} (${bookingDetails.clientEmail})`,
+            date: bookingDetails.dateRaw,
+            slot: bookingDetails.slotRaw,
+            clientEmail: bookingDetails.clientEmail,
+            consultantEmail: bookingDetails.consultant.email
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setCalendarSynced(true);
+          if (data.meetLink) {
+            setBookingDetails(prev => ({ ...prev, meetLink: data.meetLink }));
+          }
+        } else {
+          alert(`Google Calendar Sync Note: ${data.error || 'Could not sync directly to Google Calendar.'}`);
+        }
+      } catch (err) {
+        alert(`Google Calendar Sync Error: ${err.message}`);
+      } finally {
+        setSyncingCalendar(false);
+      }
+    },
+    onError: (err) => {
+      console.error('Google OAuth error:', err);
+    }
+  });
+
   // ─── Booking Confirmed Screen ────────────────────────────────────────────
   if (bookingConfirmed && bookingDetails) {
+    const gcalUrl = generateGoogleCalendarUrl({
+      title: `ProDecide Advisory Session - ${bookingDetails.consultant.fullName || bookingDetails.consultant.name}`,
+      description: `Client: ${bookingDetails.clientName}\nConsultant: ${bookingDetails.consultant.fullName || bookingDetails.consultant.name}`,
+      dateStr: bookingDetails.dateRaw,
+      slotStr: bookingDetails.slotRaw,
+      meetLink: bookingDetails.meetLink
+    });
+
+    const handleCopyMeet = () => {
+      navigator.clipboard.writeText(bookingDetails.meetLink);
+      setCopiedMeet(true);
+      setTimeout(() => setCopiedMeet(false), 2500);
+    };
+
     return (
       <div className="bg-surface font-body text-on-surface min-h-screen">
         <Navbar />
@@ -442,19 +504,80 @@ export default function Form() {
                   </div>
                 </div>
 
+                {/* Google Meet Link with 1-click copy */}
                 <div className="pt-3 border-t border-slate-200/50">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Google Meet</span>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="material-symbols-outlined text-slate-400 text-sm">videocam</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Google Meet Room</span>
+                    <button
+                      onClick={handleCopyMeet}
+                      className="text-xs text-primary font-bold hover:underline flex items-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-xs">{copiedMeet ? 'check' : 'content_copy'}</span>
+                      {copiedMeet ? 'Copied Link!' : 'Copy Link'}
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5 bg-white p-2.5 rounded-xl border border-slate-200/80">
+                    <span className="material-symbols-outlined text-primary text-lg">videocam</span>
                     <a href={bookingDetails.meetLink} target="_blank" rel="noopener noreferrer"
-                      className="text-sm text-primary font-semibold hover:underline truncate"
+                      className="text-sm text-primary font-bold hover:underline truncate flex-1"
                     >{bookingDetails.meetLink}</a>
+                    <a href={bookingDetails.meetLink} target="_blank" rel="noopener noreferrer"
+                      className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Join
+                    </a>
+                  </div>
+                </div>
+
+                {/* Google Calendar & Calendar Export Controls */}
+                <div className="pt-4 border-t border-slate-200/50 space-y-3">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block">Calendar Integration</span>
+
+                  {calendarSynced ? (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2 text-emerald-700 text-xs font-bold">
+                      <span className="material-symbols-outlined text-base">event_available</span>
+                      Synced to Google Calendar & Google Meet room initialized!
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => triggerGoogleSync()}
+                      disabled={syncingCalendar}
+                      className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs rounded-xl shadow hover:shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined text-sm">sync</span>
+                      {syncingCalendar ? 'Syncing with Google Calendar...' : 'Authorize & Sync with Google Calendar'}
+                    </button>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href={gcalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2.5 px-3 bg-white border border-slate-200 hover:border-primary text-slate-700 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition text-center"
+                    >
+                      <span className="material-symbols-outlined text-amber-500 text-sm">calendar_month</span>
+                      Add to Google Calendar
+                    </a>
+                    <button
+                      onClick={() => downloadIcsFile({
+                        title: `ProDecide Session - ${bookingDetails.consultant.fullName || bookingDetails.consultant.name}`,
+                        description: `Client: ${bookingDetails.clientName}\nConsultant: ${bookingDetails.consultant.fullName || bookingDetails.consultant.name}`,
+                        dateStr: bookingDetails.dateRaw,
+                        slotStr: bookingDetails.slotRaw,
+                        meetLink: bookingDetails.meetLink
+                      })}
+                      className="py-2.5 px-3 bg-white border border-slate-200 hover:border-slate-400 text-slate-700 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition"
+                    >
+                      <span className="material-symbols-outlined text-slate-500 text-sm">download</span>
+                      Download .ics File
+                    </button>
                   </div>
                 </div>
 
                 {bookingDetails.paymentId && (
                   <div className="pt-3 border-t border-slate-200/50">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Payment ID</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Payment Reference</span>
                     <p className="font-mono text-xs text-slate-500 mt-0.5">{bookingDetails.paymentId}</p>
                   </div>
                 )}

@@ -16,6 +16,7 @@ const { default: processAvatarHandler } = await import('./api/process-avatar.js'
 const { default: availabilityHandler } = await import('./api/availability.js');
 const { default: bookingsHandler } = await import('./api/bookings.js');
 const { default: paymentHandler } = await import('./api/payment.js');
+const { default: calendarHandler } = await import('./api/calendar.js');
 
 const app = express();
 const port = 3001;
@@ -47,6 +48,7 @@ app.all('/api/process-avatar', vercelToExpress(processAvatarHandler));
 app.all('/api/availability', vercelToExpress(availabilityHandler));
 app.all('/api/bookings', vercelToExpress(bookingsHandler));
 app.all('/api/payment', vercelToExpress(paymentHandler));
+app.all('/api/calendar', vercelToExpress(calendarHandler));
 
 app.listen(port, () => {
     console.log(`Local API server running at http://localhost:${port}`);

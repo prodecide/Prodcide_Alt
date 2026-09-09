@@ -31,7 +31,6 @@ export default function Home() {
       <Navbar />
       <div className="hero-animated-bg relative">
 
-
         {/* Merged Top Section: Hero */}
         <section 
           onMouseMove={handleMouseMove}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import { apiFetch } from '../utils/api.js';
+import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar.js';
 
 // ─── Generate 45-min slots for a day (8:00 AM – 8:00 PM) ────────────────────
 function generate45MinSlots() {
@@ -814,10 +815,44 @@ export default function ConsultantDashboard() {
                                 </div>
                               )}
                               {statusKey === 'accepted' && (
-                                <div className="bg-green-50 border border-green-100 p-3 px-4 rounded-xl flex flex-wrap items-center gap-2 flex-1">
-                                  <span className="material-symbols-outlined text-green-600 text-sm">videocam</span>
-                                  <span className="text-xs font-semibold text-green-700">Meet Link:</span>
-                                  <a href={req.meetLink} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-primary hover:underline truncate max-w-[200px]">{req.meetLink}</a>
+                                <div className="bg-green-50 border border-green-200 p-3 px-4 rounded-xl space-y-2 flex-1">
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="material-symbols-outlined text-green-600 text-sm">videocam</span>
+                                      <span className="text-xs font-semibold text-green-800">Google Meet:</span>
+                                      <a href={req.meetLink} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-primary hover:underline truncate max-w-[200px]">{req.meetLink}</a>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <a
+                                        href={generateGoogleCalendarUrl({
+                                          title: `Consultation with ${req.clientName}`,
+                                          description: `Client: ${req.clientName} (${req.clientEmail})\nChallenge: ${req.challenge || req.context || ''}`,
+                                          dateStr: req.date,
+                                          slotStr: req.slot,
+                                          meetLink: req.meetLink
+                                        })}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-200 flex items-center gap-1 transition"
+                                      >
+                                        <span className="material-symbols-outlined text-xs">calendar_month</span>
+                                        Add to Google Calendar
+                                      </a>
+                                      <button
+                                        onClick={() => downloadIcsFile({
+                                          title: `Consultation with ${req.clientName}`,
+                                          description: `Client: ${req.clientName} (${req.clientEmail})`,
+                                          dateStr: req.date,
+                                          slotStr: req.slot,
+                                          meetLink: req.meetLink
+                                        })}
+                                        className="text-[11px] font-bold text-slate-700 bg-white hover:bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 flex items-center gap-1 transition"
+                                      >
+                                        <span className="material-symbols-outlined text-xs">download</span>
+                                        .ics
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
                               )}
                               {statusKey === 'declined' && (
