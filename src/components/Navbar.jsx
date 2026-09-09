@@ -133,9 +133,9 @@ export default function Navbar({ tempUser = null }) {
             <div className="flex items-center">
               {searchOpen ? (
                 <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 animate-fade-in">
-                  <input 
-                    type="text" 
-                    placeholder="Search network..." 
+                  <input
+                    type="text"
+                    placeholder="Search network..."
                     value={searchVal}
                     onChange={(e) => setSearchVal(e.target.value)}
                     className="bg-transparent border-none outline-none text-xs w-32 md:w-44 text-slate-700 dark:text-slate-200 placeholder-slate-400 font-bold"
@@ -155,7 +155,7 @@ export default function Navbar({ tempUser = null }) {
 
           {/* Interactive Notifications Panel */}
           <div className="relative" ref={notificationsRef}>
-            <button 
+            <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
               className="p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 relative flex"
             >
@@ -164,7 +164,7 @@ export default function Navbar({ tempUser = null }) {
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
               )}
             </button>
-            
+
             {notificationsOpen && (
               <div className="absolute right-0 mt-3 w-80 rounded-2xl bg-white dark:bg-[#191c1e] border border-slate-200/50 dark:border-slate-800 shadow-xl py-3 z-50 transform origin-top-right transition-all">
                 <div className="px-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
@@ -227,7 +227,7 @@ export default function Navbar({ tempUser = null }) {
               </div>
             )}
           </div>
-          
+
           {isAnyUserLoggedIn && (
             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 hidden md:inline-block bg-slate-100/60 dark:bg-slate-800/60 px-3 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
               {tempUser ? (tempUser.name || 'User') : consultantData ? (consultantData.name || 'Consultant') : isAdminLoggedIn ? 'Admin' : userName}
@@ -236,17 +236,17 @@ export default function Navbar({ tempUser = null }) {
 
           {/* Interactive Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
-            <button 
+            <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-inner focus:outline-none focus:ring-2 focus:ring-[#0052FF] transition-all flex"
             >
-              <img 
-                alt="User Profile" 
-                src={tempUser?.picture || consultantData?.profileImage || userPicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(tempUser?.name || consultantData?.name || userName || 'User')}&background=0D8ABC&color=fff`} 
-                className="w-full h-full object-cover" 
+              <img
+                alt="User Profile"
+                src={tempUser?.picture || consultantData?.profileImage || userPicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(tempUser?.name || consultantData?.name || userName || 'User')}&background=0D8ABC&color=fff`}
+                className="w-full h-full object-cover"
               />
             </button>
- 
+
             {dropdownOpen && (
               <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-white dark:bg-[#191c1e] border border-slate-200/50 dark:border-slate-800 shadow-xl py-2 z-50 transform origin-top-right transition-all">
                 {isAnyUserLoggedIn && (
@@ -278,32 +278,32 @@ export default function Navbar({ tempUser = null }) {
                   <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Switch Portal</p>
                 </div>
                 <div className="p-1.5 space-y-1">
-                  <Link 
-                    to="/admin" 
+                  <Link
+                    to="/admin"
                     onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
                   >
                     <span className="material-symbols-outlined text-lg text-slate-400">admin_panel_settings</span>
                     Admin Dashboard
                   </Link>
-                  <Link 
-                    to="/dashboard" 
+                  <Link
+                    to="/dashboard"
                     onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
                   >
                     <span className="material-symbols-outlined text-lg text-slate-400">dashboard</span>
                     User Dashboard
                   </Link>
-                  <Link 
-                    to="/discovery" 
+                  <Link
+                    to="/discovery"
                     onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
                   >
                     <span className="material-symbols-outlined text-lg text-slate-400">explore</span>
                     User Portal
                   </Link>
-                  <Link 
-                    to="/consultant-dashboard" 
+                  <Link
+                    to="/consultant-dashboard"
                     onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
                   >
@@ -313,7 +313,7 @@ export default function Navbar({ tempUser = null }) {
                   {isAnyUserLoggedIn && (
                     <>
                       <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
-                      <button 
+                      <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 hover:text-red-700 transition-all text-sm font-semibold border-none bg-transparent cursor-pointer text-left"
                       >
@@ -328,7 +328,7 @@ export default function Navbar({ tempUser = null }) {
           </div>
 
           {/* Mobile menu toggle */}
-          <button 
+          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 flex items-center justify-center"
           >
@@ -343,26 +343,26 @@ export default function Navbar({ tempUser = null }) {
       {mobileMenuOpen && (
         <div className="md:hidden bg-white/95 dark:bg-[#191c1e]/95 backdrop-blur-lg border-t border-slate-200/40 p-6 space-y-4 shadow-lg animate-fade-in">
           <nav className="flex flex-col gap-4">
-            <Link 
-              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800" 
+            <Link
+              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800"
               to="/discovery"
             >
               Discover
             </Link>
-            <Link 
-              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800" 
+            <Link
+              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800"
               to="/about"
             >
               About Us
             </Link>
-            <Link 
-              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800" 
+            <Link
+              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800"
               to="/experts"
             >
               Consultants
             </Link>
-            <Link 
-              className="text-[#0052FF] hover:underline font-manrope font-bold text-lg py-2" 
+            <Link
+              className="text-[#0052FF] hover:underline font-manrope font-bold text-lg py-2"
               to="/registration"
             >
               Join as Expert

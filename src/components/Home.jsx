@@ -61,13 +61,6 @@ export default function Home() {
           </div>
 
           <div className="max-w-4xl mx-auto text-center z-10 flex flex-col items-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider uppercase mb-8">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              Next-Gen Decision Intelligence
-            </div>
             <h1 className="font-headline text-5xl lg:text-7xl font-extrabold tracking-tight text-on-surface mb-8 leading-[1.1]">
               The Architecture <br />of <span className="text-primary">Definitive</span> Choice.
             </h1>
