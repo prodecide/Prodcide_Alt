@@ -105,68 +105,48 @@ export default function Navbar({ tempUser = null }) {
   const getLinkClass = (path) => {
     const isActive = pathname === path;
     if (isActive) {
-      return "text-[#0052FF] border-b-2 border-[#0052FF] pb-1 font-manrope tracking-tight font-bold text-lg";
+      return "text-[#0052FF] font-bold text-sm transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:bg-[#0052FF] after:rounded-full";
     }
-    return "text-slate-500 dark:text-slate-400 hover:text-[#0052FF] font-manrope tracking-tight font-bold text-lg transition-all duration-200 ease-in-out";
+    return "text-slate-600 dark:text-slate-300 hover:text-[#0052FF] dark:hover:text-[#0052FF] font-medium text-sm transition-colors";
   };
 
   const isAdminLoggedIn = localStorage.getItem('prodecide_admin_auth') === 'true';
   const isAnyUserLoggedIn = !!tempUser || !!userName || !!userEmail || !!consultantData || isAdminLoggedIn;
 
   return (
-    <header className={`sticky top-0 w-full z-50 transition-all duration-300 ${pathname === '/discovery' ? 'bg-transparent border-none' : 'bg-[#f7f9fb]/90 dark:bg-[#191c1e]/90 backdrop-blur-md border-b border-slate-200/40 shadow-sm'}`}>
-      <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
+    <header className="fixed top-4 left-0 right-0 z-50 px-4 md:px-8 max-w-6xl mx-auto pointer-events-none">
+      <div className="pointer-events-auto bg-white/85 dark:bg-[#0b132b]/85 backdrop-blur-xl border border-white/90 dark:border-slate-800/80 shadow-[0_10px_35px_rgba(0,0,0,0.06)] rounded-full px-6 py-2.5 flex justify-between items-center transition-all duration-300">
+        
+        {/* Brand Logo */}
         <div className="flex items-center gap-8">
-          <Link className="text-xl font-black text-[#0052FF] tracking-tighter font-headline" to="/">ProDecide</Link>
-          <nav className="hidden md:flex items-center gap-8">
+          <Link className="text-xl font-extrabold text-[#03091e] dark:text-white tracking-tight font-headline flex items-center" to="/">
+            prodecide<span className="text-[#0052FF]">.ai</span>
+          </Link>
+
+          {/* Centered Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-8 ml-4">
             <Link className={getLinkClass('/discovery')} to="/discovery">Discover</Link>
             <Link className={getLinkClass('/about')} to="/about">About Us</Link>
             <Link className={getLinkClass('/experts')} to="/experts">Consultants</Link>
           </nav>
         </div>
-        <div className="flex items-center gap-4">
-          <Link to="/registration" className="px-5 py-2 rounded-full border border-[#0052FF] text-[#0052FF] font-bold hover:bg-[#0052FF]/5 transition-all text-sm hidden sm:inline-block">
-            Join as Expert
-          </Link>
-          {/* Interactive Search Expandable Input */}
-          {pathname !== '/' && (
-            <div className="flex items-center">
-              {searchOpen ? (
-                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 animate-fade-in">
-                  <input
-                    type="text"
-                    placeholder="Search network..."
-                    value={searchVal}
-                    onChange={(e) => setSearchVal(e.target.value)}
-                    className="bg-transparent border-none outline-none text-xs w-32 md:w-44 text-slate-700 dark:text-slate-200 placeholder-slate-400 font-bold"
-                    autoFocus
-                  />
-                  <button onClick={() => { setSearchOpen(false); setSearchVal(''); }} className="text-slate-400 hover:text-slate-600 flex items-center">
-                    <span className="material-symbols-outlined text-sm">close</span>
-                  </button>
-                </div>
-              ) : (
-                <button onClick={() => setSearchOpen(true)} className="p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 flex">
-                  <span className="material-symbols-outlined text-xl">search</span>
-                </button>
-              )}
-            </div>
-          )}
 
-          {/* Interactive Notifications Panel */}
+        {/* Right Actions */}
+        <div className="flex items-center gap-3">
+          {/* Notifications Icon */}
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 relative flex"
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-600 dark:text-slate-300 relative flex items-center justify-center"
             >
-              <span className="material-symbols-outlined text-xl">notifications</span>
+              <span className="material-symbols-outlined text-lg">notifications</span>
               {((consultantData && incomingRequests.length > 0) || (!consultantData)) && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#0052FF] rounded-full"></span>
               )}
             </button>
 
             {notificationsOpen && (
-              <div className="absolute right-0 mt-3 w-80 rounded-2xl bg-white dark:bg-[#191c1e] border border-slate-200/50 dark:border-slate-800 shadow-xl py-3 z-50 transform origin-top-right transition-all">
+              <div className="absolute right-0 mt-4 w-80 rounded-2xl bg-white/95 dark:bg-[#191c1e]/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-2xl py-3 z-50 transform origin-top-right transition-all">
                 <div className="px-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Notifications</p>
                   <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">
@@ -212,15 +192,6 @@ export default function Navbar({ tempUser = null }) {
                           </div>
                         </div>
                       </div>
-                      <div className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                        <div className="flex gap-2">
-                          <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
-                          <div>
-                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Welcome to ProDecide AI!</p>
-                            <p className="text-[10px] text-slate-400 mt-0.5">Click 'Start Your Discovery' to get custom, neural-guided strategy mapping.</p>
-                          </div>
-                        </div>
-                      </div>
                     </>
                   )}
                 </div>
@@ -228,111 +199,81 @@ export default function Navbar({ tempUser = null }) {
             )}
           </div>
 
-          {isAnyUserLoggedIn && (
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 hidden md:inline-block bg-slate-100/60 dark:bg-slate-800/60 px-3 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
-              {tempUser ? (tempUser.name || 'User') : consultantData ? (consultantData.name || 'Consultant') : isAdminLoggedIn ? 'Admin' : userName}
-            </span>
+          {/* Login or User Profile */}
+          {isAnyUserLoggedIn ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden shadow-inner focus:outline-none focus:ring-2 focus:ring-[#0052FF] transition-all flex items-center justify-center"
+              >
+                <img
+                  alt="User Profile"
+                  src={tempUser?.picture || consultantData?.profileImage || userPicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(tempUser?.name || consultantData?.name || userName || 'User')}&background=0D8ABC&color=fff`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-4 w-56 rounded-2xl bg-white/95 dark:bg-[#191c1e]/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-2xl py-2 z-50 transform origin-top-right transition-all">
+                  <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+                      {tempUser ? tempUser.name : consultantData ? consultantData.name : isAdminLoggedIn ? 'Administrator' : userName || 'User'}
+                    </p>
+                    <p className="text-[10px] text-slate-400 truncate">
+                      {tempUser ? tempUser.email : consultantData ? consultantData.email : isAdminLoggedIn ? 'admin@prodecide.com' : userEmail}
+                    </p>
+                  </div>
+                  <div className="p-1.5 space-y-1">
+                    <Link
+                      to="/discovery"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-xs font-semibold"
+                    >
+                      <span className="material-symbols-outlined text-base text-slate-400">explore</span>
+                      User Portal
+                    </Link>
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-xs font-semibold"
+                    >
+                      <span className="material-symbols-outlined text-base text-slate-400">dashboard</span>
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 transition-all text-xs font-semibold border-none bg-transparent cursor-pointer text-left"
+                    >
+                      <span className="material-symbols-outlined text-base text-red-500">logout</span>
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              to="/registration"
+              className="px-4 py-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 font-medium text-xs md:text-sm transition-all hidden sm:inline-block"
+            >
+              Login
+            </Link>
           )}
 
-          {/* Interactive Profile Dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden shadow-inner focus:outline-none focus:ring-2 focus:ring-[#0052FF] transition-all flex"
-            >
-              <img
-                alt="User Profile"
-                src={tempUser?.picture || consultantData?.profileImage || userPicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(tempUser?.name || consultantData?.name || userName || 'User')}&background=0D8ABC&color=fff`}
-                className="w-full h-full object-cover"
-              />
-            </button>
-
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-white dark:bg-[#191c1e] border border-slate-200/50 dark:border-slate-800 shadow-xl py-2 z-50 transform origin-top-right transition-all">
-                {isAnyUserLoggedIn && (
-                  <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
-                    {tempUser ? (
-                      <>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{tempUser.name || 'User'}</p>
-                        <p className="text-[10px] text-slate-400 truncate">{tempUser.email}</p>
-                      </>
-                    ) : consultantData ? (
-                      <>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{consultantData.name || 'Consultant'}</p>
-                        <p className="text-[10px] text-slate-400 truncate">{consultantData.email}</p>
-                      </>
-                    ) : isAdminLoggedIn ? (
-                      <>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">Administrator</p>
-                        <p className="text-[10px] text-slate-400 truncate">admin@prodecide.com</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{userName}</p>
-                        {userEmail && <p className="text-[10px] text-slate-400 truncate">{userEmail}</p>}
-                      </>
-                    )}
-                  </div>
-                )}
-                <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Switch Portal</p>
-                </div>
-                <div className="p-1.5 space-y-1">
-                  <Link
-                    to="/admin"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
-                  >
-                    <span className="material-symbols-outlined text-lg text-slate-400">admin_panel_settings</span>
-                    Admin Dashboard
-                  </Link>
-                  <Link
-                    to="/dashboard"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
-                  >
-                    <span className="material-symbols-outlined text-lg text-slate-400">dashboard</span>
-                    User Dashboard
-                  </Link>
-                  <Link
-                    to="/discovery"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
-                  >
-                    <span className="material-symbols-outlined text-lg text-slate-400">explore</span>
-                    User Portal
-                  </Link>
-                  <Link
-                    to="/consultant-dashboard"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 hover:text-[#0052FF] transition-all text-sm font-semibold"
-                  >
-                    <span className="material-symbols-outlined text-lg text-slate-400">badge</span>
-                    Consultant Portal
-                  </Link>
-                  {isAnyUserLoggedIn && (
-                    <>
-                      <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 hover:text-red-700 transition-all text-sm font-semibold border-none bg-transparent cursor-pointer text-left"
-                      >
-                        <span className="material-symbols-outlined text-lg text-red-500">logout</span>
-                        Logout
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Primary CTA (Matching reference image "Start selling" -> "Start Discovery") */}
+          <Link
+            to="/discovery"
+            className="px-5 py-2.5 rounded-full bg-[#03091e] hover:bg-[#0a1538] text-white font-semibold text-xs md:text-sm transition-all shadow-md hover:shadow-lg active:scale-95 inline-flex items-center gap-1.5"
+          >
+            Start Discovery
+          </Link>
 
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-md hover:bg-slate-200/50 transition-all text-slate-600 flex items-center justify-center"
+            className="md:hidden p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-700 dark:text-slate-200 flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-2xl">
+            <span className="material-symbols-outlined text-xl">
               {mobileMenuOpen ? 'close' : 'menu'}
             </span>
           </button>
@@ -341,28 +282,28 @@ export default function Navbar({ tempUser = null }) {
 
       {/* Mobile nav drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white/95 dark:bg-[#191c1e]/95 backdrop-blur-lg border-t border-slate-200/40 p-6 space-y-4 shadow-lg animate-fade-in">
-          <nav className="flex flex-col gap-4">
+        <div className="pointer-events-auto md:hidden mt-3 bg-white/95 dark:bg-[#0b132b]/95 backdrop-blur-xl border border-white/80 dark:border-slate-800 rounded-3xl p-5 space-y-3 shadow-2xl animate-fade-in">
+          <nav className="flex flex-col gap-2">
             <Link
-              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800"
+              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-semibold text-base py-2 border-b border-slate-100 dark:border-slate-800"
               to="/discovery"
             >
               Discover
             </Link>
             <Link
-              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800"
+              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-semibold text-base py-2 border-b border-slate-100 dark:border-slate-800"
               to="/about"
             >
               About Us
             </Link>
             <Link
-              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-manrope font-bold text-lg py-2 border-b border-slate-100 dark:border-slate-800"
+              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-semibold text-base py-2 border-b border-slate-100 dark:border-slate-800"
               to="/experts"
             >
               Consultants
             </Link>
             <Link
-              className="text-[#0052FF] hover:underline font-manrope font-bold text-lg py-2"
+              className="text-[#0052FF] font-bold text-base py-2"
               to="/registration"
             >
               Join as Expert
