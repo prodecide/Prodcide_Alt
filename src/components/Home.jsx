@@ -177,35 +177,35 @@ export default function Home() {
               {/* Floating Glassmorphic Badges (Matching Screenshot Callouts) */}
               
               {/* Badge 1: Top Right - Delight */}
-              <div className="absolute top-8 right-8 md:right-16 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float">
+              <div className="absolute top-8 left-8 md:left-14 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float">
                 <div className="w-6 h-6 rounded-full bg-[#03091e] text-white flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-xs">sentiment_very_satisfied</span>
+                  <span className="material-symbols-outlined text-xs">auto_awesome</span>
                 </div>
                 <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Delight</span>
               </div>
 
-              {/* Badge 2: Middle Left - Frustration */}
-              <div className="absolute top-28 left-6 md:left-14 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-100">
-                <div className="w-6 h-6 rounded-full bg-[#03091e] text-white flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-xs">sentiment_dissatisfied</span>
-                </div>
-                <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Frustration</span>
-              </div>
-
-              {/* Badge 3: Middle Right - Deep focus */}
-              <div className="absolute bottom-28 right-6 md:right-12 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-200">
+              {/* Badge 2: Middle Left - Deep Focus */}
+              <div className="absolute bottom-24 left-6 md:left-10 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-100">
                 <div className="w-6 h-6 rounded-full bg-[#03091e] text-white flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-xs">psychology</span>
                 </div>
-                <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Deep focus</span>
+                <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Deep Focus</span>
               </div>
 
-              {/* Badge 4: Bottom Left - Unengaged */}
-              <div className="absolute bottom-10 left-10 md:left-24 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-300">
+              {/* Badge 3: Top Right - Data-Driven Insight */}
+              <div className="absolute top-10 right-6 md:right-10 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-200">
                 <div className="w-6 h-6 rounded-full bg-[#03091e] text-white flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-xs">do_not_disturb_on</span>
+                  <span className="material-symbols-outlined text-xs">analytics</span>
                 </div>
-                <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Unengaged</span>
+                <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Data-Driven Insight</span>
+              </div>
+
+              {/* Badge 4: Bottom Right - Strategic Clarity */}
+              <div className="absolute bottom-24 right-6 md:right-10 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-300">
+                <div className="w-6 h-6 rounded-full bg-[#03091e] text-white flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined text-xs">track_changes</span>
+                </div>
+                <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Strategic Clarity</span>
               </div>
 
               {/* Bottom Interactive Status Bar */}
@@ -242,8 +242,8 @@ export default function Home() {
       </div>
 
       <main>
-        {/* Refined Framework Section with Scroll-Driven Electric Laser Beam */}
-        <section ref={frameworkRef} className="bg-slate-50/50 dark:bg-slate-950/50 py-32 px-8 relative overflow-hidden">
+        {/* Exact Methodology Section Matching Generated Demo Image */}
+        <section ref={frameworkRef} className="bg-[#080d1a] py-32 px-6 md:px-12 relative overflow-hidden text-white select-none">
           
           <div className="max-w-7xl mx-auto relative">
             
@@ -252,39 +252,52 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="mb-20 text-center md:text-left"
+              className="mb-20 text-center"
             >
-              <h2 className="font-headline text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">A Framework for Clarity</h2>
-              <p className="text-on-surface-variant max-w-2xl">Precision-engineered phases to transform complex variables into decisive action.</p>
+              <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">Methodology</h2>
+              <p className="text-slate-400 max-w-xl mx-auto text-sm md:text-base font-medium">Advanced AI career navigation for your career path</p>
             </motion.div>
 
             {/* Glowing Laser Beam Line connecting Stage 01 -> Stage 04 on Scroll */}
-            <div className="hidden lg:block absolute top-1/2 left-4 right-4 h-1.5 bg-slate-200/60 dark:bg-slate-800 rounded-full -translate-y-4 pointer-events-none z-0 overflow-visible">
+            <div className="hidden lg:block absolute top-[58%] left-12 right-12 h-2 bg-slate-800/80 rounded-full pointer-events-none z-0 overflow-visible">
               <motion.div 
-                className="h-full bg-gradient-to-r from-[#0052FF] via-cyan-400 to-indigo-500 rounded-full shadow-[0_0_20px_#0052FF] origin-left relative"
+                className="h-full bg-gradient-to-r from-blue-600 via-cyan-400 to-indigo-500 rounded-full shadow-[0_0_25px_#00f0ff] origin-left relative"
                 style={{ scaleX: beamScaleX }}
               >
                 {/* Electric Laser Tip Orb */}
-                <div className="w-4 h-4 rounded-full bg-cyan-300 shadow-[0_0_20px_#00f0ff] -right-2 -top-1 absolute animate-pulse"></div>
+                <div className="w-5 h-5 rounded-full bg-cyan-300 shadow-[0_0_25px_#00f0ff] -right-2.5 -top-1.5 absolute animate-pulse"></div>
               </motion.div>
             </div>
 
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 relative z-10">
+              
               {/* Stage 1 */}
               <motion.div 
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="group bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-[0_15px_40px_rgba(0,82,255,0.15)] hover:border-[#0052FF]/60 transition-all duration-300"
+                whileHover={{ y: -8, scale: 1.03 }}
+                className="group bg-slate-900/70 backdrop-blur-2xl p-8 rounded-3xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-cyan-400/80 hover:shadow-[0_0_40px_rgba(0,240,255,0.25)] transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
               >
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-[#0052FF] mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-md">
-                  <span className="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform">psychology</span>
+                <div>
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Stage</span>
+                      <span className="text-3xl font-extrabold text-white">01</span>
+                    </div>
+                    <div className="w-10 h-10 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-cyan-400 flex items-center justify-center shadow-inner">
+                      <span className="material-symbols-outlined text-lg">psychology</span>
+                    </div>
+                  </div>
+
+                  <div className="w-20 h-20 rounded-full bg-slate-800/90 border border-cyan-400/30 text-cyan-300 flex items-center justify-center my-6 mx-auto shadow-inner group-hover:scale-110 group-hover:border-cyan-400 group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all duration-300">
+                    <span className="material-symbols-outlined text-3xl">psychology</span>
+                  </div>
+
+                  <h3 className="font-headline text-xl font-extrabold text-white text-center mb-2">Deep Analysis</h3>
+                  <p className="text-slate-400 text-xs text-center leading-relaxed">Comprehensive Skill & Personality Assessment</p>
                 </div>
-                <span className="text-[10px] font-bold text-[#0052FF] tracking-[0.2em] uppercase block mb-3">Stage 01</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Deep Analysis</h3>
-                <p className="text-on-surface-variant text-sm leading-relaxed">Comprehensive Skill & Personality Assessment.</p>
               </motion.div>
 
               {/* Stage 2 */}
@@ -293,15 +306,27 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.25 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="group bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-[0_15px_40px_rgba(0,82,255,0.15)] hover:border-[#0052FF]/60 transition-all duration-300"
+                whileHover={{ y: -8, scale: 1.03 }}
+                className="group bg-slate-900/70 backdrop-blur-2xl p-8 rounded-3xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-cyan-400/80 hover:shadow-[0_0_40px_rgba(0,240,255,0.25)] transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
               >
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-[#0052FF] mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-md">
-                  <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">trending_up</span>
+                <div>
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Stage</span>
+                      <span className="text-3xl font-extrabold text-white">02</span>
+                    </div>
+                    <div className="w-10 h-10 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-cyan-400 flex items-center justify-center shadow-inner">
+                      <span className="material-symbols-outlined text-lg">settings</span>
+                    </div>
+                  </div>
+
+                  <div className="w-20 h-20 rounded-full bg-slate-800/90 border border-cyan-400/30 text-cyan-300 flex items-center justify-center my-6 mx-auto shadow-inner group-hover:scale-110 group-hover:border-cyan-400 group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all duration-300">
+                    <span className="material-symbols-outlined text-3xl">trending_up</span>
+                  </div>
+
+                  <h3 className="font-headline text-xl font-extrabold text-white text-center mb-2">Skill Optimization</h3>
+                  <p className="text-slate-400 text-xs text-center leading-relaxed">Curated Training & Development Paths</p>
                 </div>
-                <span className="text-[10px] font-bold text-[#0052FF] tracking-[0.2em] uppercase block mb-3">Stage 02</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Skill Optimization</h3>
-                <p className="text-on-surface-variant text-sm leading-relaxed">Curated Training & Development Paths.</p>
               </motion.div>
 
               {/* Stage 3 */}
@@ -310,15 +335,27 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.4 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="group bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-[0_15px_40px_rgba(0,82,255,0.15)] hover:border-[#0052FF]/60 transition-all duration-300"
+                whileHover={{ y: -8, scale: 1.03 }}
+                className="group bg-slate-900/70 backdrop-blur-2xl p-8 rounded-3xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-cyan-400/80 hover:shadow-[0_0_40px_rgba(0,240,255,0.25)] transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
               >
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-[#0052FF] mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-md">
-                  <span className="material-symbols-outlined text-xl group-hover:-translate-y-0.5 transition-transform">insights</span>
+                <div>
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Stage</span>
+                      <span className="text-3xl font-extrabold text-white">03</span>
+                    </div>
+                    <div className="w-10 h-10 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-cyan-400 flex items-center justify-center shadow-inner">
+                      <span className="material-symbols-outlined text-lg">language</span>
+                    </div>
+                  </div>
+
+                  <div className="w-20 h-20 rounded-full bg-slate-800/90 border border-cyan-400/30 text-cyan-300 flex items-center justify-center my-6 mx-auto shadow-inner group-hover:scale-110 group-hover:border-cyan-400 group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all duration-300">
+                    <span className="material-symbols-outlined text-3xl">track_changes</span>
+                  </div>
+
+                  <h3 className="font-headline text-xl font-extrabold text-white text-center mb-2">Market Intelligence</h3>
+                  <p className="text-slate-400 text-xs text-center leading-relaxed">Real-time Opportunity Matching & Demand Analysis</p>
                 </div>
-                <span className="text-[10px] font-bold text-[#0052FF] tracking-[0.2em] uppercase block mb-3">Stage 03</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Market Intelligence</h3>
-                <p className="text-on-surface-variant text-sm leading-relaxed">Real-time Opportunity Matching & Demand Analysis.</p>
               </motion.div>
 
               {/* Stage 4 */}
@@ -327,16 +364,29 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.55 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="group bg-[#03091e] backdrop-blur-xl p-8 rounded-3xl text-white shadow-2xl hover:shadow-[0_15px_40px_rgba(0,82,255,0.3)] border border-[#0052FF]/50 transition-all duration-300 relative overflow-hidden"
+                whileHover={{ y: -8, scale: 1.03 }}
+                className="group bg-slate-900/70 backdrop-blur-2xl p-8 rounded-3xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-cyan-400/80 hover:shadow-[0_0_40px_rgba(0,240,255,0.25)] transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
               >
-                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-md">
-                  <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">star</span>
+                <div>
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Stage</span>
+                      <span className="text-3xl font-extrabold text-white">04</span>
+                    </div>
+                    <div className="w-10 h-10 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-cyan-400 flex items-center justify-center shadow-inner">
+                      <span className="material-symbols-outlined text-lg">star</span>
+                    </div>
+                  </div>
+
+                  <div className="w-20 h-20 rounded-full bg-slate-800/90 border border-cyan-400/30 text-cyan-300 flex items-center justify-center my-6 mx-auto shadow-inner group-hover:scale-110 group-hover:border-cyan-400 group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all duration-300">
+                    <span className="material-symbols-outlined text-3xl">person</span>
+                  </div>
+
+                  <h3 className="font-headline text-xl font-extrabold text-white text-center mb-2">Exec Coaching</h3>
+                  <p className="text-slate-400 text-xs text-center leading-relaxed">Personalized Guidance for Strategic Placement</p>
                 </div>
-                <span className="text-[10px] font-bold text-cyan-400 tracking-[0.2em] uppercase block mb-3">Stage 04</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-white">Exec Coaching</h3>
-                <p className="text-slate-300 text-sm leading-relaxed">Personalized Guidance for Strategic Placement.</p>
               </motion.div>
+
             </div>
           </div>
         </section>
