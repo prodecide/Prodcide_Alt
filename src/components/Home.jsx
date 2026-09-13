@@ -38,23 +38,28 @@ export default function Home() {
   };
 
   return (
-    <div ref={containerRef} className="bg-surface font-body text-on-surface antialiased relative">
+    <div ref={containerRef} className="bg-[#03091e] font-body text-white antialiased relative">
       
       {/* Scroll Progress Line directly below top fixed navbar */}
       <motion.div 
-        className="fixed top-16 left-0 right-0 h-0.5 bg-gradient-to-r from-[#0052FF] via-indigo-500 to-purple-600 z-50 origin-left"
+        className="fixed top-16 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-400 via-[#0052FF] to-indigo-500 z-50 origin-left shadow-[0_0_10px_#00f0ff]"
         style={{ scaleX: smoothProgress }}
       />
 
       <Navbar />
       
-      <div className="hero-animated-bg relative">
+      <div className="relative overflow-hidden bg-[#03091e]">
+
+        {/* Ambient Radial Blur Lighting Orbs (Matching Demo Image) */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] h-[600px] bg-gradient-to-tr from-[#0052FF]/35 via-cyan-400/25 to-emerald-400/30 rounded-full blur-[150px] pointer-events-none z-0"></div>
+        <div className="absolute top-1/3 -left-32 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[130px] pointer-events-none z-0"></div>
+        <div className="absolute top-1/3 -right-32 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[130px] pointer-events-none z-0"></div>
 
         {/* Merged Top Section: Hero */}
         <section 
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative pt-36 pb-32 px-6 md:px-12 overflow-hidden min-h-[92vh] flex items-center justify-center"
+          className="relative pt-36 pb-32 px-6 md:px-12 overflow-hidden min-h-[92vh] flex items-center justify-center z-10"
         >
           {/* Full-bleed 3D Background Video & Ambient Glow */}
           <div 
@@ -63,10 +68,10 @@ export default function Home() {
               transition: 'transform 0.15s ease-out',
               transformStyle: 'preserve-3d'
             }}
-            className="absolute inset-0 w-full h-full pointer-events-none z-0"
+            className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-40"
           >
             <video 
-              className="w-full h-full object-cover opacity-40 dark:opacity-20"
+              className="w-full h-full object-cover opacity-25"
               autoPlay 
               loop 
               muted 
@@ -74,9 +79,9 @@ export default function Home() {
             >
               <source src="/Video.mp4" type="video/mp4" />
             </video>
-            {/* Premium glass mask to ensure crisp text reading */}
-            <div className="absolute inset-0 bg-white/75 dark:bg-slate-950/80 backdrop-blur-[4px]"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-[#f7f9fb]"></div>
+            {/* Premium glass mask */}
+            <div className="absolute inset-0 bg-[#03091e]/80 backdrop-blur-[2px]"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#03091e]/50 to-[#03091e]"></div>
           </div>
 
           <motion.div 
@@ -89,9 +94,9 @@ export default function Home() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-sm mb-8 text-xs font-semibold text-[#0052FF] dark:text-blue-400 backdrop-blur-md animate-fade-in"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 shadow-lg mb-8 text-xs font-semibold text-cyan-300 backdrop-blur-xl animate-fade-in"
             >
-              <span className="w-2 h-2 rounded-full bg-[#0052FF] animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
               ✦ Next-Gen Predictive Career Intelligence
             </motion.div>
 
@@ -99,17 +104,17 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.1 }}
-              className="font-headline text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#03091e] dark:text-white mb-8 leading-[1.1] max-w-4xl"
+              className="font-headline text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-8 leading-[1.1] max-w-4xl"
             >
               The Architecture of <br />
-              <span className="bg-gradient-to-r from-[#0052FF] via-indigo-600 to-purple-600 bg-clip-text text-transparent">Definitive Choice.</span>
+              <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-400 bg-clip-text text-transparent">Definitive Choice.</span>
             </motion.h1>
 
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="text-base md:text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-2xl leading-relaxed"
+              className="text-base md:text-xl text-slate-300 mb-10 max-w-2xl leading-relaxed"
             >
               Fusing AI predictive career mapping with real-world executive mentorship to help students & professionals navigate high-stakes career decisions with 100% confidence.
             </motion.p>
@@ -121,13 +126,13 @@ export default function Home() {
               transition={{ duration: 0.7, delay: 0.3 }}
               className="flex flex-wrap justify-center gap-4 mb-16"
             >
-              <Link className="bg-[#03091e] hover:bg-[#0a1538] text-white font-bold py-4 px-9 rounded-full shadow-xl shadow-slate-900/10 hover:scale-[1.02] active:scale-[0.98] transition-all text-center inline-flex items-center gap-2" to="/discovery">
+              <Link className="bg-gradient-to-r from-[#0052FF] to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-4 px-9 rounded-full shadow-[0_0_30px_rgba(0,82,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all text-center inline-flex items-center gap-2" to="/discovery">
                 <span>Start Your Discovery</span>
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </Link>
               <button 
                 onClick={() => frameworkRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                className="bg-white/90 hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-200/90 dark:border-slate-800 font-semibold py-4 px-9 rounded-full shadow-sm hover:shadow-md transition-all backdrop-blur-md"
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold py-4 px-9 rounded-full shadow-lg transition-all backdrop-blur-xl"
               >
                 The Methodology
               </button>
@@ -143,7 +148,7 @@ export default function Home() {
                 transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
                 transition: 'transform 0.2s cubic-bezier(0.03, 0.98, 0.52, 0.99)'
               }}
-              className="w-full max-w-3xl rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.12)] border border-white/90 dark:border-slate-800 relative aspect-[16/10] bg-gradient-to-br from-[#4ade80] via-[#52e493] to-[#34d399] flex items-center justify-center group select-none"
+              className="w-full max-w-3xl rounded-3xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.6)] border border-white/20 relative aspect-[16/10] bg-gradient-to-br from-[#4ade80] via-[#52e493] to-[#34d399] flex items-center justify-center group select-none"
             >
               {/* Halftone Dot Grid Pattern Overlay */}
               <div 
@@ -176,41 +181,41 @@ export default function Home() {
 
               {/* Floating Glassmorphic Badges (Matching Screenshot Callouts) */}
               
-              {/* Badge 1: Top Right - Delight */}
-              <div className="absolute top-8 left-8 md:left-14 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float">
-                <div className="w-6 h-6 rounded-full bg-[#03091e] text-white flex items-center justify-center flex-shrink-0">
+              {/* Badge 1: Top Left - Delight */}
+              <div className="absolute top-8 left-8 md:left-14 bg-slate-900/90 text-white backdrop-blur-xl border border-white/20 shadow-2xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float">
+                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-xs">auto_awesome</span>
                 </div>
-                <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Delight</span>
+                <span className="text-xs font-extrabold text-white tracking-tight">Delight</span>
               </div>
 
-              {/* Badge 2: Middle Left - Deep Focus */}
-              <div className="absolute bottom-24 left-6 md:left-10 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-100">
-                <div className="w-6 h-6 rounded-full bg-[#03091e] text-white flex items-center justify-center flex-shrink-0">
+              {/* Badge 2: Bottom Left - Deep Focus */}
+              <div className="absolute bottom-24 left-6 md:left-10 bg-slate-900/90 text-white backdrop-blur-xl border border-white/20 shadow-2xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-100">
+                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-xs">psychology</span>
                 </div>
-                <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Deep Focus</span>
+                <span className="text-xs font-extrabold text-white tracking-tight">Deep Focus</span>
               </div>
 
               {/* Badge 3: Top Right - Data-Driven Insight */}
-              <div className="absolute top-10 right-6 md:right-10 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-200">
-                <div className="w-6 h-6 rounded-full bg-[#03091e] text-white flex items-center justify-center flex-shrink-0">
+              <div className="absolute top-10 right-6 md:right-10 bg-slate-900/90 text-white backdrop-blur-xl border border-white/20 shadow-2xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-200">
+                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-xs">analytics</span>
                 </div>
-                <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Data-Driven Insight</span>
+                <span className="text-xs font-extrabold text-white tracking-tight">Data-Driven Insight</span>
               </div>
 
               {/* Badge 4: Bottom Right - Strategic Clarity */}
-              <div className="absolute bottom-24 right-6 md:right-10 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/90 dark:border-slate-700 shadow-xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-300">
-                <div className="w-6 h-6 rounded-full bg-[#03091e] text-white flex items-center justify-center flex-shrink-0">
+              <div className="absolute bottom-24 right-6 md:right-10 bg-slate-900/90 text-white backdrop-blur-xl border border-white/20 shadow-2xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-300">
+                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0">
                   <span className="material-symbols-outlined text-xs">track_changes</span>
                 </div>
-                <span className="text-xs font-extrabold text-[#03091e] dark:text-white tracking-tight">Strategic Clarity</span>
+                <span className="text-xs font-extrabold text-white tracking-tight">Strategic Clarity</span>
               </div>
 
               {/* Bottom Interactive Status Bar */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[#03091e]/90 text-white backdrop-blur-xl px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-2 shadow-lg">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[#03091e]/90 text-white backdrop-blur-xl px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-2 shadow-lg border border-white/10">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
                 ProDecide Neural Cognitive Parser Active
               </div>
             </motion.div>
@@ -221,19 +226,19 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="grid grid-cols-3 gap-6 md:gap-16 mt-16 pt-8 border-t border-slate-200/60 dark:border-slate-800/60 max-w-2xl w-full text-center"
+              className="grid grid-cols-3 gap-6 md:gap-16 mt-16 pt-8 border-t border-slate-800/80 max-w-2xl w-full text-center"
             >
               <div>
-                <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white font-headline">500+</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Verified Executives</div>
+                <div className="text-2xl md:text-3xl font-black text-white font-headline">500+</div>
+                <div className="text-xs text-slate-400 font-medium">Verified Executives</div>
               </div>
               <div>
-                <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white font-headline">98%</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Decision Satisfaction</div>
+                <div className="text-2xl md:text-3xl font-black text-white font-headline">98%</div>
+                <div className="text-xs text-slate-400 font-medium">Decision Satisfaction</div>
               </div>
               <div>
-                <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white font-headline">20k+</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Paths Mapped</div>
+                <div className="text-2xl md:text-3xl font-black text-white font-headline">20k+</div>
+                <div className="text-xs text-slate-400 font-medium">Paths Mapped</div>
               </div>
             </motion.div>
 
