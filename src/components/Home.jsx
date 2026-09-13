@@ -1,11 +1,22 @@
 import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import Navbar from './Navbar';
 
 export default function Home() {
   const frameworkRef = useRef(null);
   const cardRef = useRef(null);
+  const containerRef = useRef(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  // Page Scroll Progress Hooks
+  const { scrollYProgress } = useScroll();
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+
+  // Hero Scroll Transformations
+  const heroScale = useTransform(scrollYProgress, [0, 0.2], [1, 1.06]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0.92]);
+  const beamScaleX = useTransform(scrollYProgress, [0.18, 0.42], [0, 1]);
 
   const handleMouseMove = (e) => {
     const card = cardRef.current;
@@ -27,8 +38,16 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-surface font-body text-on-surface antialiased">
+    <div ref={containerRef} className="bg-surface font-body text-on-surface antialiased relative">
+      
+      {/* Scroll Progress Line directly below top fixed navbar */}
+      <motion.div 
+        className="fixed top-16 left-0 right-0 h-0.5 bg-gradient-to-r from-[#0052FF] via-indigo-500 to-purple-600 z-50 origin-left"
+        style={{ scaleX: smoothProgress }}
+      />
+
       <Navbar />
+      
       <div className="hero-animated-bg relative">
 
         {/* Merged Top Section: Hero */}
@@ -60,25 +79,48 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-[#f7f9fb]"></div>
           </div>
 
-          <div className="max-w-6xl mx-auto text-center z-10 flex flex-col items-center">
+          <motion.div 
+            style={{ scale: heroScale, opacity: heroOpacity }}
+            className="max-w-6xl mx-auto text-center z-10 flex flex-col items-center"
+          >
             
             {/* Top Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-sm mb-8 text-xs font-semibold text-[#0052FF] dark:text-blue-400 backdrop-blur-md animate-fade-in">
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-sm mb-8 text-xs font-semibold text-[#0052FF] dark:text-blue-400 backdrop-blur-md animate-fade-in"
+            >
               <span className="w-2 h-2 rounded-full bg-[#0052FF] animate-pulse"></span>
               ✦ Next-Gen Predictive Career Intelligence
-            </div>
+            </motion.div>
 
-            <h1 className="font-headline text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#03091e] dark:text-white mb-8 leading-[1.1] max-w-4xl">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+              className="font-headline text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#03091e] dark:text-white mb-8 leading-[1.1] max-w-4xl"
+            >
               The Architecture of <br />
               <span className="bg-gradient-to-r from-[#0052FF] via-indigo-600 to-purple-600 bg-clip-text text-transparent">Definitive Choice.</span>
-            </h1>
+            </motion.h1>
 
-            <p className="text-base md:text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-2xl leading-relaxed">
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="text-base md:text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-2xl leading-relaxed"
+            >
               Fusing AI predictive career mapping with real-world executive mentorship to help students & professionals navigate high-stakes career decisions with 100% confidence.
-            </p>
+            </motion.p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap justify-center gap-4 mb-16">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="flex flex-wrap justify-center gap-4 mb-16"
+            >
               <Link className="bg-[#03091e] hover:bg-[#0a1538] text-white font-bold py-4 px-9 rounded-full shadow-xl shadow-slate-900/10 hover:scale-[1.02] active:scale-[0.98] transition-all text-center inline-flex items-center gap-2" to="/discovery">
                 <span>Start Your Discovery</span>
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -89,11 +131,14 @@ export default function Home() {
               >
                 The Methodology
               </button>
-            </div>
+            </motion.div>
 
             {/* Interactive Visual Card: Neural Cognitive Scan Widget (Matching Reference Image) */}
-            <div 
+            <motion.div 
               ref={cardRef}
+              initial={{ opacity: 0, y: 40, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
               style={{
                 transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
                 transition: 'transform 0.2s cubic-bezier(0.03, 0.98, 0.52, 0.99)'
@@ -168,10 +213,16 @@ export default function Home() {
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 ProDecide Neural Cognitive Parser Active
               </div>
-            </div>
+            </motion.div>
 
             {/* Quick Stats Bar */}
-            <div className="grid grid-cols-3 gap-6 md:gap-16 mt-16 pt-8 border-t border-slate-200/60 dark:border-slate-800/60 max-w-2xl w-full text-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="grid grid-cols-3 gap-6 md:gap-16 mt-16 pt-8 border-t border-slate-200/60 dark:border-slate-800/60 max-w-2xl w-full text-center"
+            >
               <div>
                 <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white font-headline">500+</div>
                 <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Verified Executives</div>
@@ -184,77 +235,138 @@ export default function Home() {
                 <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white font-headline">20k+</div>
                 <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Paths Mapped</div>
               </div>
-            </div>
+            </motion.div>
 
-          </div>
+          </motion.div>
         </section>
       </div>
 
       <main>
-        {/* Refined Framework Section */}
-        <section ref={frameworkRef} className="bg-slate-50/50 py-32 px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="mb-20 text-center md:text-left">
-              <h2 className="font-headline text-4xl font-bold tracking-tight mb-4 text-slate-900">A Framework for Clarity</h2>
+        {/* Refined Framework Section with Scroll-Driven Electric Laser Beam */}
+        <section ref={frameworkRef} className="bg-slate-50/50 dark:bg-slate-950/50 py-32 px-8 relative overflow-hidden">
+          
+          <div className="max-w-7xl mx-auto relative">
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-20 text-center md:text-left"
+            >
+              <h2 className="font-headline text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">A Framework for Clarity</h2>
               <p className="text-on-surface-variant max-w-2xl">Precision-engineered phases to transform complex variables into decisive action.</p>
+            </motion.div>
+
+            {/* Glowing Laser Beam Line connecting Stage 01 -> Stage 04 on Scroll */}
+            <div className="hidden lg:block absolute top-1/2 left-4 right-4 h-1 bg-slate-200/60 dark:bg-slate-800 rounded-full -translate-y-4 pointer-events-none z-0">
+              <motion.div 
+                className="h-full bg-gradient-to-r from-[#0052FF] via-indigo-500 to-purple-600 rounded-full shadow-[0_0_15px_#0052FF] origin-left"
+                style={{ scaleX: beamScaleX }}
+              />
             </div>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 relative z-10">
               {/* Stage 1 */}
-              <div className="group bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className="group bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:border-[#0052FF]/40 transition-all duration-300"
+              >
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-sm">
                   <span className="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform">explore</span>
                 </div>
                 <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 01</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900">Understand Your Situation</h3>
+                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Understand Your Situation</h3>
                 <p className="text-on-surface-variant text-sm leading-relaxed">We capture your goals, constraints, and what’s actually at stake.</p>
-              </div>
+              </motion.div>
+
               {/* Stage 2 */}
-              <div className="group bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.25 }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className="group bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:border-[#0052FF]/40 transition-all duration-300"
+              >
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-sm">
                   <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">query_stats</span>
                 </div>
                 <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 02</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900">Bring Clarity to the Problem</h3>
+                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Bring Clarity to the Problem</h3>
                 <p className="text-on-surface-variant text-sm leading-relaxed">Our AI structures your inputs and highlights what truly matters.</p>
-              </div>
+              </motion.div>
+
               {/* Stage 3 */}
-              <div className="group bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className="group bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:border-[#0052FF]/40 transition-all duration-300"
+              >
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-sm">
                   <span className="material-symbols-outlined text-xl group-hover:-translate-y-0.5 transition-transform">person_search</span>
                 </div>
                 <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 03</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900">Match You with the Right Expert</h3>
+                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Match You with the Right Expert</h3>
                 <p className="text-on-surface-variant text-sm leading-relaxed">Get connected to a consultant who fits your specific decision context.</p>
-              </div>
+              </motion.div>
+
               {/* Stage 4 */}
-              <div className="group bg-slate-900 p-8 rounded-xl text-white shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.55 }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className="group bg-[#03091e] p-8 rounded-2xl text-white shadow-2xl hover:border-indigo-500/50 transition-all duration-300 border border-slate-800"
+              >
+                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-white mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-sm">
                   <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">verified_user</span>
                 </div>
                 <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 04</span>
                 <h3 className="font-headline text-xl font-bold mb-3 text-white">Make the Decision with Confidence</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">Work through your options in guided sessions and move forward with clarity.</p>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
 
         {/* Expert Section - Premium Directory */}
-        <section className="py-32 px-8 bg-white">
+        <section className="py-32 px-8 bg-white dark:bg-slate-950">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-20">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="flex flex-col md:flex-row justify-between items-end gap-8 mb-20"
+            >
               <div className="max-w-xl">
-                <h2 className="font-headline text-4xl font-bold tracking-tight mb-4 text-slate-900">Human Intelligence, Augmented.</h2>
+                <h2 className="font-headline text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">Human Intelligence, Augmented.</h2>
                 <p className="text-on-surface-variant leading-relaxed">Work directly with the top 1% of industry strategists, hand-matched to your specific challenge by our AI engine.</p>
               </div>
-              <Link className="text-primary font-bold inline-flex items-center gap-2 group" to="/experts">
+              <Link className="text-[#0052FF] font-bold inline-flex items-center gap-2 group" to="/experts">
                 <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all">View Full Directory</span>
                 <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
               </Link>
-            </div>
+            </motion.div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
               {/* Consultant 1 */}
-              <div className="consultant-card group cursor-pointer bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                whileHover={{ y: -6 }}
+                className="consultant-card group cursor-pointer bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300"
+              >
                 <div className="relative overflow-hidden rounded-xl mb-6 aspect-[4/5] bg-slate-100">
                   <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="Professional female executive Sarah Chen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKmkV3e9nKo1J_wj7ErY6Jo6PA56ImpTbrbrf2JYmVGx5aBDub1zWrwrFnA5uF233QPgq6gde2uCEcMIQZ9qCI1iglD-skyrmtrLJKersPCe1Rvg8FNt_I1fpLuwsjQYgiu78gm-f7n_kPd-ghenwl5I_6wu21JAv54emIIUm2Q3Xhlsz6Pp9Pexoj5l_nceGikMwWkdDliA8XZlFE6xp5Tnxxwywkz1oD_R7uKfinJU1t1MFuopE34HN1MxJzjZljD1I13-6uyhk" />
                   <div className="absolute bottom-4 left-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
@@ -262,14 +374,22 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-headline text-xl font-bold text-slate-900">Sarah Chen</h4>
-                  <div className="expertise-tag px-2 py-0.5 border border-slate-200 rounded text-[10px] font-bold text-slate-500 uppercase tracking-tighter transition-colors">Logistics</div>
+                  <h4 className="font-headline text-xl font-bold text-slate-900 dark:text-white">Sarah Chen</h4>
+                  <div className="expertise-tag px-2 py-0.5 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-500 uppercase tracking-tighter transition-colors">Logistics</div>
                 </div>
                 <p className="text-xs text-slate-400 font-semibold mb-4 uppercase tracking-wider">Former COO at GlobalLogix</p>
                 <p className="text-sm text-on-surface-variant leading-relaxed">Specializes in multi-modal infrastructure optimization and supply chain resilience.</p>
-              </div>
+              </motion.div>
+
               {/* Consultant 2 */}
-              <div className="consultant-card group cursor-pointer bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.25 }}
+                whileHover={{ y: -6 }}
+                className="consultant-card group cursor-pointer bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300"
+              >
                 <div className="relative overflow-hidden rounded-xl mb-6 aspect-[4/5] bg-slate-100">
                   <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="Senior male consultant Marcus Thorne" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXjKQlFsexu8ZM3ElWg6wQMIVQV-Qe30MQDGhEcj6zoD8IJPVJ3HC9paxqHLneNw_yE8mxaQay6PAsWJ1xtRKYLBiBYc33Zbn8b-3rxQDp0Z4RMstc5B0jnpPYr8WW0bmLTowuj7C31WHCHJ5EIshKQDQxgUjpt-ZR5kjMbsSOKTZpbn78XKBjOKP0lEt9qYIpHw7TPvoA6FaHM38_UG69PNRs_YWCKxq6TX_tybB2TfPgls6GEUJ_DuCO17OFEQcoitR68UR9w_s" />
                   <div className="absolute bottom-4 left-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
@@ -277,14 +397,22 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-headline text-xl font-bold text-slate-900">Marcus Thorne</h4>
-                  <div className="expertise-tag px-2 py-0.5 border border-slate-200 rounded text-[10px] font-bold text-slate-500 uppercase tracking-tighter transition-colors">FinTech</div>
+                  <h4 className="font-headline text-xl font-bold text-slate-900 dark:text-white">Marcus Thorne</h4>
+                  <div className="expertise-tag px-2 py-0.5 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-500 uppercase tracking-tighter transition-colors">FinTech</div>
                 </div>
                 <p className="text-xs text-slate-400 font-semibold mb-4 uppercase tracking-wider">Venture Capital Partner</p>
                 <p className="text-sm text-on-surface-variant leading-relaxed">Expertise in emerging market regulatory frameworks and digital asset integration.</p>
-              </div>
+              </motion.div>
+
               {/* Consultant 3 */}
-              <div className="consultant-card group cursor-pointer bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                whileHover={{ y: -6 }}
+                className="consultant-card group cursor-pointer bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300"
+              >
                 <div className="relative overflow-hidden rounded-xl mb-6 aspect-[4/5] bg-slate-100">
                   <img className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="Female tech professional Dr. Elena Rodriguez" src="/elena_portrait.png" />
                   <div className="absolute bottom-4 left-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
@@ -292,34 +420,40 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-headline text-xl font-bold text-slate-900">Dr. Elena Rodriguez</h4>
-                  <div className="expertise-tag px-2 py-0.5 border border-slate-200 rounded text-[10px] font-bold text-slate-500 uppercase tracking-tighter transition-colors">ESG Systems</div>
+                  <h4 className="font-headline text-xl font-bold text-slate-900 dark:text-white">Dr. Elena Rodriguez</h4>
+                  <div className="expertise-tag px-2 py-0.5 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold text-slate-500 uppercase tracking-tighter transition-colors">ESG Systems</div>
                 </div>
                 <p className="text-xs text-slate-400 font-semibold mb-4 uppercase tracking-wider">G7 Climate Task Force Advisor</p>
                 <p className="text-sm text-on-surface-variant leading-relaxed">Lead researcher on circular economies and large-scale sustainability modeling.</p>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
 
         {/* AI Insight Pulse */}
-        <section className="py-24 px-8 bg-slate-50">
+        <section className="py-24 px-8 bg-slate-50 dark:bg-slate-900/50">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white border border-slate-200 rounded-2xl p-12 relative overflow-hidden shadow-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-xl"
+            >
               <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
-                <div className="bg-primary p-5 rounded-2xl text-white shadow-xl shadow-primary/20">
+                <div className="bg-[#0052FF] p-5 rounded-2xl text-white shadow-xl shadow-[#0052FF]/20">
                   <span className="material-symbols-outlined text-4xl">lightbulb</span>
                 </div>
                 <div className="text-center md:text-left">
-                  <h3 className="font-headline text-2xl font-bold mb-4 text-slate-900">Why ProDecide AI?</h3>
+                  <h3 className="font-headline text-2xl font-bold mb-4 text-slate-900 dark:text-white">Why ProDecide AI?</h3>
                   <p className="text-lg text-on-surface-variant leading-relaxed italic mb-6">"ProDecide empowers professionals and individuals alike to navigate complex career paths and personal milestones. We don't just provide data; we provide the narrative architecture that makes the right choice obvious."</p>
                   <div className="flex items-center justify-center md:justify-start gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-primary">Live Strategy Optimization</span>
+                    <div className="w-2 h-2 bg-[#0052FF] rounded-full animate-pulse"></div>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-[#0052FF]">Live Strategy Optimization</span>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
       </main>
