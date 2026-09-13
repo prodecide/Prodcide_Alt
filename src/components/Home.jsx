@@ -138,83 +138,203 @@ export default function Home() {
               </button>
             </motion.div>
 
-            {/* Interactive Visual Card: Neural Cognitive Scan Widget (Matching Reference Image) */}
+            {/* Interactive Visual Card: Revamped Front-Facing Holographic Neural Scanner */}
             <motion.div 
               ref={cardRef}
               initial={{ opacity: 0, y: 40, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
               style={{
-                transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+                transform: `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
                 transition: 'transform 0.2s cubic-bezier(0.03, 0.98, 0.52, 0.99)'
               }}
-              className="w-full max-w-3xl rounded-3xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.6)] border border-white/20 relative aspect-[16/10] bg-gradient-to-br from-[#4ade80] via-[#52e493] to-[#34d399] flex items-center justify-center group select-none"
+              className="w-full max-w-4xl rounded-3xl overflow-hidden shadow-[0_30px_100px_rgba(0,82,255,0.25)] border border-cyan-500/30 relative aspect-[16/10] bg-[#040c1e]/85 backdrop-blur-2xl flex items-center justify-center group select-none"
             >
-              {/* Halftone Dot Grid Pattern Overlay */}
-              <div 
-                className="absolute inset-0 opacity-25 mix-blend-overlay pointer-events-none"
-                style={{
-                  backgroundImage: `radial-gradient(#03091e 1.5px, transparent 1.5px)`,
-                  backgroundSize: '16px 16px'
-                }}
-              ></div>
+              {/* Radial Cyan-Blue Glow backdrop inside card */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-500/15 via-blue-600/10 to-transparent pointer-events-none"></div>
 
-              {/* Central Silhouette & Neural Mesh Overlay */}
-              <div className="relative w-72 h-80 flex items-center justify-center">
-                {/* Silhouette SVG Avatar / Portrait */}
-                <svg className="w-full h-full text-[#03091e] opacity-90 drop-shadow-2xl" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12c0 3.54 1.84 6.65 4.63 8.43.12-.51.37-1.41.76-2.22.46-.96 1.15-1.92 2.1-2.61.92-.67 2.05-1.1 3.51-1.1s2.59.43 3.51 1.1c.95.69 1.64 1.65 2.1 2.61.39.81.64 1.71.76 2.22C20.16 18.65 22 15.54 22 12c0-5.52-4.48-10-10-10zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+              {/* Full-Screen Spreading Neural Constellation Network Mesh SVG */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 1000 625" fill="none">
+                <defs>
+                  <linearGradient id="laserGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#00f0ff" stopOpacity="0.8" />
+                    <stop offset="50%" stopColor="#0052FF" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#34d399" stopOpacity="0.8" />
+                  </linearGradient>
+                  <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+
+                {/* Spreading Background Neural Network Lines across entire container */}
+                <g opacity="0.4" stroke="url(#laserGrad)" strokeWidth="1">
+                  {/* Outer Spreading Nodes and Line Network */}
+                  <line x1="500" y1="280" x2="200" y2="100" strokeDasharray="4 2" />
+                  <line x1="500" y1="280" x2="800" y2="100" strokeDasharray="4 2" />
+                  <line x1="500" y1="360" x2="180" y2="480" strokeDasharray="4 2" />
+                  <line x1="500" y1="360" x2="820" y2="480" strokeDasharray="4 2" />
+                  
+                  <line x1="200" y1="100" x2="80" y2="220" />
+                  <line x1="200" y1="100" x2="350" y2="60" />
+                  <line x1="800" y1="100" x2="920" y2="220" />
+                  <line x1="800" y1="100" x2="650" y2="60" />
+
+                  <line x1="180" y1="480" x2="60" y2="380" />
+                  <line x1="180" y1="480" x2="360" y2="560" />
+                  <line x1="820" y1="480" x2="940" y2="380" />
+                  <line x1="820" y1="480" x2="640" y2="560" />
+
+                  <line x1="80" y1="220" x2="60" y2="380" />
+                  <line x1="920" y1="220" x2="940" y2="380" />
+                  <line x1="350" y1="60" x2="650" y2="60" />
+                  <line x1="360" y1="560" x2="640" y2="560" />
+
+                  {/* Interconnected Web Mesh */}
+                  <line x1="350" y1="60" x2="420" y2="200" />
+                  <line x1="650" y1="60" x2="580" y2="200" />
+                  <line x1="180" y1="220" x2="400" y2="240" />
+                  <line x1="820" y1="220" x2="600" y2="240" />
+                </g>
+
+                {/* Spreading Node Particles */}
+                <g filter="url(#cyanGlow)">
+                  <circle cx="200" cy="100" r="4" fill="#00f0ff" className="animate-ping" />
+                  <circle cx="800" cy="100" r="4" fill="#00f0ff" className="animate-ping" />
+                  <circle cx="180" cy="480" r="4" fill="#34d399" />
+                  <circle cx="820" cy="480" r="4" fill="#34d399" />
+                  <circle cx="80" cy="220" r="3" fill="#0052FF" />
+                  <circle cx="920" cy="220" r="3" fill="#0052FF" />
+                  <circle cx="350" cy="60" r="3" fill="#00f0ff" />
+                  <circle cx="650" cy="60" r="3" fill="#00f0ff" />
+                  <circle cx="60" cy="380" r="3" fill="#00f0ff" />
+                  <circle cx="940" cy="380" r="3" fill="#00f0ff" />
+                  <circle cx="360" cy="560" r="3.5" fill="#34d399" />
+                  <circle cx="640" cy="560" r="3.5" fill="#34d399" />
+                </g>
+
+                {/* Laser Connector Target Lines directly linking Badge Positions to Head Nodes */}
+                <g stroke="#00f0ff" strokeWidth="1.5" filter="url(#cyanGlow)" opacity="0.8">
+                  {/* Top Left Badge Connector */}
+                  <polyline points="210,110 320,150 420,210" strokeDasharray="3 2" />
+                  <circle cx="420" cy="210" r="4" fill="#00f0ff" />
+                  <circle cx="210" cy="110" r="3" fill="#00f0ff" />
+
+                  {/* Bottom Left Badge Connector */}
+                  <polyline points="200,430 330,420 430,360" strokeDasharray="3 2" />
+                  <circle cx="430" cy="360" r="4" fill="#34d399" />
+                  <circle cx="200" cy="430" r="3" fill="#34d399" />
+
+                  {/* Top Right Badge Connector */}
+                  <polyline points="790,110 680,150 580,210" strokeDasharray="3 2" />
+                  <circle cx="580" cy="210" r="4" fill="#00f0ff" />
+                  <circle cx="790" cy="110" r="3" fill="#00f0ff" />
+
+                  {/* Bottom Right Badge Connector */}
+                  <polyline points="800,430 670,420 570,360" strokeDasharray="3 2" />
+                  <circle cx="570" cy="360" r="4" fill="#34d399" />
+                  <circle cx="800" cy="430" r="3" fill="#34d399" />
+                </g>
+              </svg>
+
+              {/* Central Front-Facing Holographic Neural Head & Laser Beam Scanner */}
+              <div className="relative w-80 h-96 flex items-center justify-center z-10">
+                
+                {/* Front-Facing Holographic Head Silhouette SVG */}
+                <svg className="w-full h-full text-cyan-400 opacity-90 drop-shadow-[0_0_25px_rgba(0,240,255,0.4)]" viewBox="0 0 200 240" fill="none">
+                  {/* Front-Facing Head Outline Contour */}
+                  <path 
+                    d="M100 20 C60 20 42 45 42 90 C42 130 52 165 72 190 L80 200 C90 208 95 212 100 212 C105 212 110 208 120 200 L128 190 C148 165 158 130 158 90 C158 45 140 20 100 20 Z" 
+                    stroke="url(#laserGrad)" 
+                    strokeWidth="2" 
+                    fill="url(#headFillGrad)" 
+                    opacity="0.85" 
+                  />
+
+                  {/* Facial Features & Cranium Neural Grid Lines */}
+                  <g stroke="#00f0ff" strokeWidth="0.8" opacity="0.6">
+                    {/* Eyebrow & Orbit Lines */}
+                    <path d="M60 92 C72 86 84 88 92 94" />
+                    <path d="M140 92 C128 86 116 88 108 94" />
+                    {/* Nose Bridge & Tip */}
+                    <path d="M100 90 L100 135 L93 142 L107 142" />
+                    {/* Lips Line */}
+                    <path d="M82 165 Q100 172 118 165" />
+                    {/* Jaw & Chin Contours */}
+                    <path d="M62 145 Q100 195 138 145" />
+
+                    {/* Dotted Neural Brain Grid */}
+                    {Array.from({ length: 48 }).map((_, i) => {
+                      const cx = 60 + (i % 7) * 13;
+                      const cy = 40 + Math.floor(i / 7) * 14;
+                      return <circle key={i} cx={cx} cy={cy} r="1.2" fill="#00f0ff" opacity={i % 3 === 0 ? "0.9" : "0.4"} />;
+                    })}
+                  </g>
+
+                  <defs>
+                    <linearGradient id="headFillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#00f0ff" stopOpacity="0.15" />
+                      <stop offset="60%" stopColor="#0052FF" stopOpacity="0.08" />
+                      <stop offset="100%" stopColor="#03091e" stopOpacity="0.4" />
+                    </linearGradient>
+                  </defs>
                 </svg>
 
-                {/* Dotted Neural Scanning Overlay Grid over Head */}
-                <div className="absolute top-4 w-48 h-56 rounded-full bg-slate-900/30 backdrop-blur-[1px] mix-blend-multiply flex flex-wrap gap-1 p-3 items-center justify-center opacity-80 animate-pulse">
-                  {Array.from({ length: 96 }).map((_, i) => (
-                    <span 
-                      key={i} 
-                      className={`w-1.5 h-1.5 rounded-full transition-opacity duration-500 ${
-                        i % 5 === 0 ? 'bg-white opacity-90' : i % 3 === 0 ? 'bg-[#03091e] opacity-70' : 'bg-emerald-950 opacity-40'
-                      }`}
-                    ></span>
-                  ))}
-                </div>
+                {/* Vertical Electric Laser Beam Scanner Line */}
+                <motion.div 
+                  className="absolute left-0 right-0 h-1 bg-cyan-300 shadow-[0_0_20px_#00f0ff,0_0_35px_#00f0ff] z-20 pointer-events-none"
+                  animate={{
+                    top: ['12%', '84%', '12%']
+                  }}
+                  transition={{
+                    duration: 3.2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  {/* Laser Beam Pulse Orbs on Edges */}
+                  <div className="absolute -left-1 -top-1 w-3 h-3 rounded-full bg-cyan-200 shadow-[0_0_12px_#00f0ff]"></div>
+                  <div className="absolute -right-1 -top-1 w-3 h-3 rounded-full bg-cyan-200 shadow-[0_0_12px_#00f0ff]"></div>
+                </motion.div>
+
               </div>
 
-              {/* Floating Glassmorphic Badges (Matching Screenshot Callouts) */}
+              {/* Floating Glassmorphic Badges connected via Laser lines */}
               
               {/* Badge 1: Top Left - Delight */}
-              <div className="absolute top-8 left-8 md:left-14 bg-slate-900/90 text-white backdrop-blur-xl border border-white/20 shadow-2xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float">
-                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0">
+              <div className="absolute top-8 left-6 md:left-12 bg-[#03091e]/90 text-white backdrop-blur-xl border border-cyan-400/40 shadow-[0_0_20px_rgba(0,240,255,0.2)] rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float z-20">
+                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0 shadow-[0_0_10px_#0052FF]">
                   <span className="material-symbols-outlined text-xs">auto_awesome</span>
                 </div>
                 <span className="text-xs font-extrabold text-white tracking-tight">Delight</span>
               </div>
 
               {/* Badge 2: Bottom Left - Deep Focus */}
-              <div className="absolute bottom-24 left-6 md:left-10 bg-slate-900/90 text-white backdrop-blur-xl border border-white/20 shadow-2xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-100">
-                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0">
+              <div className="absolute bottom-20 left-6 md:left-10 bg-[#03091e]/90 text-white backdrop-blur-xl border border-cyan-400/40 shadow-[0_0_20px_rgba(0,240,255,0.2)] rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-100 z-20">
+                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0 shadow-[0_0_10px_#0052FF]">
                   <span className="material-symbols-outlined text-xs">psychology</span>
                 </div>
                 <span className="text-xs font-extrabold text-white tracking-tight">Deep Focus</span>
               </div>
 
               {/* Badge 3: Top Right - Data-Driven Insight */}
-              <div className="absolute top-10 right-6 md:right-10 bg-slate-900/90 text-white backdrop-blur-xl border border-white/20 shadow-2xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-200">
-                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0">
+              <div className="absolute top-8 right-6 md:right-12 bg-[#03091e]/90 text-white backdrop-blur-xl border border-cyan-400/40 shadow-[0_0_20px_rgba(0,240,255,0.2)] rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-200 z-20">
+                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0 shadow-[0_0_10px_#0052FF]">
                   <span className="material-symbols-outlined text-xs">analytics</span>
                 </div>
                 <span className="text-xs font-extrabold text-white tracking-tight">Data-Driven Insight</span>
               </div>
 
               {/* Badge 4: Bottom Right - Strategic Clarity */}
-              <div className="absolute bottom-24 right-6 md:right-10 bg-slate-900/90 text-white backdrop-blur-xl border border-white/20 shadow-2xl rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-300">
-                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0">
+              <div className="absolute bottom-20 right-6 md:right-10 bg-[#03091e]/90 text-white backdrop-blur-xl border border-cyan-400/40 shadow-[0_0_20px_rgba(0,240,255,0.2)] rounded-full px-4 py-2.5 flex items-center gap-2.5 hover:scale-105 transition-all duration-300 cursor-pointer animate-float delay-300 z-20">
+                <div className="w-6 h-6 rounded-full bg-[#0052FF] text-white flex items-center justify-center flex-shrink-0 shadow-[0_0_10px_#0052FF]">
                   <span className="material-symbols-outlined text-xs">track_changes</span>
                 </div>
                 <span className="text-xs font-extrabold text-white tracking-tight">Strategic Clarity</span>
               </div>
 
               {/* Bottom Interactive Status Bar */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[#03091e]/90 text-white backdrop-blur-xl px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-2 shadow-lg border border-white/10">
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[#03091e]/95 text-white backdrop-blur-xl px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-2 shadow-lg border border-cyan-500/30 z-20">
                 <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
                 ProDecide Neural Cognitive Parser Active
               </div>
