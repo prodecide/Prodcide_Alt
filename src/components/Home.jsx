@@ -259,11 +259,14 @@ export default function Home() {
             </motion.div>
 
             {/* Glowing Laser Beam Line connecting Stage 01 -> Stage 04 on Scroll */}
-            <div className="hidden lg:block absolute top-1/2 left-4 right-4 h-1 bg-slate-200/60 dark:bg-slate-800 rounded-full -translate-y-4 pointer-events-none z-0">
+            <div className="hidden lg:block absolute top-1/2 left-4 right-4 h-1.5 bg-slate-200/60 dark:bg-slate-800 rounded-full -translate-y-4 pointer-events-none z-0 overflow-visible">
               <motion.div 
-                className="h-full bg-gradient-to-r from-[#0052FF] via-indigo-500 to-purple-600 rounded-full shadow-[0_0_15px_#0052FF] origin-left"
+                className="h-full bg-gradient-to-r from-[#0052FF] via-cyan-400 to-indigo-500 rounded-full shadow-[0_0_20px_#0052FF] origin-left relative"
                 style={{ scaleX: beamScaleX }}
-              />
+              >
+                {/* Electric Laser Tip Orb */}
+                <div className="w-4 h-4 rounded-full bg-cyan-300 shadow-[0_0_20px_#00f0ff] -right-2 -top-1 absolute animate-pulse"></div>
+              </motion.div>
             </div>
 
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 relative z-10">
@@ -273,15 +276,15 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className="group bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:border-[#0052FF]/40 transition-all duration-300"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-[0_15px_40px_rgba(0,82,255,0.15)] hover:border-[#0052FF]/60 transition-all duration-300"
               >
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-sm">
-                  <span className="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform">explore</span>
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-[#0052FF] mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-md">
+                  <span className="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform">psychology</span>
                 </div>
-                <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 01</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Understand Your Situation</h3>
-                <p className="text-on-surface-variant text-sm leading-relaxed">We capture your goals, constraints, and what’s actually at stake.</p>
+                <span className="text-[10px] font-bold text-[#0052FF] tracking-[0.2em] uppercase block mb-3">Stage 01</span>
+                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Deep Analysis</h3>
+                <p className="text-on-surface-variant text-sm leading-relaxed">Comprehensive Skill & Personality Assessment.</p>
               </motion.div>
 
               {/* Stage 2 */}
@@ -290,15 +293,15 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.25 }}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className="group bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:border-[#0052FF]/40 transition-all duration-300"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-[0_15px_40px_rgba(0,82,255,0.15)] hover:border-[#0052FF]/60 transition-all duration-300"
               >
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-sm">
-                  <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">query_stats</span>
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-[#0052FF] mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-md">
+                  <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">trending_up</span>
                 </div>
-                <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 02</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Bring Clarity to the Problem</h3>
-                <p className="text-on-surface-variant text-sm leading-relaxed">Our AI structures your inputs and highlights what truly matters.</p>
+                <span className="text-[10px] font-bold text-[#0052FF] tracking-[0.2em] uppercase block mb-3">Stage 02</span>
+                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Skill Optimization</h3>
+                <p className="text-on-surface-variant text-sm leading-relaxed">Curated Training & Development Paths.</p>
               </motion.div>
 
               {/* Stage 3 */}
@@ -307,15 +310,15 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.4 }}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className="group bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:border-[#0052FF]/40 transition-all duration-300"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-[0_15px_40px_rgba(0,82,255,0.15)] hover:border-[#0052FF]/60 transition-all duration-300"
               >
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-sm">
-                  <span className="material-symbols-outlined text-xl group-hover:-translate-y-0.5 transition-transform">person_search</span>
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-[#0052FF] mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-md">
+                  <span className="material-symbols-outlined text-xl group-hover:-translate-y-0.5 transition-transform">insights</span>
                 </div>
-                <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 03</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Match You with the Right Expert</h3>
-                <p className="text-on-surface-variant text-sm leading-relaxed">Get connected to a consultant who fits your specific decision context.</p>
+                <span className="text-[10px] font-bold text-[#0052FF] tracking-[0.2em] uppercase block mb-3">Stage 03</span>
+                <h3 className="font-headline text-xl font-bold mb-3 text-slate-900 dark:text-white">Market Intelligence</h3>
+                <p className="text-on-surface-variant text-sm leading-relaxed">Real-time Opportunity Matching & Demand Analysis.</p>
               </motion.div>
 
               {/* Stage 4 */}
@@ -324,15 +327,15 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.55 }}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className="group bg-[#03091e] p-8 rounded-2xl text-white shadow-2xl hover:border-indigo-500/50 transition-all duration-300 border border-slate-800"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group bg-[#03091e] backdrop-blur-xl p-8 rounded-3xl text-white shadow-2xl hover:shadow-[0_15px_40px_rgba(0,82,255,0.3)] border border-[#0052FF]/50 transition-all duration-300 relative overflow-hidden"
               >
-                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-white mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-sm">
-                  <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">verified_user</span>
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:bg-[#0052FF] group-hover:text-white transition-all duration-300 shadow-md">
+                  <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">star</span>
                 </div>
-                <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase block mb-3">Stage 04</span>
-                <h3 className="font-headline text-xl font-bold mb-3 text-white">Make the Decision with Confidence</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">Work through your options in guided sessions and move forward with clarity.</p>
+                <span className="text-[10px] font-bold text-cyan-400 tracking-[0.2em] uppercase block mb-3">Stage 04</span>
+                <h3 className="font-headline text-xl font-bold mb-3 text-white">Exec Coaching</h3>
+                <p className="text-slate-300 text-sm leading-relaxed">Personalized Guidance for Strategic Placement.</p>
               </motion.div>
             </div>
           </div>
