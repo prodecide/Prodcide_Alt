@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, useScroll, useSpring } from 'framer-motion';
 import { apiFetch } from '../utils/api.js';
 
 export default function Navbar({ tempUser = null }) {
@@ -16,6 +17,16 @@ export default function Navbar({ tempUser = null }) {
   const notificationsRef = useRef(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userPicture, setUserPicture] = useState('');
+  const [scrolled, setScrolled] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [consultantData, setConsultantData] = useState(null);
@@ -102,42 +113,55 @@ export default function Navbar({ tempUser = null }) {
     window.location.reload();
   };
 
-  const getLinkClass = (path) => {
-    const isActive = pathname === path;
-    if (isActive) {
-      return "text-[#0052FF] font-bold text-sm transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:bg-[#0052FF] after:rounded-full";
-    }
-    return "text-slate-600 dark:text-slate-300 hover:text-[#0052FF] dark:hover:text-[#0052FF] font-medium text-sm transition-colors";
-  };
+  const navItems = [
+    { path: '/discovery', label: 'Discover' },
+    { path: '/about', label: 'About Us' },
+    { path: '/experts', label: 'Consultants' },
+  ];
 
   const isAdminLoggedIn = localStorage.getItem('prodecide_admin_auth') === 'true';
   const isAnyUserLoggedIn = !!tempUser || !!userName || !!userEmail || !!consultantData || isAdminLoggedIn;
 
   return (
-    <header className="fixed top-4 left-0 right-0 z-50 px-4 md:px-8 max-w-6xl mx-auto pointer-events-none">
-      <div className="pointer-events-auto bg-white/85 dark:bg-[#0b132b]/85 backdrop-blur-xl border border-white/90 dark:border-slate-800/80 shadow-[0_10px_35px_rgba(0,0,0,0.06)] rounded-full px-6 py-2.5 flex justify-between items-center transition-all duration-300">
-        
-        {/* Brand Logo */}
-        <div className="flex items-center gap-8">
-          <Link className="text-xl font-extrabold text-[#03091e] dark:text-white tracking-tight font-headline flex items-center" to="/">
-            prodecide<span className="text-[#0052FF]">.ai</span>
-          </Link>
+    <header className="fixed top-4 inset-x-0 z-50 px-6 md:px-12 pointer-events-none">
+      <div className="max-w-7xl mx-auto">
+      <div className={`pointer-events-auto relative grid grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center bg-[#050a18]/70 backdrop-blur-2xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-full px-5 md:px-6 transition-all duration-300 ${scrolled ? 'py-1.5 bg-[#050a18]/85 border-cyan-400/20' : 'py-2.5'}`}>
 
-          {/* Centered Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 ml-4">
-            <Link className={getLinkClass('/discovery')} to="/discovery">Discover</Link>
-            <Link className={getLinkClass('/about')} to="/about">About Us</Link>
-            <Link className={getLinkClass('/experts')} to="/experts">Consultants</Link>
-          </nav>
-        </div>
+        {/* Brand Logo */}
+        <Link className="justify-self-start text-xl font-extrabold text-white tracking-tight font-headline flex items-center" to="/">
+          prodecide<span className="text-cyan-400">.ai</span>
+        </Link>
+
+        {/* Centered Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navItems.map(({ path, label }) => {
+            const active = pathname === path;
+            return (
+              <Link
+                key={path}
+                to={path}
+                className={`relative px-4 py-1.5 rounded-full text-sm transition-colors ${active ? 'text-white font-semibold' : 'text-slate-300 hover:text-white font-medium'}`}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="nav-active"
+                    className="absolute inset-0 rounded-full bg-white/10 ring-1 ring-cyan-400/30 shadow-[0_0_18px_rgba(0,240,255,0.15)]"
+                    transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                  />
+                )}
+                <span className="relative">{label}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3">
+        <div className="justify-self-end flex items-center gap-3">
           {/* Notifications Icon */}
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-600 dark:text-slate-300 relative flex items-center justify-center"
+              className="p-2 rounded-full hover:bg-white/10 transition-all text-slate-300 relative flex items-center justify-center"
             >
               <span className="material-symbols-outlined text-lg">notifications</span>
               {((consultantData && incomingRequests.length > 0) || (!consultantData)) && (
@@ -146,23 +170,23 @@ export default function Navbar({ tempUser = null }) {
             </button>
 
             {notificationsOpen && (
-              <div className="absolute right-0 mt-4 w-80 rounded-2xl bg-white/95 dark:bg-[#191c1e]/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-2xl py-3 z-50 transform origin-top-right transition-all">
-                <div className="px-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Notifications</p>
+              <div className="absolute right-0 mt-4 w-80 rounded-2xl bg-[#0b1226]/95 backdrop-blur-xl border border-white/10 shadow-2xl py-3 z-50 transform origin-top-right transition-all">
+                <div className="px-4 pb-2 border-b border-white/10 flex justify-between items-center">
+                  <p className="text-xs font-bold text-slate-100 uppercase tracking-wider">Notifications</p>
                   <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">
                     {consultantData ? `${incomingRequests.length} New` : '2 New'}
                   </span>
                 </div>
-                <div className="max-h-60 overflow-y-auto mt-2 divide-y divide-slate-100 dark:divide-slate-800">
+                <div className="max-h-60 overflow-y-auto mt-2 divide-y divide-white/10">
                   {consultantData ? (
                     incomingRequests.length > 0 ? (
                       incomingRequests.map((req, reqIdx) => (
-                        <div key={reqIdx} className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div key={reqIdx} className="p-3.5 hover:bg-white/5 transition-colors">
                           <Link to="/consultant-dashboard" onClick={() => setNotificationsOpen(false)} className="block text-left no-underline group">
                             <div className="flex gap-2">
                               <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
                               <div>
-                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-[#0052FF] transition-colors">
+                                <p className="text-xs font-bold text-slate-100 group-hover:text-[#0052FF] transition-colors">
                                   Request from {req.clientName}
                                 </p>
                                 <p className="text-[10px] text-slate-500 mt-0.5">
@@ -183,11 +207,11 @@ export default function Navbar({ tempUser = null }) {
                     )
                   ) : (
                     <>
-                      <div className="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <div className="p-3.5 hover:bg-white/5 transition-colors">
                         <div className="flex gap-2">
                           <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></div>
                           <div>
-                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Matching algorithm complete</p>
+                            <p className="text-xs font-bold text-slate-100">Matching algorithm complete</p>
                             <p className="text-[10px] text-slate-400 mt-0.5">3 consulting experts have been hand-matched to your assessment.</p>
                           </div>
                         </div>
@@ -214,9 +238,9 @@ export default function Navbar({ tempUser = null }) {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-4 w-56 rounded-2xl bg-white/95 dark:bg-[#191c1e]/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800 shadow-2xl py-2 z-50 transform origin-top-right transition-all">
-                  <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
-                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+                <div className="absolute right-0 mt-4 w-56 rounded-2xl bg-[#0b1226]/95 backdrop-blur-xl border border-white/10 shadow-2xl py-2 z-50 transform origin-top-right transition-all">
+                  <div className="px-4 py-2.5 border-b border-white/10">
+                    <p className="text-sm font-bold text-slate-100 truncate">
                       {tempUser ? tempUser.name : consultantData ? consultantData.name : isAdminLoggedIn ? 'Administrator' : userName || 'User'}
                     </p>
                     <p className="text-[10px] text-slate-400 truncate">
@@ -227,7 +251,7 @@ export default function Navbar({ tempUser = null }) {
                     <Link
                       to="/discovery"
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-xs font-semibold"
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/10 text-slate-200 text-xs font-semibold"
                     >
                       <span className="material-symbols-outlined text-base text-slate-400">explore</span>
                       User Portal
@@ -235,14 +259,14 @@ export default function Navbar({ tempUser = null }) {
                     <Link
                       to="/dashboard"
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 text-xs font-semibold"
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/10 text-slate-200 text-xs font-semibold"
                     >
                       <span className="material-symbols-outlined text-base text-slate-400">dashboard</span>
                       Dashboard
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 transition-all text-xs font-semibold border-none bg-transparent cursor-pointer text-left"
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-500/10 text-red-600 transition-all text-xs font-semibold border-none bg-transparent cursor-pointer text-left"
                     >
                       <span className="material-symbols-outlined text-base text-red-500">logout</span>
                       Logout
@@ -254,7 +278,7 @@ export default function Navbar({ tempUser = null }) {
           ) : (
             <Link
               to="/registration"
-              className="px-4 py-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 font-medium text-xs md:text-sm transition-all hidden sm:inline-block"
+              className="px-4 py-2 rounded-full text-slate-300 hover:bg-white/10 font-medium text-xs md:text-sm transition-all hidden sm:inline-block"
             >
               Login
             </Link>
@@ -263,7 +287,7 @@ export default function Navbar({ tempUser = null }) {
           {/* Primary CTA (Matching reference image "Start selling" -> "Start Discovery") */}
           <Link
             to="/discovery"
-            className="px-5 py-2.5 rounded-full bg-[#03091e] hover:bg-[#0a1538] text-white font-semibold text-xs md:text-sm transition-all shadow-md hover:shadow-lg active:scale-95 inline-flex items-center gap-1.5"
+            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#0052FF] to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold text-xs md:text-sm transition-all shadow-[0_0_24px_rgba(0,82,255,0.4)] active:scale-95 inline-flex items-center gap-1.5"
           >
             Start Discovery
           </Link>
@@ -271,33 +295,37 @@ export default function Navbar({ tempUser = null }) {
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-700 dark:text-slate-200 flex items-center justify-center"
+            className="md:hidden p-2 rounded-full hover:bg-white/10 transition-all text-slate-200 flex items-center justify-center"
           >
             <span className="material-symbols-outlined text-xl">
               {mobileMenuOpen ? 'close' : 'menu'}
             </span>
           </button>
         </div>
+        {/* Scroll progress along the pill's bottom edge */}
+        <div className="absolute inset-x-8 -bottom-px h-px overflow-hidden rounded-full pointer-events-none">
+          <motion.div className="h-full origin-left bg-gradient-to-r from-cyan-400 via-[#0052FF] to-indigo-500 shadow-[0_0_10px_#00f0ff]" style={{ scaleX: progress }} />
+        </div>
       </div>
 
       {/* Mobile nav drawer */}
       {mobileMenuOpen && (
-        <div className="pointer-events-auto md:hidden mt-3 bg-white/95 dark:bg-[#0b132b]/95 backdrop-blur-xl border border-white/80 dark:border-slate-800 rounded-3xl p-5 space-y-3 shadow-2xl animate-fade-in">
+        <div className="pointer-events-auto md:hidden mt-3 bg-[#0b1226]/95 backdrop-blur-xl border border-white/10 rounded-3xl p-5 space-y-3 shadow-2xl animate-fade-in">
           <nav className="flex flex-col gap-2">
             <Link
-              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-semibold text-base py-2 border-b border-slate-100 dark:border-slate-800"
+              className="text-slate-100 hover:text-[#0052FF] font-semibold text-base py-2 border-b border-white/10"
               to="/discovery"
             >
               Discover
             </Link>
             <Link
-              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-semibold text-base py-2 border-b border-slate-100 dark:border-slate-800"
+              className="text-slate-100 hover:text-[#0052FF] font-semibold text-base py-2 border-b border-white/10"
               to="/about"
             >
               About Us
             </Link>
             <Link
-              className="text-slate-800 dark:text-slate-200 hover:text-[#0052FF] font-semibold text-base py-2 border-b border-slate-100 dark:border-slate-800"
+              className="text-slate-100 hover:text-[#0052FF] font-semibold text-base py-2 border-b border-white/10"
               to="/experts"
             >
               Consultants
@@ -311,6 +339,7 @@ export default function Navbar({ tempUser = null }) {
           </nav>
         </div>
       )}
+      </div>
     </header>
   );
 }
