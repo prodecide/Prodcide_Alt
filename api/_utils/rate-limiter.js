@@ -1,4 +1,4 @@
-import clientPromise from '../../lib/mongodb.js';
+import clientPromise from '../../lib/db.js';
 
 /**
  * Basic MongoDB-backed IP rate limiter for serverless environments.

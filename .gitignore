@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 scratch/
 
+
+# Local secrets
+.env
+.env.*
+!.env.example

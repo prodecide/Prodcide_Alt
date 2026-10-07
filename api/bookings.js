@@ -1,4 +1,4 @@
-import clientPromise from '../lib/mongodb.js';
+import clientPromise from '../lib/db.js';
 import { sendBookingAlertToConsultant } from './_utils/email.js';
 import { checkRateLimit } from './_utils/rate-limiter.js';
 import { verifyToken } from './_utils/auth-middleware.js';

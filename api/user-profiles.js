@@ -1,4 +1,4 @@
-import clientPromise from '../lib/mongodb.js';
+import clientPromise from '../lib/db.js';
 import { verifyToken } from './_utils/auth-middleware.js';
 
 export default async function handler(req, res) {

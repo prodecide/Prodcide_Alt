@@ -1,5 +1,5 @@
-import clientPromise from '../lib/mongodb.js';
-import { ObjectId } from 'mongodb';
+import clientPromise from '../lib/db.js';
+import { ObjectId } from '../lib/db.js';
 import { sendOtpEmail } from './_utils/email.js';
 import { checkRateLimit } from './_utils/rate-limiter.js';
 import { generateToken } from './_utils/auth-middleware.js';

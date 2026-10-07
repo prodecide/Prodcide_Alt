@@ -1,5 +1,5 @@
-import clientPromise from '../lib/mongodb.js';
-import { ObjectId } from 'mongodb';
+import clientPromise from '../lib/db.js';
+import { ObjectId } from '../lib/db.js';
 
 export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
