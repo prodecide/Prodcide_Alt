@@ -196,7 +196,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     } catch (error) {
         console.error('Database operation failed:', error.message);
-        if (req.method === 'GET') {
+        if (req.method === 'GET' && process.env.NODE_ENV !== 'production') {
             console.log('Serving fallback consultants data for local offline development.');
             return res.status(200).json([
                 {
