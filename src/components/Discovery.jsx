@@ -825,8 +825,8 @@ export default function Discovery() {
     <div className="font-body text-on-surface min-h-screen flex flex-col chat-gradient-bg">
       <Navbar />
 
-      <div className="flex-grow flex overflow-hidden w-full p-4 md:p-6 lg:p-8">
-          <div className="flex-grow flex overflow-hidden w-full max-w-[1920px] mx-auto rounded-[2rem] border border-white/40 shadow-2xl backdrop-blur-xl bg-white/10">
+      <div className="flex-grow flex overflow-hidden w-full px-6 md:px-12 pt-24 md:pt-28 pb-6 md:pb-8">
+          <div className="flex-grow flex overflow-hidden w-full max-w-7xl mx-auto rounded-[2rem] border border-white/40 shadow-2xl backdrop-blur-xl bg-white/10">
             {/* Main Chat Interface */}
             <main className="flex-grow flex flex-col relative">
 
