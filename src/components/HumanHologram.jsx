@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 // Left-facing human bust silhouette (forehead, brow, nose, lips, chin, jaw, neck, shoulders)
 const BUST =
@@ -27,6 +27,7 @@ const BRAIN_LINKS = [
 ];
 
 export default function HumanHologram({ tilt = { x: 0, y: 0 } }) {
+  const reduce = useReducedMotion();
   const { nodes, links } = useMemo(() => {
     const rnd = mulberry32(7);
     const pts = Array.from({ length: 150 }, () => [120 + rnd() * 250, 40 + rnd() * 440]);
@@ -42,10 +43,8 @@ export default function HumanHologram({ tilt = { x: 0, y: 0 } }) {
   }, []);
 
   const badges = [
-    { icon: 'auto_awesome', label: 'Delight', pos: 'top-[8%] left-0', d: '' },
-    { icon: 'psychology', label: 'Deep Focus', pos: 'top-[40%] -left-2 sm:-left-6', d: 'delay-100' },
-    { icon: 'analytics', label: 'Data-Driven Insight', pos: 'top-[14%] right-0', d: 'delay-200' },
-    { icon: 'track_changes', label: 'Strategic Clarity', pos: 'bottom-[18%] right-0 sm:-right-4', d: 'delay-300' },
+    { icon: 'psychology', label: 'Deep Focus', pos: 'top-[40%] -left-2 sm:-left-6', d: '' },
+    { icon: 'track_changes', label: 'Strategic Clarity', pos: 'bottom-[22%] right-0 sm:-right-4', d: 'delay-200' },
   ];
 
   return (
@@ -102,16 +101,6 @@ export default function HumanHologram({ tilt = { x: 0, y: 0 } }) {
           </filter>
         </defs>
 
-        {/* Orbiting rings */}
-        <motion.g animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}>
-          <circle cx="220" cy="250" r="214" stroke="#00f0ff" strokeOpacity="0.22" strokeDasharray="2 10" />
-          <circle cx="220" cy="36" r="4" fill="#00f0ff" filter="url(#holoGlow)" />
-        </motion.g>
-        <motion.g animate={{ rotate: -360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}>
-          <circle cx="220" cy="250" r="190" stroke="#3b82f6" strokeOpacity="0.25" strokeDasharray="18 14" />
-          <circle cx="220" cy="440" r="3.5" fill="#34d399" filter="url(#holoGlow)" />
-        </motion.g>
-
         {/* Silhouette glow + fill */}
         <path d={BUST} fill="url(#bustFill)" />
         <path d={BUST} stroke="#00f0ff" strokeOpacity="0.35" strokeWidth="6" filter="url(#holoGlow)" />
@@ -147,12 +136,12 @@ export default function HumanHologram({ tilt = { x: 0, y: 0 } }) {
           <motion.path
             d="M248 122 C220 130 196 138 178 146"
             stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeDasharray="10 60" filter="url(#holoGlow)"
-            animate={{ strokeDashoffset: [70, 0] }}
+            animate={reduce ? { strokeDashoffset: 30 } : { strokeDashoffset: [70, 0] }}
             transition={{ duration: 1.6, repeat: Infinity, ease: 'linear' }}
           />
 
           {/* Scanning band */}
-          <motion.g animate={{ y: [30, 480, 30] }} transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}>
+          <motion.g animate={reduce ? { y: 240 } : { y: [30, 480, 30] }} transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}>
             <rect x="40" y="-70" width="360" height="70" fill="url(#scanBand)" />
             <rect x="40" y="-1.5" width="360" height="3" fill="#a5f3fc" filter="url(#holoGlow)" />
           </motion.g>
@@ -171,14 +160,11 @@ export default function HumanHologram({ tilt = { x: 0, y: 0 } }) {
         <path d={BUST} stroke="url(#bustStroke)" strokeWidth="1.8" strokeLinejoin="round" />
 
         {/* Callout leaders */}
-        <g stroke="#00f0ff" strokeOpacity="0.55" strokeDasharray="3 3" strokeWidth="1">
-          <polyline points="188,134 120,96 52,96" />
-          <polyline points="296,128 350,84 400,84" />
+        <g stroke="#00f0ff" strokeOpacity="0.5" strokeDasharray="3 3" strokeWidth="1">
           <polyline points="160,214 110,250 52,250" />
           <polyline points="320,300 360,340 400,340" />
         </g>
         <g fill="#00f0ff" filter="url(#holoGlow)">
-          <circle cx="188" cy="134" r="3" /><circle cx="296" cy="128" r="3" />
           <circle cx="160" cy="214" r="3" /><circle cx="320" cy="300" r="3" />
         </g>
       </svg>
@@ -198,21 +184,16 @@ export default function HumanHologram({ tilt = { x: 0, y: 0 } }) {
 
       {/* Readout card */}
       <div className="absolute left-[6%] bottom-[5%] z-20 bg-[#03091e]/85 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-3 shadow-xl">
-        <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Path Match</div>
+        <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Sample result</div>
         <div className="flex items-end gap-2 mt-0.5">
-          <span className="font-headline text-2xl font-black text-white leading-none">98.4%</span>
-          <span className="text-[10px] font-semibold text-emerald-400 pb-0.5">▲ confident</span>
+          <span className="font-headline text-2xl font-black text-white leading-none">94%</span>
+          <span className="text-[10px] font-semibold text-slate-400 pb-0.5">career match</span>
         </div>
         <div className="mt-2 h-1 w-28 rounded-full bg-white/10 overflow-hidden">
-          <motion.div className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400" initial={{ width: 0 }} animate={{ width: '98%' }} transition={{ duration: 1.6, delay: 0.8 }} />
+          <motion.div className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400" initial={{ width: 0 }} animate={{ width: '94%' }} transition={{ duration: 1.6, delay: 0.8 }} />
         </div>
       </div>
 
-      {/* Status chip */}
-      <div className="absolute bottom-[5%] right-[6%] z-20 bg-[#03091e]/90 backdrop-blur-xl px-3 py-1.5 rounded-full text-[9px] font-bold tracking-[0.18em] uppercase flex items-center gap-2 border border-cyan-500/30 text-white">
-        <span className="relative flex w-2 h-2"><span className="absolute inline-flex w-full h-full rounded-full bg-cyan-400 opacity-75 animate-ping" /><span className="relative w-2 h-2 rounded-full bg-cyan-400" /></span>
-        Neural Parser Active
-      </div>
     </div>
   );
 }

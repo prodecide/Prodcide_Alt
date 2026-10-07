@@ -289,7 +289,8 @@ export default function Navbar({ tempUser = null }) {
             to="/discovery"
             className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#0052FF] to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold text-xs md:text-sm transition-all shadow-[0_0_24px_rgba(0,82,255,0.4)] active:scale-95 inline-flex items-center gap-1.5"
           >
-            Start Discovery
+            <span className="sm:hidden">Start</span>
+            <span className="hidden sm:inline">Start Discovery</span>
           </Link>
 
           {/* Mobile menu toggle */}
