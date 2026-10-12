@@ -117,6 +117,7 @@ export default function Navbar({ tempUser = null }) {
     { path: '/discovery', label: 'Discover' },
     { path: '/about', label: 'About Us' },
     { path: '/experts', label: 'Consultants' },
+    { path: '/references', label: 'References' },
   ];
 
   const isAdminLoggedIn = localStorage.getItem('prodecide_admin_auth') === 'true';
@@ -135,7 +136,7 @@ export default function Navbar({ tempUser = null }) {
         {/* Centered Desktop Nav */}
         <nav className="hidden md:flex items-center gap-1">
           {navItems.map(({ path, label }) => {
-            const active = pathname === path;
+            const active = pathname === path || (path === '/references' && pathname.startsWith('/r/'));
             return (
               <Link
                 key={path}
@@ -330,6 +331,12 @@ export default function Navbar({ tempUser = null }) {
               to="/experts"
             >
               Consultants
+            </Link>
+            <Link
+              className="text-slate-100 hover:text-[#0052FF] font-semibold text-base py-2 border-b border-white/10"
+              to="/references"
+            >
+              References
             </Link>
             <Link
               className="text-[#0052FF] font-bold text-base py-2"
