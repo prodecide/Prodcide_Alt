@@ -4,6 +4,24 @@ import Navbar from './Navbar';
 import { apiFetch } from '../utils/api.js';
 import { useGoogleLogin } from '@react-oauth/google';
 
+const STUDENT_FLOW = 'Career Path Selection';
+
+// First assistant message: uses what the user told us in setup, with concrete career starters
+function buildGreeting({ name, domain, subject, job }) {
+  const first = (name || '').trim().split(' ')[0];
+  const hello = first ? `Hi ${first}` : 'Hi';
+  if (domain === STUDENT_FLOW) {
+    return {
+      text: `${hello}${subject ? `, I see you're studying ${subject}` : ''}. What career decision is on your mind? Tell me in your own words, or pick one below.`,
+      options: ["I'm not sure which career suits me", 'Help me choose between two options', 'Plan my next 2 years'],
+    };
+  }
+  return {
+    text: `${hello}${job ? `, I see you work as ${job}` : ''}. What career move are you weighing? Tell me in your own words, or pick one below.`,
+    options: ['Should I switch careers?', 'Is this job offer right for me?', 'Plan my next promotion'],
+  };
+}
+
 export default function Discovery() {
   const navigate = useNavigate();
   
@@ -16,8 +34,8 @@ export default function Discovery() {
   const [messages, setMessages] = useState([
     {
       sender: 'ai',
-      text: "Hello! Tell me about the challenge you're facing. What is the core decision you need to make? Be as specific as possible—I'll help you structure the variables and evaluate the outcomes.",
-      options: ["Help me decide between Option A and Option B considering I want to be employed in 2 years"],
+      text: 'Hi! What career decision is on your mind? Tell me in your own words, or pick one below.',
+      options: ["I'm not sure which career suits me", 'Help me choose between two options', 'Plan my next 2 years'],
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -611,6 +629,15 @@ export default function Discovery() {
     }
   };
 
+  // Personalise the opening message until the user has replied
+  useEffect(() => {
+    setMessages(prev => {
+      if (prev.length !== 1 || prev[0].sender !== 'ai') return prev;
+      const g = buildGreeting({ name: onboardingName, domain: selectedDomain, subject: onboardingSubject, job: onboardingJob });
+      return prev[0].text === g.text ? prev : [{ ...prev[0], ...g }];
+    });
+  }, [onboardingName, selectedDomain, onboardingSubject, onboardingJob]);
+
   // Handle return redirect from Dashboard authentication & load context on mount
   useEffect(() => {
     const savedContextStr = localStorage.getItem('discovery_onboarding_context');
@@ -822,11 +849,11 @@ export default function Discovery() {
   };
 
   return (
-    <div className="font-body text-on-surface min-h-screen flex flex-col chat-gradient-bg">
+    <div className="font-body text-white min-h-screen flex flex-col chat-gradient-bg">
       <Navbar />
 
       <div className="flex-grow flex overflow-hidden w-full px-6 md:px-12 pt-24 md:pt-28 pb-6 md:pb-8">
-          <div className="flex-grow flex overflow-hidden w-full max-w-7xl mx-auto rounded-[2rem] border border-white/40 shadow-2xl backdrop-blur-xl bg-white/10">
+          <div className="flex-grow flex overflow-hidden w-full max-w-7xl mx-auto rounded-[2rem] border border-white/10 shadow-2xl bg-slate-900/40">
             {/* Main Chat Interface */}
             <main className="flex-grow flex flex-col relative">
 
@@ -838,7 +865,7 @@ export default function Discovery() {
                   {msg.sender === 'ai' ? (
                     <div className="flex items-start gap-4 max-w-3xl">
                       {/* Animated Waveform Avatar */}
-                      <div className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shrink-0 shadow-sm border border-white/40">
+                      <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shrink-0 border border-white/10">
                         <div className="waveform-container">
                           <div className="waveform-bar"></div>
                           <div className="waveform-bar"></div>
@@ -848,16 +875,16 @@ export default function Discovery() {
                         </div>
                       </div>
                       <div className="flex flex-col gap-2">
-                        <div className="bg-white/70 backdrop-blur-md p-6 rounded-2xl rounded-tl-none border border-white/40 shadow-sm">
+                        <div className="bg-slate-800/70 p-6 rounded-2xl rounded-tl-none border border-white/10">
                           <TypewriterText text={msg.text} isLatest={i === messages.length - 1} />
                         </div>
                         {i === messages.length - 1 && msg.options && msg.options.length > 0 && !isAITyping && (
-                          <div className="flex flex-wrap gap-2 mt-1 ml-1 animate-fade-in">
+                          <div className="flex flex-wrap gap-2 mt-1 ml-1 animate-fade-in" role="group" aria-label="Suggested replies">
                             {msg.options.map((opt, oIdx) => (
                               <button
                                 key={oIdx}
                                 onClick={() => handleOptionClick(opt)}
-                                className="bg-[#0052FF] text-white hover:bg-[#003ec7] px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 border-none animate-fade-in"
+                                className="bg-transparent text-cyan-200 border border-cyan-400/40 hover:bg-cyan-400/10 hover:border-cyan-300 px-4 py-2 rounded-full text-sm font-medium transition-all active:scale-95 animate-fade-in cursor-pointer"
                               >
                                 {opt}
                               </button>
@@ -865,11 +892,11 @@ export default function Discovery() {
                           </div>
                         )}
                         <div className="flex items-center gap-2 mt-1 ml-2">
-                          <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">{msg.time || 'AI Agent'}</span>
+                          <span className="text-xs text-slate-400">{msg.time || 'Assistant'}</span>
                           <button
                             onClick={() => toggleSpeakText(msg.text, i)}
                             type="button"
-                            className="p-1 rounded hover:bg-slate-200/50 text-slate-400 hover:text-slate-600 transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
+                            className="p-1 rounded hover:bg-white/10 text-slate-400 hover:text-slate-200 transition-colors border-none bg-transparent cursor-pointer flex items-center justify-center"
                             title={speakingMsgIndex === i ? "Stop reading" : "Read message aloud"}
                           >
                             <span className="material-symbols-outlined text-xs">
@@ -881,10 +908,10 @@ export default function Discovery() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-end max-w-2xl">
-                      <div className="bg-primary text-white p-5 rounded-2xl rounded-tr-none shadow-sm">
+                      <div className="bg-[#0052FF] text-white p-5 rounded-2xl rounded-tr-none">
                         <p className="text-sm leading-relaxed">{msg.text}</p>
                       </div>
-                      <span className="text-[10px] text-slate-400 mt-2 font-medium uppercase tracking-widest">{msg.time || 'SENT'}</span>
+                      <span className="text-xs text-slate-400 mt-2">{msg.time || 'Sent'}</span>
                     </div>
                   )}
                 </div>
@@ -893,7 +920,7 @@ export default function Discovery() {
               {/* Typing Indicator */}
               {isAITyping && (
                 <div className="flex items-start gap-4 max-w-3xl mb-8">
-                  <div className="w-10 h-10 rounded-full bg-white/60 backdrop-blur-md flex items-center justify-center shrink-0 shadow-sm border border-white/40">
+                  <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shrink-0 border border-white/10">
                     <div className="waveform-container">
                       <div className="waveform-bar"></div>
                       <div className="waveform-bar"></div>
@@ -903,11 +930,11 @@ export default function Discovery() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 px-4 py-3 bg-white/70 backdrop-blur-md rounded-2xl rounded-tl-none border border-white/40">
+                    <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/70 rounded-2xl rounded-tl-none border border-white/10">
                       <div className="typing-dot"></div>
                       <div className="typing-dot"></div>
                       <div className="typing-dot"></div>
-                      <span className="text-xs italic text-primary ml-2">Analyzing...</span>
+                      <span className="text-xs text-cyan-300 ml-2">Thinking…</span>
                     </div>
                   </div>
                 </div>
@@ -916,7 +943,7 @@ export default function Discovery() {
             </div>
 
             {/* Input Area */}
-            <div className="p-8 border-t border-white/30 bg-white/40 backdrop-blur-sm">
+            <div className="p-6 md:p-8 border-t border-white/10 bg-slate-900/60">
               <div className="max-w-4xl mx-auto">
                 <div className="relative group">
                   <textarea 
@@ -929,7 +956,7 @@ export default function Discovery() {
                       }
                     }}
                     disabled={limitExceeded}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 pr-36 text-sm focus:ring-4 focus:ring-[#003ec7]/10 focus:border-primary transition-all resize-none shadow-sm placeholder:text-slate-400 disabled:opacity-50" 
+                    className="w-full bg-slate-800/80 border border-white/10 text-white rounded-2xl p-5 pr-36 text-sm focus:ring-4 focus:ring-cyan-400/10 focus:border-cyan-400/60 focus:outline-none transition-all resize-none placeholder:text-slate-400 disabled:opacity-50" 
                     placeholder={limitExceeded ? "Session message limit reached. Please view recommended paths." : "Describe your goals, experience, or reply to the assistant's questions..."} 
                     rows="2"
                   />
@@ -941,7 +968,7 @@ export default function Discovery() {
                       className={`p-2.5 rounded-xl transition-all flex items-center justify-center shadow-md active:scale-95 border-none cursor-pointer ${
                         isListening 
                           ? 'bg-red-500 text-white animate-pulse' 
-                          : 'bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-800'
+                          : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
                       }`}
                       title={isListening ? "Stop listening" : "Start voice typing"}
                     >
@@ -952,7 +979,7 @@ export default function Discovery() {
                     <button 
                       onClick={handleSendMessage}
                       disabled={limitExceeded || !inputValue.trim()}
-                      className="bg-primary hover:bg-[#003ec7]/90 text-white px-6 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-lg active:scale-95 disabled:opacity-50"
+                      className="bg-[#0052FF] hover:bg-[#0046e0] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50"
                     >
                       <span>Send</span>
                       <span className="material-symbols-outlined text-sm">send</span>
@@ -960,12 +987,12 @@ export default function Discovery() {
                   </div>
                 </div>
                 {limitExceeded && (
-                  <p className="text-center text-xs text-red-600 font-semibold mt-3">
+                  <p className="text-center text-xs text-red-300 font-semibold mt-3">
                     ⚠️ Session quota reached. Please select a suggested path from the right panel to proceed.
                   </p>
                 )}
-                <p className="text-center text-[10px] text-slate-400 mt-4 uppercase tracking-widest opacity-70">
-                  ProDecide Intelligence • Strategic Career Output Verification Required
+                <p className="text-center text-xs text-slate-400 mt-4">
+                  AI can make mistakes. For big decisions, talk to a consultant.
                 </p>
               </div>
             </div>
@@ -973,28 +1000,28 @@ export default function Discovery() {
 
           {/* ─── Context Engine Sidebar ─── */}
           {!readyToSuggest ? (
-            <aside className="w-80 m-6 ml-0 hidden lg:flex flex-col bg-white/40 backdrop-blur-xl border border-white/40 rounded-3xl shadow-lg relative overflow-hidden">
+            <aside className="w-80 m-6 ml-0 hidden lg:flex flex-col bg-slate-900/60 border border-white/10 rounded-3xl relative overflow-hidden">
               <div className="p-6 overflow-y-auto flex-grow space-y-8">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shadow-md">
-                    <span className="material-symbols-outlined text-white text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>hub</span>
+                  <div className="w-8 h-8 rounded-lg bg-[#0052FF]/25 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-cyan-300 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>hub</span>
                   </div>
                   <div>
-                    <h2 className="font-headline text-sm font-bold text-slate-900 leading-tight">Context Engine</h2>
-                    <p className="text-[10px] text-primary font-bold uppercase tracking-tighter">Discovery Phase Active</p>
+                    <h2 className="font-headline text-base font-bold text-white leading-tight">Your profile so far</h2>
+                    <p className="text-xs text-cyan-300">Updates as you chat</p>
                   </div>
                 </div>
 
                 {/* Current Skills list */}
                 {currentSkills.length > 0 && (
                   <section key={`skills-${currentSkills.length}`} className="animate-pop-in">
-                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Current Skills</h3>
+                    <h3 className="text-xs font-semibold text-slate-400 mb-3">Current skills</h3>
                     <div className="space-y-2">
                       {currentSkills.map((skill, idx) => (
-                        <div key={idx} className="flex items-center gap-3 p-3 bg-white/60 backdrop-blur-md rounded-xl border border-white/60 shadow-sm">
-                          <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
-                          <span className="text-xs font-semibold text-slate-700">{skill}</span>
+                        <div key={idx} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                          <span className="material-symbols-outlined text-cyan-300 text-lg">check_circle</span>
+                          <span className="text-sm font-medium text-slate-200">{skill}</span>
                         </div>
                       ))}
                     </div>
@@ -1004,10 +1031,10 @@ export default function Discovery() {
                 {/* Critical Gaps list */}
                 {criticalGaps.length > 0 && (
                   <section key={`gaps-${criticalGaps.length}`} className="animate-pop-in">
-                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Critical Gaps</h3>
+                    <h3 className="text-xs font-semibold text-slate-400 mb-3">Gaps to close</h3>
                     <div className="flex flex-wrap gap-2">
                       {criticalGaps.map((gap, idx) => (
-                        <span key={idx} className="px-3 py-1.5 bg-red-50/80 backdrop-blur-md text-red-600 border border-red-200/50 text-[10px] font-extrabold rounded-lg tracking-wide uppercase shadow-sm">
+                        <span key={idx} className="px-3 py-1.5 bg-red-500/10 text-red-300 border border-red-400/30 text-xs font-semibold rounded-lg">
                           {gap}
                         </span>
                       ))}
@@ -1018,7 +1045,7 @@ export default function Discovery() {
                 {/* Direct Action Trigger */}
                 <button 
                   onClick={() => setReadyToSuggest(true)}
-                  className="w-full mt-4 bg-slate-900 text-white py-3 rounded-xl font-bold text-xs hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-md"
+                  className="w-full mt-4 bg-[#0052FF] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#0046e0] transition-colors flex items-center justify-center gap-2"
                 >
                   <span>Generate Roadmap</span>
                   <span className="material-symbols-outlined text-sm">auto_awesome</span>
@@ -1493,7 +1520,7 @@ export default function Discovery() {
         .typing-dot {
           width: 6px;
           height: 6px;
-          background-color: #003ec7;
+          background-color: #67f3ff;
           border-radius: 50%;
           animation: bounce 1.4s infinite ease-in-out both;
         }
@@ -1505,14 +1532,10 @@ export default function Discovery() {
         }
         /* Gradient chat background */
         .chat-gradient-bg {
-          background: linear-gradient(135deg, 
-            #e8eaf6 0%, 
-            #f3e5f5 25%, 
-            #e3f2fd 50%, 
-            #fce4ec 75%, 
-            #e8eaf6 100%);
-          background-size: 400% 400%;
-          animation: gradientShift 15s ease infinite;
+          background:
+            radial-gradient(900px 500px at 12% 0%, rgba(0, 82, 255, 0.22), transparent 60%),
+            radial-gradient(700px 500px at 100% 100%, rgba(0, 240, 255, 0.10), transparent 60%),
+            #03091e;
         }
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
@@ -1528,7 +1551,7 @@ export default function Discovery() {
         }
         .waveform-bar {
           width: 3px;
-          background-color: #6b7280;
+          background-color: #67f3ff;
           border-radius: 2px;
           animation: waveform 1.2s ease-in-out infinite;
         }
@@ -1546,7 +1569,7 @@ export default function Discovery() {
           display: inline-block;
           width: 2px;
           height: 1em;
-          background-color: #003ec7;
+          background-color: #67f3ff;
           margin-left: 2px;
           animation: cursorBlink 0.7s step-end infinite;
           vertical-align: text-bottom;
@@ -1598,7 +1621,7 @@ function TypewriterText({ text, isLatest }) {
   }, [text, isLatest]);
 
   return (
-    <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
+    <p className="text-sm text-slate-100 leading-relaxed whitespace-pre-wrap">
       {displayedText}
       {isLatest && !isComplete && <span className="typewriter-cursor" />}
     </p>
