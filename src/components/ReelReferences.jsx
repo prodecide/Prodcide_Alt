@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Navbar from './Navbar';
+import { findReel } from '../content/reels';
 
 const TYPE_ICON = {
   article: 'article',
@@ -18,24 +19,8 @@ const host = (url) => {
 
 export default function ReelReferences() {
   const { slug } = useParams();
-  const [reel, setReel] = useState(null);
-  const [state, setState] = useState('loading'); // loading | ready | missing | error
+  const reel = findReel(slug);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    setState('loading');
-    fetch(`/api/reels?slug=${encodeURIComponent(slug)}`)
-      .then(async (r) => {
-        if (cancelled) return;
-        if (r.status === 404) return setState('missing');
-        if (!r.ok) return setState('error');
-        setReel(await r.json());
-        setState('ready');
-      })
-      .catch(() => { if (!cancelled) setState('error'); });
-    return () => { cancelled = true; };
-  }, [slug]);
 
   useEffect(() => {
     if (reel?.title) document.title = `${reel.title} | Prodecide references`;
@@ -54,30 +39,20 @@ export default function ReelReferences() {
     <div className="min-h-screen bg-[#03091e] text-white font-body antialiased">
       <Navbar />
       <main className="max-w-3xl mx-auto px-6 pt-32 pb-24">
-        {state === 'loading' && (
-          <div className="animate-pulse space-y-4" aria-busy="true">
-            <div className="h-9 w-3/4 rounded bg-white/10" />
-            <div className="h-4 w-full rounded bg-white/5" />
-            {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-white/5" />)}
-          </div>
-        )}
-
-        {(state === 'missing' || state === 'error') && (
+        {!reel && (
           <div className="text-center py-20">
             <span className="material-symbols-outlined text-5xl text-cyan-300 mb-4 block" aria-hidden="true">link_off</span>
             <h1 className="font-headline text-3xl font-bold mb-3">
-              {state === 'missing' ? "We couldn't find that page" : 'Something went wrong'}
+              We couldn't find that page
             </h1>
             <p className="text-slate-300 mb-8">
-              {state === 'missing'
-                ? 'The link may be mistyped, or the references are not published yet. Check the message we sent you.'
-                : 'We could not load these references. Refresh the page or try again in a minute.'}
+              The link may be mistyped, or the references are not published yet. Check the message we sent you.
             </p>
             <Link to="/references" className="text-cyan-300 hover:text-cyan-200 font-semibold">See all reel references</Link>
           </div>
         )}
 
-        {state === 'ready' && reel && (
+        {reel && (
           <>
             <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tight mb-4">{reel.title}</h1>
             {reel.summary && <p className="text-lg text-slate-300 leading-relaxed mb-6">{reel.summary}</p>}

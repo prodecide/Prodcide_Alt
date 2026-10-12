@@ -4,7 +4,7 @@
 do $$
 declare t text;
 begin
-  foreach t in array array['consultants','bookings','users','user_profiles','availability','reviews','otps','rate_limits','reels']
+  foreach t in array array['consultants','bookings','users','user_profiles','availability','reviews','otps','rate_limits']
   loop
     execute format('create table if not exists public.%I (
       id text primary key,
@@ -27,5 +27,3 @@ create index if not exists bookings_client_idx         on public.bookings ((data
 create index if not exists availability_consultant_idx on public.availability ((data->>'consultantId'));
 create index if not exists reviews_consultant_idx      on public.reviews ((data->>'consultantId'));
 create index if not exists rate_limits_ip_action_idx   on public.rate_limits ((data->>'ip'), (data->>'action'));
-create unique index if not exists reels_slug_uq            on public.reels ((data->>'slug'));
-create index if not exists reels_published_idx          on public.reels ((data->>'published'));

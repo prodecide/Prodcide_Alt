@@ -1,18 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import { publishedReels } from '../content/reels';
 
 export default function References() {
-  const [reels, setReels] = useState(null);
+  const reels = publishedReels;
 
   useEffect(() => {
-    let cancelled = false;
     document.title = 'Reel references | Prodecide';
-    fetch('/api/reels')
-      .then((r) => (r.ok ? r.json() : []))
-      .then((d) => { if (!cancelled) setReels(Array.isArray(d) ? d : []); })
-      .catch(() => { if (!cancelled) setReels([]); });
-    return () => { cancelled = true; document.title = 'Prodecide - Expert Strategic Consulting'; };
+    return () => { document.title = 'Prodecide - Expert Strategic Consulting'; };
   }, []);
 
   return (
@@ -24,22 +20,16 @@ export default function References() {
           The articles, tools and guides behind each reel. Comment on a reel and we'll send you its page, or find it here.
         </p>
 
-        {reels === null && (
-          <div className="space-y-4 animate-pulse" aria-busy="true">
-            {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-white/5" />)}
-          </div>
-        )}
-
-        {reels && reels.length === 0 && (
+        {reels.length === 0 && (
           <div className="rounded-2xl border border-dashed border-white/15 p-10 text-center">
             <p className="text-slate-300">No references are published yet. Check back soon.</p>
           </div>
         )}
 
-        {reels && reels.length > 0 && (
+        {reels.length > 0 && (
           <ul className="space-y-4">
             {reels.map((r) => (
-              <li key={r._id}>
+              <li key={r.slug}>
                 <Link
                   to={`/r/${r.slug}`}
                   className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-slate-900/50 p-5 transition-colors hover:border-cyan-400/40"
@@ -47,7 +37,7 @@ export default function References() {
                   <span className="min-w-0 flex-1">
                     <span className="block font-headline font-bold text-lg group-hover:text-cyan-200 transition-colors">{r.title}</span>
                     {r.summary && <span className="block text-slate-300 mt-1 line-clamp-2">{r.summary}</span>}
-                    <span className="block text-sm text-slate-400 mt-2">{r.resourceCount} {r.resourceCount === 1 ? 'reference' : 'references'}</span>
+                    <span className="block text-sm text-slate-400 mt-2">{r.resources.length} {r.resources.length === 1 ? 'reference' : 'references'}</span>
                   </span>
                   <span className="material-symbols-outlined text-slate-400 group-hover:text-cyan-300 transition-colors" aria-hidden="true">arrow_forward</span>
                 </Link>
