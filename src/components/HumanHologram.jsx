@@ -56,7 +56,7 @@ export default function HumanHologram({ tilt = { x: 0, y: 0 } }) {
       }}
     >
       {/* Ambient aura */}
-      <div className="absolute inset-[8%] rounded-full bg-gradient-to-tr from-[#0052FF]/30 via-cyan-400/20 to-emerald-400/20 blur-[80px] pointer-events-none" />
+      <div className="absolute inset-[8%] rounded-full bg-gradient-to-tr from-[#0052FF]/30 via-cyan-400/20 to-[#0052FF]/20 blur-[80px] pointer-events-none" />
 
       {/* HUD frame */}
       <div className="absolute inset-0 rounded-[2rem] border border-cyan-400/20 bg-[#040c1e]/50 backdrop-blur-xl shadow-[0_30px_120px_rgba(0,82,255,0.25)] overflow-hidden">
@@ -84,7 +84,7 @@ export default function HumanHologram({ tilt = { x: 0, y: 0 } }) {
           <linearGradient id="bustStroke" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#67f3ff" />
             <stop offset="55%" stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#34d399" />
+            <stop offset="100%" stopColor="#0052FF" />
           </linearGradient>
           <linearGradient id="bustFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#00f0ff" stopOpacity="0.2" />
@@ -135,7 +135,7 @@ export default function HumanHologram({ tilt = { x: 0, y: 0 } }) {
           {/* signal travelling from brain to eye */}
           <motion.path
             d="M248 122 C220 130 196 138 178 146"
-            stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeDasharray="10 60" filter="url(#holoGlow)"
+            stroke="#2f7bff" strokeWidth="2" strokeLinecap="round" strokeDasharray="10 60" filter="url(#holoGlow)"
             animate={reduce ? { strokeDashoffset: 30 } : { strokeDashoffset: [70, 0] }}
             transition={{ duration: 1.6, repeat: Infinity, ease: 'linear' }}
           />
@@ -184,13 +184,13 @@ export default function HumanHologram({ tilt = { x: 0, y: 0 } }) {
 
       {/* Readout card */}
       <div className="absolute left-[6%] bottom-[5%] z-20 bg-[#03091e]/85 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-3 shadow-xl">
-        <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Sample result</div>
+        <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Sample result</div>
         <div className="flex items-end gap-2 mt-0.5">
           <span className="font-headline text-2xl font-black text-white leading-none">94%</span>
-          <span className="text-[10px] font-semibold text-slate-400 pb-0.5">career match</span>
+          <span className="text-xs font-semibold text-slate-300 pb-0.5">career match</span>
         </div>
         <div className="mt-2 h-1 w-28 rounded-full bg-white/10 overflow-hidden">
-          <motion.div className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400" initial={{ width: 0 }} animate={{ width: '94%' }} transition={{ duration: 1.6, delay: 0.8 }} />
+          <motion.div className="h-full bg-gradient-to-r from-cyan-400 to-[#0052FF]" initial={{ width: 0 }} animate={{ width: '94%' }} transition={{ duration: 1.6, delay: 0.8 }} />
         </div>
       </div>
 

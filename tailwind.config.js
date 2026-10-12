@@ -57,7 +57,7 @@ export default {
         "tertiary-fixed": "#d3e4fe"
       },
       fontFamily: {
-        "headline": ["Manrope", "sans-serif"],
+        "headline": ["Bricolage Grotesque", "Manrope", "sans-serif"],
         "body": ["Inter", "sans-serif"],
         "label": ["Inter", "sans-serif"]
       },

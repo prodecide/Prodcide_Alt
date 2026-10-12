@@ -52,10 +52,10 @@ The page looks competent but generic. Near-black background, cyan/blue gradients
 
 | # | Item | Detail |
 |---|------|--------|
-| 17 | **Pick a type pairing with character.** Manrope and Inter are the common defaults. A distinct headline face (for example a refined serif or a condensed grotesque for display) with Inter for body would separate Prodecide from other AI sites. Needs your taste; I can mock two options. |
-| 18 | **Cut the accent color to one.** Cyan, electric blue, indigo, emerald and violet all appear. Keep cyan for "AI" moments (the bust, scan) and one blue for actions. |
-| 19 | **Vary the card treatments.** Every section uses the same rounded dark glass card with the same glow. Let Methodology be a line, Experts be photographic, and keep glass for the hologram only. |
-| 20 | **Contrast check.** `text-slate-400` on `#050a18` for small labels is borderline. Raise secondary text and the "Stage" / role labels to meet WCAG AA. |
+| ✅ 17 | **Pick a type pairing with character.** Manrope and Inter are the common defaults. A distinct headline face (for example a refined serif or a condensed grotesque for display) with Inter for body would separate Prodecide from other AI sites. Needs your taste; I can mock two options. |
+| ✅ 18 | **Cut the accent color to one.** Cyan, electric blue, indigo, emerald and violet all appear. Keep cyan for "AI" moments (the bust, scan) and one blue for actions. |
+| ✅ 19 | **Vary the card treatments.** Every section uses the same rounded dark glass card with the same glow. Let Methodology be a line, Experts be photographic, and keep glass for the hologram only. |
+| ✅ 20 | **Contrast check (corrected: body and secondary text already pass AA at about 7:1; only the 9-11px hologram labels were small, now 11-12px).** `text-slate-400` on `#050a18` for small labels is borderline. Raise secondary text and the "Stage" / role labels to meet WCAG AA. |
 
 ## Phase 5: Mobile and performance
 
@@ -84,3 +84,5 @@ The page looks competent but generic. Near-black background, cyan/blue gradients
 
 ## Status (7 Oct 2026)
 Phases 1-3 implemented locally, not deployed. Not done: item 6 (needs Privacy/Terms content), item 14 (needs founder note or user quote). Phases 4-5 not started.
+
+Phase 4 done locally on 7 Oct 2026 (headline font Bricolage Grotesque, one accent system: cyan for AI, blue for actions; Why section simplified). Not pushed.

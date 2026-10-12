@@ -52,7 +52,7 @@ function ExpertsPreview() {
         <h3 className="font-headline text-2xl font-bold text-white mb-2">Our first consultants are joining</h3>
         <p className="text-slate-300 max-w-md mx-auto mb-8">Start Discovery now and we'll match you as soon as profiles go live. Experienced professional? Apply to be one.</p>
         <div className="flex flex-wrap justify-center gap-3">
-          <Link to="/discovery" className="bg-gradient-to-r from-[#0052FF] to-blue-600 text-white font-semibold py-3 px-7 rounded-full">Start your discovery</Link>
+          <Link to="/discovery" className="bg-[#0052FF] hover:bg-[#0046e0] text-white font-semibold py-3 px-7 rounded-full">Start your discovery</Link>
           <Link to="/registration" className="border border-white/20 text-white font-semibold py-3 px-7 rounded-full hover:bg-white/10 transition-colors">Apply as a consultant</Link>
         </div>
       </div>
@@ -120,9 +120,9 @@ export default function Home() {
 
         {/* Hero */}
         <div className="relative overflow-hidden bg-[#03091e]">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] h-[600px] bg-gradient-to-tr from-[#0052FF]/35 via-cyan-400/25 to-emerald-400/30 rounded-full blur-[150px] pointer-events-none z-0"></div>
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] h-[600px] bg-gradient-to-tr from-[#0052FF]/35 via-cyan-400/25 to-[#0052FF]/20 rounded-full blur-[150px] pointer-events-none z-0"></div>
           <div className="absolute top-1/3 -left-32 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[130px] pointer-events-none z-0"></div>
-          <div className="absolute top-1/3 -right-32 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[130px] pointer-events-none z-0"></div>
+          <div className="absolute top-1/3 -right-32 w-[500px] h-[500px] bg-[#0052FF]/20 rounded-full blur-[130px] pointer-events-none z-0"></div>
 
           <section
             onMouseMove={handleMouseMove}
@@ -145,7 +145,7 @@ export default function Home() {
 
                 <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-4 mb-14">
                   <Link
-                    className="bg-gradient-to-r from-[#0052FF] to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-4 px-9 rounded-full shadow-[0_0_30px_rgba(0,82,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all inline-flex items-center gap-2"
+                    className="bg-[#0052FF] hover:bg-[#0046e0] text-white font-bold py-4 px-9 rounded-full shadow-[0_0_30px_rgba(0,82,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all inline-flex items-center gap-2"
                     to="/discovery"
                   >
                     Start your discovery
@@ -232,16 +232,11 @@ export default function Home() {
 
           {/* Why */}
           <section className="py-24 px-6 md:px-12 bg-[#080d1a]">
-            <div className="max-w-4xl mx-auto bg-slate-900/60 border border-cyan-400/20 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-10">
-              <div className="bg-[#0052FF] p-5 rounded-2xl text-white shadow-xl shadow-[#0052FF]/20">
-                <span className="material-symbols-outlined text-4xl" aria-hidden="true">lightbulb</span>
-              </div>
-              <div className="text-center md:text-left">
-                <h3 className="font-headline text-2xl font-bold mb-4 text-white">Why Prodecide?</h3>
-                <p className="text-lg text-slate-300 leading-relaxed">
-                  Career decisions are personal and hard to undo. We combine AI that maps your options with real people who have made similar moves, so the right choice becomes clearer.
-                </p>
-              </div>
+            <div className="max-w-4xl mx-auto border-l-2 border-cyan-400/60 pl-6 md:pl-10">
+              <h3 className="font-headline text-2xl md:text-3xl font-bold mb-5 text-white">Why Prodecide?</h3>
+              <p className="text-xl md:text-2xl text-slate-200 leading-relaxed max-w-prose">
+                Career decisions are personal and hard to undo. We combine AI that maps your options with real people who have made similar moves, so the right choice becomes clearer.
+              </p>
             </div>
           </section>
 
@@ -252,7 +247,7 @@ export default function Home() {
               <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-4">Ready to decide?</h2>
               <p className="text-slate-300 text-lg mb-8">It takes a few minutes to tell us where you are and where you want to go.</p>
               <Link
-                className="bg-gradient-to-r from-[#0052FF] to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-4 px-10 rounded-full shadow-[0_0_30px_rgba(0,82,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all inline-flex items-center gap-2"
+                className="bg-[#0052FF] hover:bg-[#0046e0] text-white font-bold py-4 px-10 rounded-full shadow-[0_0_30px_rgba(0,82,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all inline-flex items-center gap-2"
                 to="/discovery"
               >
                 Start your discovery
