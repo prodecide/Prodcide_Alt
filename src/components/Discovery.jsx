@@ -5,11 +5,20 @@ import { apiFetch } from '../utils/api.js';
 import { useGoogleLogin } from '@react-oauth/google';
 
 const STUDENT_FLOW = 'Career Path Selection';
+const PRO_FLOW = 'Strategic Job Transitioning';
+const WORKING_OPTION = "I'm working and thinking of a switch";
 
 // First assistant message: uses what the user told us in setup, with concrete career starters
 function buildGreeting({ name, domain, subject, job }) {
   const first = (name || '').trim().split(' ')[0];
-  const hello = first ? `Hi ${first}` : 'Hi';
+  if (!first) {
+    // Guest: no sign-in yet, so offer both starting points
+    return {
+      text: 'Hi! What career decision is on your mind? Tell me in your own words, or pick one below.',
+      options: ["I'm a student choosing a career", WORKING_OPTION, 'Help me choose between two options'],
+    };
+  }
+  const hello = `Hi ${first}`;
   if (domain === STUDENT_FLOW) {
     return {
       text: `${hello}${subject ? `, I see you're studying ${subject}` : ''}. What career decision is on your mind? Tell me in your own words, or pick one below.`,
@@ -29,13 +38,15 @@ export default function Discovery() {
   const [selectedDomain, setSelectedDomain] = useState('Career Path Selection');
   const [isDomainOpen, setIsDomainOpen] = useState(false);
   const [showContextModal, setShowContextModal] = useState(false);
+  const [pendingRoadmap, setPendingRoadmap] = useState(false); // guest asked for the roadmap; sign in first
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
   
   // Chat states
   const [messages, setMessages] = useState([
     {
       sender: 'ai',
       text: 'Hi! What career decision is on your mind? Tell me in your own words, or pick one below.',
-      options: ["I'm not sure which career suits me", 'Help me choose between two options', 'Plan my next 2 years'],
+      options: ["I'm a student choosing a career", WORKING_OPTION, 'Help me choose between two options'],
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -655,13 +666,22 @@ export default function Discovery() {
       } catch (e) {
         console.error("Failed to parse saved onboarding context", e);
       }
-    } else {
-      setShowContextModal(true);
     }
-    
+    // No saved profile: the visitor chats as a guest and signs in only when they want their roadmap.
+
     // Clean up challenge text only
     localStorage.removeItem('discovery_challenge_text');
   }, []);
+
+  // Roadmap results are saved to a profile, so guests sign in at this point (and not before).
+  const requestRoadmap = () => {
+    if (!isGoogleAuthed) {
+      setPendingRoadmap(true);
+      setShowContextModal(true);
+      return;
+    }
+    setReadyToSuggest(true);
+  };
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || limitExceeded) return;
@@ -717,7 +737,7 @@ export default function Discovery() {
       if (data.criticalGaps && data.criticalGaps.length > 0) setCriticalGaps(data.criticalGaps);
       if (data.currentSkills && data.currentSkills.length > 0) setCurrentSkills(data.currentSkills);
       if (data.suggestedPaths && data.suggestedPaths.length > 0) setSuggestedPaths(data.suggestedPaths);
-      if (data.readyToSuggest) setReadyToSuggest(true);
+      if (data.readyToSuggest) requestRoadmap();
       if (data.limitExceeded) setLimitExceeded(true);
 
       setMessages(prev => [
@@ -732,7 +752,7 @@ export default function Discovery() {
     } catch (err) {
       console.error("Discovery send error:", err);
       const fallback = getFallbackResponse(userMsg.text, updatedMessages);
-      if (fallback.readyToSuggest) setReadyToSuggest(true);
+      if (fallback.readyToSuggest) requestRoadmap();
       setMessages(prev => [
         ...prev,
         {
@@ -749,6 +769,8 @@ export default function Discovery() {
 
   const handleOptionClick = async (optionText) => {
     if (isAITyping || limitExceeded) return;
+    const domainForCall = optionText === WORKING_OPTION ? PRO_FLOW : selectedDomain;
+    if (domainForCall !== selectedDomain) setSelectedDomain(domainForCall);
 
     // Stop speaking/listening when selecting an option
     if ('speechSynthesis' in window) {
@@ -791,7 +813,7 @@ export default function Discovery() {
         },
         body: JSON.stringify({
           messages: updatedMessages,
-          selectedDomain: selectedDomain,
+          selectedDomain: domainForCall,
           criticalGaps,
           currentSkills,
           suggestedPaths,
@@ -813,7 +835,7 @@ export default function Discovery() {
       if (data.criticalGaps && data.criticalGaps.length > 0) setCriticalGaps(data.criticalGaps);
       if (data.currentSkills && data.currentSkills.length > 0) setCurrentSkills(data.currentSkills);
       if (data.suggestedPaths && data.suggestedPaths.length > 0) setSuggestedPaths(data.suggestedPaths);
-      if (data.readyToSuggest) setReadyToSuggest(true);
+      if (data.readyToSuggest) requestRoadmap();
       if (data.limitExceeded) setLimitExceeded(true);
 
       setMessages(prev => [
@@ -828,7 +850,7 @@ export default function Discovery() {
     } catch (err) {
       console.error("Discovery send option error:", err);
       const fallback = getFallbackResponse(userMsg.text, updatedMessages);
-      if (fallback.readyToSuggest) setReadyToSuggest(true);
+      if (fallback.readyToSuggest) requestRoadmap();
       setMessages(prev => [
         ...prev,
         {
@@ -942,6 +964,61 @@ export default function Discovery() {
               <div ref={chatMessagesEndRef} />
             </div>
 
+            {/* Mobile profile bar (the side panel is hidden below lg) */}
+            {!readyToSuggest && (
+              <div className="lg:hidden border-t border-white/10 bg-slate-900/60 px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setMobileProfileOpen(o => !o)}
+                    aria-expanded={mobileProfileOpen}
+                    className="flex items-center gap-2 text-left bg-transparent border-none cursor-pointer text-white"
+                  >
+                    <span className="material-symbols-outlined text-cyan-300 text-lg" aria-hidden="true">{mobileProfileOpen ? 'expand_more' : 'expand_less'}</span>
+                    <span>
+                      <span className="block text-sm font-semibold">Your profile so far</span>
+                      <span className="block text-xs text-slate-400">{currentSkills.length} skills · {criticalGaps.length} gaps</span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={requestRoadmap}
+                    className="shrink-0 bg-[#0052FF] hover:bg-[#0046e0] text-white px-4 py-2.5 rounded-xl font-bold text-sm border-none cursor-pointer flex items-center gap-2"
+                  >
+                    Get roadmap
+                    <span className="material-symbols-outlined text-sm" aria-hidden="true">auto_awesome</span>
+                  </button>
+                </div>
+                {mobileProfileOpen && (
+                  <div className="mt-3 max-h-44 overflow-y-auto space-y-3">
+                    {currentSkills.length === 0 && criticalGaps.length === 0 && (
+                      <p className="text-sm text-slate-300">Your skills and gaps will appear here as you chat.</p>
+                    )}
+                    {currentSkills.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-slate-400 mb-2">Current skills</p>
+                        <div className="flex flex-wrap gap-2">
+                          {currentSkills.map((skill, i) => (
+                            <span key={i} className="px-3 py-1.5 bg-white/5 border border-white/10 text-slate-200 text-xs font-medium rounded-lg">{skill}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {criticalGaps.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-slate-400 mb-2">Gaps to close</p>
+                        <div className="flex flex-wrap gap-2">
+                          {criticalGaps.map((gap, i) => (
+                            <span key={i} className="px-3 py-1.5 bg-red-500/10 text-red-300 border border-red-400/30 text-xs font-semibold rounded-lg">{gap}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Input Area */}
             <div className="p-6 md:p-8 border-t border-white/10 bg-slate-900/60">
               <div className="max-w-4xl mx-auto">
@@ -1044,7 +1121,7 @@ export default function Discovery() {
 
                 {/* Direct Action Trigger */}
                 <button 
-                  onClick={() => setReadyToSuggest(true)}
+                  onClick={requestRoadmap}
                   className="w-full mt-4 bg-[#0052FF] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#0046e0] transition-colors flex items-center justify-center gap-2"
                 >
                   <span>Generate Roadmap</span>
@@ -1156,13 +1233,13 @@ export default function Discovery() {
             <div className="flex justify-between items-center pb-2 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#0052FF] text-2xl">account_tree</span>
-                <h3 className="font-headline text-xl font-black text-slate-900 tracking-tight">Set Up Your Profile Context</h3>
+                <h3 className="font-headline text-xl font-black text-slate-900 tracking-tight">{pendingRoadmap ? 'Sign in to see your roadmap' : 'Set up your profile'}</h3>
               </div>
               <button 
                 type="button"
                 onClick={() => {
                   setShowContextModal(false);
-                  navigate('/');
+                  setPendingRoadmap(false);
                 }} 
                 className="border-none bg-transparent cursor-pointer text-slate-400 hover:text-slate-600"
               >
@@ -1171,7 +1248,7 @@ export default function Discovery() {
             </div>
             
             <p className="text-xs text-slate-500 leading-relaxed font-medium">
-              Sign in with Google and customize the decision mapping system based on your current academic or professional context.
+              {pendingRoadmap ? 'Your roadmap is saved to your profile, so you can come back to it. Sign in with Google and confirm a few details to continue.' : 'Sign in with Google and tell us a little about your studies or work, so the advice fits you.'}
             </p>
 
             {/* Google Sign-In Button */}
@@ -1343,6 +1420,10 @@ export default function Discovery() {
                   domain: selectedDomain
                 }));
                 setShowContextModal(false);
+                if (pendingRoadmap) {
+                  setPendingRoadmap(false);
+                  setReadyToSuggest(true);
+                }
               }}
               className={`w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border-none shadow-md cursor-pointer active:scale-95 ${isGoogleAuthed ? 'bg-primary hover:bg-[#003ec7] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
             >
