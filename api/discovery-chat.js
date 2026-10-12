@@ -16,10 +16,14 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: `Too many chat requests. Try again in ${limitCheck.retryAfter} seconds.` });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+  // AI provider: Gemini by default. Set AI_PROVIDER=claude (and ANTHROPIC_API_KEY) to use Claude instead.
+  const useClaude = process.env.AI_PROVIDER === 'claude';
+  const apiKey = useClaude
+    ? process.env.ANTHROPIC_API_KEY
+    : (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY);
   if (!apiKey) {
-    console.error('Missing GEMINI_API_KEY environment variable');
-    return res.status(500).json({ error: 'Gemini API key is not configured on the server' });
+    console.error(`Missing ${useClaude ? 'ANTHROPIC_API_KEY' : 'GEMINI_API_KEY'} environment variable`);
+    return res.status(500).json({ error: `${useClaude ? 'Claude' : 'Gemini'} API key is not configured on the server` });
   }
 
   try {
@@ -71,6 +75,10 @@ ${selectedDomain === 'Career Path Selection' ? `
 Do NOT ask the user for their name, age, class, subject, current job, or educational qualifications in the chat, since they have already provided this information. Acknowledge these details naturally in your opening response (e.g. "Hello ${name || 'there'}!") and skip directly to deeper discovery questions about their specific goals, challenges, or transition preferences.`;
     }
 
+    let parsedData;
+    if (useClaude) {
+      parsedData = await callClaude({ apiKey, system: `${systemPrompt}${contextInstructions}`, messages });
+    } else {
     const requestBody = {
       contents: [
         {
@@ -137,7 +145,8 @@ Do NOT ask the user for their name, age, class, subject, current job, or educati
       throw new Error('Empty response from Gemini API');
     }
 
-    const parsedData = JSON.parse(textContent);
+      parsedData = JSON.parse(textContent);
+    }
 
     // Server-side guard: force readyToSuggest=false if fewer than 4 user messages
     const userMessageCount = messages.filter(m => m.sender === 'user').length;
@@ -161,3 +170,57 @@ Do NOT ask the user for their name, age, class, subject, current job, or educati
     return res.status(500).json({ error: 'Failed to process discovery chat: ' + error.message });
   }
 }
+
+
+// ─── Claude (Anthropic Messages API) ───
+const CLAUDE_MODEL = process.env.AI_MODEL || 'claude-haiku-5-5';
+
+// Claude needs alternating user/assistant turns that start with the user.
+function toClaudeMessages(messages) {
+  const out = [];
+  for (const m of messages) {
+    const role = m.sender === 'user' ? 'user' : 'assistant';
+    const text = String(m.text ?? '').trim();
+    if (!text) continue;
+    if (out.length === 0 && role === 'assistant') out.push({ role: 'user', content: '(The user opened the chat.)' });
+    const last = out[out.length - 1];
+    if (last && last.role === role) last.content += `\n\n${text}`;
+    else out.push({ role, content: text });
+  }
+  return out;
+}
+
+export { toClaudeMessages };
+
+async function callClaude({ apiKey, system, messages, clientOptions = {} }) {
+  const [{ default: Anthropic }, { zodOutputFormat }, { z }] = await Promise.all([
+    import('@anthropic-ai/sdk'),
+    import('@anthropic-ai/sdk/helpers/zod'),
+    import('zod'),
+  ]);
+
+  const Reply = z.object({
+    text: z.string(),
+    options: z.array(z.string()),
+    criticalGaps: z.array(z.string()),
+    currentSkills: z.array(z.string()),
+    suggestedPaths: z.array(z.object({ title: z.string(), icon: z.string() })),
+    readyToSuggest: z.boolean(),
+  });
+
+  const client = new Anthropic({ apiKey, ...clientOptions });
+  const response = await client.messages.parse({
+    model: CLAUDE_MODEL,
+    max_tokens: 4000,
+    system,
+    messages: toClaudeMessages(messages),
+    // Short chat turns: keep reasoning light for speed and cost
+    output_config: { effort: 'low', format: zodOutputFormat(Reply) },
+  });
+
+  if (response.stop_reason === 'refusal') throw new Error('Claude declined this request');
+  if (!response.parsed_output) throw new Error('Claude returned an unreadable reply');
+  return response.parsed_output;
+}
+
+export { callClaude };
