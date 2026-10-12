@@ -24,16 +24,31 @@ async function pickModel(apiKey) {
   return stable[0]?.id || null;
 }
 
+// Google answers 503 ("high demand") or 429 now and then; a short retry usually succeeds.
+// Delays are short because serverless functions have a time limit.
+const RETRY_DELAYS_MS = [700, 1500];
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function postWithRetry(model, apiKey, body) {
+  let res = await post(model, apiKey, body);
+  for (const delay of RETRY_DELAYS_MS) {
+    if (res.status !== 503 && res.status !== 429) break;
+    await wait(delay);
+    res = await post(model, apiKey, body);
+  }
+  return res;
+}
+
 export async function geminiFetch(apiKey, body) {
   const pinned = process.env.GEMINI_MODEL;
   const model = pinned || cachedModel || DEFAULT_MODEL;
-  let res = await post(model, apiKey, body);
+  let res = await postWithRetry(model, apiKey, body);
   if (res.status === 404 && !pinned) {
     const found = await pickModel(apiKey);
     if (found && found !== model) {
       console.warn(`Gemini model ${model} was not found for this key; using ${found} instead.`);
       cachedModel = found;
-      res = await post(found, apiKey, body);
+      res = await postWithRetry(found, apiKey, body);
     }
   }
   return res;
