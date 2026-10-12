@@ -271,6 +271,7 @@ export default function Home() {
             <nav aria-label="Footer" className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm">
               <Link className="text-slate-300 hover:text-white transition-colors" to="/discovery">Discovery</Link>
               <Link className="text-slate-300 hover:text-white transition-colors" to="/experts">Consultants</Link>
+              <Link className="text-slate-300 hover:text-white transition-colors" to="/references">Reel references</Link>
               <Link className="text-slate-300 hover:text-white transition-colors" to="/about">About us</Link>
               <Link className="text-slate-300 hover:text-white transition-colors" to="/registration">Apply as a consultant</Link>
             </nav>

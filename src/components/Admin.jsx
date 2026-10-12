@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import { apiFetch } from '../utils/api.js';
+import ReelsAdmin from './ReelsAdmin';
 
 export default function Admin() {
     const [isAuthenticated, setIsAuthenticated] = useState(
@@ -12,7 +13,7 @@ export default function Admin() {
     const [consultants, setConsultants] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState('pending'); // 'pending' or 'approved'
+    const [activeTab, setActiveTab] = useState('pending'); // 'pending', 'approved' or 'reels'
     const [actioningId, setActioningId] = useState(null);
     const [toast, setToast] = useState(null);
     const [processingId, setProcessingId] = useState(null);
@@ -248,10 +249,10 @@ export default function Admin() {
                 </div>
 
                 {/* Navigation Tabs */}
-                <div className="flex border-b border-outline/10 mb-8">
+                <div className="flex overflow-x-auto border-b border-outline/10 mb-8">
                     <button
                         onClick={() => setActiveTab('pending')}
-                        className={`flex items-center gap-2 pb-4 px-4 font-semibold text-base transition border-b-2 -mb-[2px] ${activeTab === 'pending'
+                        className={`flex shrink-0 items-center gap-2 whitespace-nowrap pb-4 px-4 font-semibold text-base transition border-b-2 -mb-[2px] ${activeTab === 'pending'
                                 ? 'border-primary text-primary'
                                 : 'border-transparent text-outline hover:text-on-surface'
                             }`}
@@ -266,7 +267,7 @@ export default function Admin() {
                     </button>
                     <button
                         onClick={() => setActiveTab('approved')}
-                        className={`flex items-center gap-2 pb-4 px-4 font-semibold text-base transition border-b-2 -mb-[2px] ${activeTab === 'approved'
+                        className={`flex shrink-0 items-center gap-2 whitespace-nowrap pb-4 px-4 font-semibold text-base transition border-b-2 -mb-[2px] ${activeTab === 'approved'
                                 ? 'border-primary text-primary'
                                 : 'border-transparent text-outline hover:text-on-surface'
                             }`}
@@ -277,10 +278,22 @@ export default function Admin() {
                             {approvedList.length}
                         </span>
                     </button>
+                    <button
+                        onClick={() => setActiveTab('reels')}
+                        className={`flex shrink-0 items-center gap-2 whitespace-nowrap pb-4 px-4 font-semibold text-base transition border-b-2 -mb-[2px] ${activeTab === 'reels'
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-outline hover:text-on-surface'
+                            }`}
+                    >
+                        <span className="material-symbols-outlined text-lg">movie</span>
+                        Reel references
+                    </button>
                 </div>
 
                 {/* Dashboard Main Content */}
-                {loading ? (
+                {activeTab === 'reels' ? (
+                    <ReelsAdmin />
+                ) : loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent mb-4"></div>
                         <p className="text-outline font-medium">Fetching applications...</p>

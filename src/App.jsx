@@ -13,6 +13,8 @@ const ConsultantDashboard = React.lazy(() => import('./components/ConsultantDash
 const ConsultantProfile = React.lazy(() => import('./components/ConsultantProfile'));
 const Dashboard = React.lazy(() => import('./components/Dashboard'));
 const NotFound = React.lazy(() => import('./components/NotFound'));
+const References = React.lazy(() => import('./components/References'));
+const ReelReferences = React.lazy(() => import('./components/ReelReferences'));
 
 // A simple loading skeleton
 const PageLoader = () => (
@@ -37,6 +39,8 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/consultant-dashboard" element={<ConsultantDashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/references" element={<References />} />
+            <Route path="/r/:slug" element={<ReelReferences />} />
             {/* Catch-all for 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
