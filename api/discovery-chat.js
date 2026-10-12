@@ -1,4 +1,5 @@
 import { checkRateLimit } from './_utils/rate-limiter.js';
+import clientPromise, { addToCounter } from '../lib/db.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -17,13 +18,33 @@ export default async function handler(req, res) {
   }
 
   // AI provider: Gemini by default. Set AI_PROVIDER=claude (and ANTHROPIC_API_KEY) to use Claude instead.
-  const useClaude = process.env.AI_PROVIDER === 'claude';
-  const apiKey = useClaude
-    ? process.env.ANTHROPIC_API_KEY
-    : (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY);
+  // Claude spend is capped per calendar month (AI_BUDGET_INR, default 200). When the cap is reached the chat
+  // switches to Gemini if a Gemini key exists, otherwise it returns 503 and the page uses its built-in questions.
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+  let useClaude = process.env.AI_PROVIDER === 'claude';
+  if (useClaude) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('Missing ANTHROPIC_API_KEY environment variable');
+      return res.status(500).json({ error: 'Claude API key is not configured on the server' });
+    }
+    try {
+      const { spentInr } = await claudeSpend();
+      if (spentInr >= AI_BUDGET_INR) {
+        console.warn(`Claude monthly budget reached (about Rs ${spentInr.toFixed(2)} of Rs ${AI_BUDGET_INR}).`);
+        useClaude = false;
+        if (!geminiKey) return res.status(503).json({ error: 'AI chat is paused for this month.', budgetExhausted: true });
+      }
+    } catch (e) {
+      // If spend cannot be checked, do not risk the cap: stop using Claude for this request.
+      console.error('Could not read Claude spend; not calling Claude:', e.message);
+      useClaude = false;
+      if (!geminiKey) return res.status(503).json({ error: 'AI chat is temporarily unavailable.' });
+    }
+  }
+  const apiKey = useClaude ? process.env.ANTHROPIC_API_KEY : geminiKey;
   if (!apiKey) {
-    console.error(`Missing ${useClaude ? 'ANTHROPIC_API_KEY' : 'GEMINI_API_KEY'} environment variable`);
-    return res.status(500).json({ error: `${useClaude ? 'Claude' : 'Gemini'} API key is not configured on the server` });
+    console.error('Missing GEMINI_API_KEY environment variable');
+    return res.status(500).json({ error: 'Gemini API key is not configured on the server' });
   }
 
   try {
@@ -77,7 +98,13 @@ Do NOT ask the user for their name, age, class, subject, current job, or educati
 
     let parsedData;
     if (useClaude) {
-      parsedData = await callClaude({ apiKey, system: `${systemPrompt}${contextInstructions}`, messages });
+      const { reply, usage } = await callClaude({ apiKey, system: `${systemPrompt}${contextInstructions}`, messages });
+      parsedData = reply;
+      try {
+        await addToCounter('ai_usage', claudeMonth(), 'costUsd', claudeCostUsd(usage));
+      } catch (e) {
+        console.error('Could not record Claude spend:', e.message);
+      }
     } else {
     const requestBody = {
       contents: [
@@ -175,6 +202,26 @@ Do NOT ask the user for their name, age, class, subject, current job, or educati
 // ─── Claude (Anthropic Messages API) ───
 const CLAUDE_MODEL = process.env.AI_MODEL || 'claude-haiku-5-5';
 
+// Spend cap. Prices are USD per million tokens [input, output]; an unknown model is priced like Opus (the highest)
+// so the cap stays safe. AI_INR_PER_USD is deliberately on the high side so spend is over-, not under-counted.
+const AI_BUDGET_INR = Number(process.env.AI_BUDGET_INR || 200);
+const AI_INR_PER_USD = Number(process.env.AI_INR_PER_USD || 95);
+const PRICES = { 'claude-haiku-5-5': [0.1, 0.5], 'claude-sonnet-5-5': [2, 10], 'claude-opus-5-5': [4, 20] };
+
+const claudeMonth = () => `claude-${new Date().toISOString().slice(0, 7)}`;
+
+export function claudeCostUsd(usage = {}) {
+  const [inPrice, outPrice] = PRICES[CLAUDE_MODEL] || [4, 20];
+  const tokensIn = (usage.input_tokens || 0) + (usage.cache_creation_input_tokens || 0) + (usage.cache_read_input_tokens || 0);
+  return (tokensIn * inPrice + (usage.output_tokens || 0) * outPrice) / 1e6;
+}
+
+async function claudeSpend() {
+  const client = await clientPromise;
+  const doc = await client.db('prodecide').collection('ai_usage').findOne({ _id: claudeMonth() });
+  return { spentInr: Number(doc?.costUsd || 0) * AI_INR_PER_USD };
+}
+
 // Claude needs alternating user/assistant turns that start with the user.
 function toClaudeMessages(messages) {
   const out = [];
@@ -220,7 +267,7 @@ async function callClaude({ apiKey, system, messages, clientOptions = {} }) {
 
   if (response.stop_reason === 'refusal') throw new Error('Claude declined this request');
   if (!response.parsed_output) throw new Error('Claude returned an unreadable reply');
-  return response.parsed_output;
+  return { reply: response.parsed_output, usage: response.usage };
 }
 
 export { callClaude };

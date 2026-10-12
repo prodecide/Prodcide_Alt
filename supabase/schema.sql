@@ -4,7 +4,7 @@
 do $$
 declare t text;
 begin
-  foreach t in array array['consultants','bookings','users','user_profiles','availability','reviews','otps','rate_limits']
+  foreach t in array array['consultants','bookings','users','user_profiles','availability','reviews','otps','rate_limits','ai_usage']
   loop
     execute format('create table if not exists public.%I (
       id text primary key,
