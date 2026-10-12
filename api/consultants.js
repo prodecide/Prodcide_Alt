@@ -196,7 +196,8 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     } catch (error) {
         console.error('Database operation failed:', error.message);
-        if (req.method === 'GET' && process.env.NODE_ENV !== 'production') {
+        // Demo data is for offline local development only; never show it on a deployed site.
+        if (req.method === 'GET' && !process.env.NETLIFY && process.env.NODE_ENV !== 'production') {
             console.log('Serving fallback consultants data for local offline development.');
             return res.status(200).json([
                 {
@@ -240,7 +241,7 @@ export default async function handler(req, res) {
                 }
             ]);
         }
-        return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+        return res.status(500).json({ error: 'Internal Server Error', details: process.env.NETLIFY ? undefined : error.message });
     }
 }
 

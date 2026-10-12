@@ -15,6 +15,9 @@ export async function apiFetch(url, options = {}) {
         }
         return response;
     } catch (error) {
+        // Mock responses are for local development only. In production, surface the failure.
+        if (!import.meta.env.DEV) throw error;
+
         console.warn(`[Mock Fallback] API server unreachable for ${url}. Returning mock response.`);
         
         // Mock responses for the Consultant Onboarding Flow

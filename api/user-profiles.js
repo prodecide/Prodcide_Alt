@@ -193,6 +193,6 @@ export default async function handler(req, res) {
                 currentSkills: []
             });
         }
-        return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+        return res.status(500).json({ error: 'Internal Server Error', details: process.env.NETLIFY ? undefined : error.message });
     }
 }
