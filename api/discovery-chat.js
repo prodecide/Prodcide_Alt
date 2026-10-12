@@ -1,5 +1,6 @@
 import { checkRateLimit } from './_utils/rate-limiter.js';
 import clientPromise, { addToCounter } from '../lib/db.js';
+import { geminiFetch } from './_utils/gemini.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -48,7 +49,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     // Format chat history into a string prompt for the model
     let conversationHistory = '';
@@ -152,13 +152,7 @@ Do NOT ask the user for their name, age, class, subject, current job, or educati
       }
     };
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
+    const response = await geminiFetch(apiKey, requestBody);
 
     if (!response.ok) {
       const errorText = await response.text();

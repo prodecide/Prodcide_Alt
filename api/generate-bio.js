@@ -1,3 +1,4 @@
+import { geminiFetch } from './_utils/gemini.js';
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -15,7 +16,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const prompt = `You are an expert recruitment and profile-writing agent. Analyze the attached PDF resume/CV and extract the professional details into the specified JSON structure:
 - bio: A concise, highly professional summary of the candidate's core expertise, tenure, and strategic vision (2-4 sentences). Written in a premium, executive tone.
@@ -87,13 +87,7 @@ export default async function handler(req, res) {
       }
     };
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
+    const response = await geminiFetch(apiKey, requestBody);
 
     if (!response.ok) {
       const errorText = await response.text();

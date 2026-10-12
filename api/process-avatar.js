@@ -1,4 +1,5 @@
 import clientPromise from '../lib/db.js';
+import { geminiFetch } from './_utils/gemini.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -17,7 +18,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const prompt = `You are an expert image styling and professional avatar agent. Analyze the attached profile photo. 
 Identify the person's key visual traits (apparent gender, age, ethnicity, hair style/color, facial hair, glasses, expression) and describe them. 
@@ -57,13 +57,7 @@ Return a JSON object with:
       }
     };
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
+    const response = await geminiFetch(apiKey, requestBody);
 
     if (!response.ok) {
       const errorText = await response.text();
