@@ -4,6 +4,7 @@
 // To add a reel: copy an entry, change the text, set published: true, then deploy.
 // Newest reels go at the top. Entries with published: false are hidden everywhere.
 //
+// icon          Material Symbols icon name shown on the tile (default play_circle)
 // instagramUrl  the public reel link (it is embedded on the page)
 // link          the main thing the reel recommends (button)
 // howToUse      short steps, in order
@@ -14,6 +15,7 @@ export const reels = [
     slug: 'claude-firecrawl-jobs',
     published: true,
     heading: 'Job search reel',
+    icon: 'work',
     title: 'Find the right jobs with Claude and Firecrawl in one prompt',
     instagramUrl: 'https://www.instagram.com/pro.decide/reel/DecRT6YPb9Z/',
     description:
@@ -32,6 +34,7 @@ export const reels = [
     slug: 'roadmap-sh',
     published: true,
     heading: 'Roadmap reel',
+    icon: 'map',
     title: 'Not sure what to learn next in tech? Follow a roadmap.',
     instagramUrl: 'https://www.instagram.com/pro.decide/reel/DeBpwtRv65s/',
     description:

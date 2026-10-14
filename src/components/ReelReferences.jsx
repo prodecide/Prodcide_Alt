@@ -20,6 +20,10 @@ export default function ReelReferences() {
       <main className="max-w-7xl mx-auto px-6 md:px-12 pt-32 pb-24">
         {reel ? (
           <>
+            <Link to="/references" className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white">
+              <span className="material-symbols-outlined text-base" aria-hidden="true">arrow_back</span>
+              All references
+            </Link>
             <ReelSection reel={reel} as="h1" />
             <div className="mt-20 max-w-2xl rounded-2xl border border-cyan-400/20 bg-slate-900/60 p-6 md:p-8">
               <h2 className="font-headline text-xl font-bold mb-2">Want advice for your own situation?</h2>
