@@ -11,6 +11,24 @@
 
 export const reels = [
   {
+    slug: 'claude-firecrawl-jobs',
+    published: true,
+    heading: 'Job search reel',
+    title: 'Find the right jobs with Claude and Firecrawl in one prompt',
+    instagramUrl: 'https://www.instagram.com/pro.decide/reel/DecRT6YPb9Z/',
+    description:
+      'Stop applying to 100 jobs blindly. Firecrawl lets Claude read job sites for you, so you can ask for the roles you want in plain English and get a clean list back in minutes. Then use Claude to tailor your resume to each role and prepare for the interview.',
+    link: { label: 'Open Firecrawl', url: 'https://www.firecrawl.dev' },
+    howToUse: [
+      'Go to firecrawl.dev and sign up. Click Start for free.',
+      'After you sign in, find the page that shows your MCP server URL, and copy it. This link contains your personal key, so never share it or post it.',
+      'Open Claude Desktop. Click the + button, choose Connectors, then Add custom connector. Give it a name, such as Firecrawl, paste the MCP server URL and confirm.',
+      'Turn the Firecrawl connector on in your chat. Then type /firecrawl-scrape followed by what you want, for example: Find product manager jobs in Bangalore for 4 years of experience, with company, role and when each was posted. Change the role, city and experience to match you.',
+      'Ask Claude to put the list in a spreadsheet. Then pick a role you like and ask Claude to tailor your resume to it and prepare you for that interview.',
+    ],
+    resources: [],
+  },
+  {
     slug: 'roadmap-sh',
     published: true,
     heading: 'Roadmap reel',
